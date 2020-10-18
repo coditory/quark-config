@@ -12,22 +12,15 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 class ListConfigNode implements ConfigNode {
-    private final Path path;
     private final List<ConfigNode> values;
 
-    ListConfigNode(Path path, List<ConfigNode> values) {
-        this.path = requireNonNull(path);
+    ListConfigNode(List<ConfigNode> values) {
         this.values = values;
     }
 
     @Override
     public boolean isEmpty() {
         return values.isEmpty();
-    }
-
-    @Override
-    public Path path() {
-        return path;
     }
 
     @Override
@@ -47,60 +40,61 @@ class ListConfigNode implements ConfigNode {
     }
 
     @Override
-    public Object getOrThrow(Path subPath) {
-        if (subPath.isRoot()) {
-            return unwrap();
-        }
-        return getChild(subPath.getFirstElement())
-                .orElseThrow(() -> {
-                    String message = "Could not get element for path: " + path +
-                            ". Got list on path: " + this.path + " with size: " + values.size();
-                    return new MissingConfigValueException(message);
-                });
-    }
-
-    @Override
-    public ListConfigNode addIfMissing(Path subPath, Object value) {
+    public ListConfigNode addIfMissing(Path parentPath, Path subPath, Object value) {
         if (subPath.isRoot()) {
             return this;
         }
-        ConfigNode child = getChild(subPath.getFirstElement())
-                .map(c -> c.addIfMissing(subPath.removeFirstElement(), value))
-                .orElseGet(() -> ConfigNode.of(path.add(subPath.getFirstElement()), subPath.removeFirstElement(), value));
-        return addOrReplaceChild(subPath.getFirstElement(), child);
+        Path.PathElement element = subPath.getFirstElement();
+        if (element.isNamed() || element.getIndex() > values.size()) {
+            return this;
+        }
+        ConfigNode child = getChild(element)
+                .map(c -> c.addIfMissing(parentPath.add(element), subPath.removeFirstElement(), value))
+                .orElseGet(() -> ConfigNode.of(parentPath.add(element), subPath.removeFirstElement(), value));
+        return addOrReplaceChild(element, child);
     }
 
     @Override
-    public ListConfigNode addOrThrow(Path subPath, Object value) {
+    public ListConfigNode addOrThrow(Path parentPath, Path subPath, Object value) {
         if (subPath.isRoot()) {
             return this;
         }
-        return getChild(subPath.getFirstElement())
-                .map(c -> c.addOrThrow(subPath.removeFirstElement(), value))
-                .map(c -> this.addOrReplaceChild(subPath.getFirstElement(), c))
-                .orElseThrow(() -> {
-                    String message = "Could not add element on path: " + path.add(subPath) +
-                            ". Got list on path: " + this.path + " with size: " + values.size();
-                    return new MissingConfigValueException(message);
-                });
+        Path.PathElement element = subPath.getFirstElement();
+        if (element.isNamed() || element.getIndex() > values.size()) {
+            throw new MissingConfigValueException(
+                    "Could not add element on: " + parentPath.add(subPath) +
+                            ". Got a list on: " + parentPath + " of size: " + values.size()
+            );
+        }
+        ConfigNode child = getChild(element)
+                .map(c -> c.addOrThrow(parentPath.add(element), subPath.removeFirstElement(), value))
+                .orElseGet(() -> ConfigNode.of(parentPath, subPath, value));
+        return addOrReplaceChild(element, child);
     }
 
     @Override
-    public ConfigNode addOrReplace(Path subPath, Object value) {
+    public ConfigNode addOrReplace(Path parentPath, Path subPath, Object value) {
         if (subPath.isRoot()) {
-            return new LeafConfigNode(path, value);
+            return new LeafConfigNode(value);
         }
-        return getChild(subPath.getFirstElement())
-                .map(c -> c.addOrReplace(subPath.removeFirstElement(), value))
-                .map(c -> this.addOrReplaceChild(subPath.getFirstElement(), c))
-                .orElse(this);
+        Path.PathElement element = subPath.getFirstElement();
+        if (element.isNamed() || element.getIndex() > values.size()) {
+            throw new MissingConfigValueException(
+                    "Could not add element on: " + parentPath.add(subPath) +
+                            ". Got a list on: " + parentPath + " of size: " + values.size()
+            );
+        }
+        ConfigNode child = getChild(element)
+                .map(c -> c.addOrReplace(parentPath.add(element), subPath.removeFirstElement(), value))
+                .orElseGet(() -> ConfigNode.of(parentPath, subPath, value));
+        return addOrReplaceChild(element, child);
     }
 
     private ListConfigNode addOrReplaceChild(Path.PathElement element, ConfigNode node) {
         int index = element.getIndex();
         List<ConfigNode> children = new ArrayList<>(this.values);
         children.add(index, node);
-        return new ListConfigNode(path, children);
+        return new ListConfigNode(children);
     }
 
     private Optional<ConfigNode> getChild(Path.PathElement element) {
@@ -119,6 +113,19 @@ class ListConfigNode implements ConfigNode {
         List<ConfigNode> mapped = values.stream()
                 .map(child -> child.mapLeaves(mapper))
                 .collect(toList());
-        return new ListConfigNode(path, mapped);
+        return new ListConfigNode(mapped);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ListConfigNode that = (ListConfigNode) o;
+        return values.equals(that.values);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(values);
     }
 }

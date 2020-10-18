@@ -6,6 +6,7 @@ import com.coditory.configio.api.ValueParser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -101,6 +102,20 @@ public class Config implements ConfigValueExtractor {
                 .map(value -> value.getAs(valueParser, type));
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Config config = (Config) o;
+        return valueParser.equals(config.valueParser) &&
+                root.equals(config.root);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(valueParser, root);
+    }
+
     private Optional<ConfigValue> getOptional(String path) {
         expectNonEmpty(path, "path");
         return getOptional(Path.parse(path));
@@ -172,7 +187,7 @@ public class Config implements ConfigValueExtractor {
             expectNonEmpty(name, "name");
             if (value != null) {
                 Path path = Path.parse(name);
-                root = root.addIfMissing(path, value);
+                root = root.addIfMissing(Path.root(), path, value);
             }
             return this;
         }

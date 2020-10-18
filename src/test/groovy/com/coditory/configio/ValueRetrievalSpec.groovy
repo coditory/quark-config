@@ -19,6 +19,17 @@ class ValueRetrievalSpec extends Specification {
             config.getString("e") == "E"
     }
 
+    def "should return retrieve nested value from inserted map"() {
+        given:
+            Config config = Config.builder()
+                    .withValue("a", [b: [c: "ABC"], d: "AD"])
+                    .build()
+        expect:
+            config.getString("a.b.c") == "ABC"
+        and:
+            config.getString("a.d") == "AD"
+    }
+
     def "should not retrieve missing value"() {
         given:
             Config config = Config.builder()
@@ -29,7 +40,8 @@ class ValueRetrievalSpec extends Specification {
         when:
             config.getString("a.e")
         then:
-            thrown(MissingConfigValueException)
+            MissingConfigValueException e = thrown(MissingConfigValueException)
+            e.message == "Missing config value for path: a.e"
         and:
             config.getStringOrNull("a.e") == null
         and:
@@ -52,5 +64,16 @@ class ValueRetrievalSpec extends Specification {
             config.getStringOrNull("a.b[5].d") == null
         and:
             config.getStringOrNull("a.b.d") == null
+    }
+
+    def "should return retrieve nested value from inserted list"() {
+        given:
+            Config config = Config.builder()
+                    .withValue("a.b", [[c: "AB0C"], "AB1"])
+                    .build()
+        expect:
+            config.getString("a.b[0].c") == "AB0C"
+        and:
+            config.getString("a.b[1]") == "AB1"
     }
 }

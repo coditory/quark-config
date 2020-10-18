@@ -56,7 +56,8 @@ class SubConfigSpec extends Specification {
         when:
             config.subConfig("a.b[2]").isEmpty()
         then:
-            thrown(MissingConfigValueException)
+            MissingConfigValueException e = thrown(MissingConfigValueException)
+            e.message == "Could not get subConfig for path: a.b[2]"
 
         when:
             config.subConfig("b").isEmpty()

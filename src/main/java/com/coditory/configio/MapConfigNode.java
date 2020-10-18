@@ -12,17 +12,15 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
 
 class MapConfigNode implements ConfigNode {
-    private static final MapConfigNode EMPTY_ROOT = new MapConfigNode(Path.root(), Map.of());
+    private static final MapConfigNode EMPTY_ROOT = new MapConfigNode(Map.of());
 
     static MapConfigNode emptyRoot() {
         return EMPTY_ROOT;
     }
 
-    private final Path path;
     private final Map<String, ConfigNode> values;
 
-    MapConfigNode(Path path, Map<String, ConfigNode> values) {
-        this.path = requireNonNull(path);
+    MapConfigNode(Map<String, ConfigNode> values) {
         this.values = requireNonNull(values);
     }
 
@@ -41,24 +39,6 @@ class MapConfigNode implements ConfigNode {
     }
 
     @Override
-    public Object getOrThrow(Path subPath) {
-        if (subPath.isRoot()) {
-            return unwrap();
-        }
-        return getChild(subPath.getFirstElement())
-                .orElseThrow(() -> {
-                    String message = "Could not get element for path: " + path +
-                            ". Got map on path: " + this.path + " with keys: " + values.keySet();
-                    return new MissingConfigValueException(message);
-                });
-    }
-
-    @Override
-    public Path path() {
-        return path;
-    }
-
-    @Override
     public Map<String, Object> unwrap() {
         if (values.isEmpty()) {
             return Map.of();
@@ -72,55 +52,68 @@ class MapConfigNode implements ConfigNode {
     public ConfigNode mapLeaves(Function<Object, Object> mapper) {
         Map<String, ConfigNode> mapped = values.entrySet().stream()
                 .collect(toMap(Map.Entry::getKey, entry -> entry.getValue().mapLeaves(mapper)));
-        return new MapConfigNode(path, mapped);
+        return new MapConfigNode(mapped);
     }
 
     @Override
-    public MapConfigNode addIfMissing(Path subPath, Object value) {
+    public MapConfigNode addIfMissing(Path parentPath, Path subPath, Object value) {
         if (subPath.isRoot()) {
             return this;
         }
-        ConfigNode child = getChild(subPath.getFirstElement())
-                .map(c -> c.addIfMissing(subPath.removeFirstElement(), value))
-                .orElseGet(() -> ConfigNode.of(path, subPath, value));
-        return this.addOrReplaceChild(child);
+        Path.PathElement element = subPath.getFirstElement();
+        if (element.isIndexed()) {
+            return this;
+        }
+        ConfigNode child = getChild(element)
+                .map(c -> c.addIfMissing(parentPath.add(element), subPath.removeFirstElement(), value))
+                .orElseGet(() -> ConfigNode.of(parentPath, subPath, value));
+        return addOrReplaceChild(element, child);
     }
 
     @Override
-    public MapConfigNode addOrThrow(Path subPath, Object value) {
+    public MapConfigNode addOrThrow(Path parentPath, Path subPath, Object value) {
         if (subPath.isRoot()) {
             return this;
         }
-        return getChild(subPath.getFirstElement())
-                .map(c -> c.addOrThrow(subPath.removeFirstElement(), value))
-                .map(c -> this.addOrReplaceChild(c))
-                .orElseThrow(() -> {
-                    String message = "Could not add element on path: " + path.add(subPath) +
-                            ". Got map on path: " + this.path + " with keys: " + values.keySet();
-                    return new MissingConfigValueException(message);
-                });
+        Path.PathElement element = subPath.getFirstElement();
+        if (element.isIndexed()) {
+            throw new MissingConfigValueException(
+                    "Could not add element on: " + parentPath.add(subPath) +
+                            ". Got a map on: " + parentPath
+            );
+        }
+        ConfigNode child = getChild(element)
+                .map(c -> c.addOrThrow(parentPath.add(element), subPath.removeFirstElement(), value))
+                .orElseGet(() -> ConfigNode.of(parentPath, subPath, value));
+        return addOrReplaceChild(element, child);
     }
 
     @Override
-    public ConfigNode addOrReplace(Path subPath, Object value) {
+    public ConfigNode addOrReplace(Path parentPath, Path subPath, Object value) {
         if (subPath.isRoot()) {
-            return new LeafConfigNode(path, value);
+            return new LeafConfigNode(value);
         }
-        return getChild(subPath.getFirstElement())
-                .map(c -> c.addOrReplace(subPath.removeFirstElement(), value))
-                .map(c -> this.addOrReplaceChild(c))
-                .orElse(this);
+        Path.PathElement element = subPath.getFirstElement();
+        if (element.isIndexed()) {
+            throw new MissingConfigValueException(
+                    "Could not add element on: " + parentPath.add(subPath) +
+                            ". Got a map on: " + parentPath
+            );
+        }
+        ConfigNode child = getChild(element)
+                .map(c -> c.addOrReplace(parentPath.add(element), subPath.removeFirstElement(), value))
+                .orElseGet(() -> ConfigNode.of(parentPath, subPath, value));
+        return addOrReplaceChild(element, child);
     }
 
-    private MapConfigNode addOrReplaceChild(ConfigNode node) {
-        Path.PathElement element = node.path().getLastElement();
+    private MapConfigNode addOrReplaceChild(Path.PathElement element, ConfigNode node) {
         ConfigNode current = this.values.get(element.getName());
         if (Objects.equals(current, node)) {
             return this;
         }
         HashMap<String, ConfigNode> children = new HashMap<>(this.values);
         children.put(element.getName(), node);
-        return new MapConfigNode(path, children);
+        return new MapConfigNode(children);
     }
 
     private Optional<ConfigNode> getChild(Path.PathElement element) {
@@ -129,5 +122,18 @@ class MapConfigNode implements ConfigNode {
         }
         ConfigNode child = values.get(element.getName());
         return Optional.ofNullable(child);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MapConfigNode that = (MapConfigNode) o;
+        return values.equals(that.values);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(values);
     }
 }
