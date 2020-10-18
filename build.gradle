@@ -1,3 +1,47 @@
 plugins {
-  id 'java'
+    id 'java'
+    id 'groovy'
+    id 'com.coditory.build' version '0.1.5'
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile 'org.yaml:snakeyaml:1.26'
+    compile 'org.json:json:20200518'
+    testImplementation 'org.spockframework:spock-core:2.0-M3-groovy-3.0'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_14
+}
+
+tasks.withType(JavaCompile) {
+    // make all test/main builds use UTF-8
+    options.encoding = 'UTF-8'
+    // compile only changed files
+    options.incremental = true
+    // skip JsonCreator from Jackson
+    options.compilerArgs << "-parameters"
+    // error instead of warn on lint problems
+    options.compilerArgs << "-Werror"
+    options.compilerArgs << "-Xlint"
+    options.compilerArgs << "-Xlint:-serial"
+    options.compilerArgs << "-Xlint:-processing"
+    options.compilerArgs << "-Xlint:-try"
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_14
+}
+
+tasks.withType(Test) {
+    useJUnitPlatform()
+    testLogging {
+        exceptionFormat = 'full'
+        events = ['passed', 'skipped', 'failed']
+        showStandardStreams = true
+    }
 }
