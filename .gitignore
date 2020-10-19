@@ -4,10 +4,11 @@
 *.ipr
 *.iws
 
-# gradle config
-.gradle
-
-# project binaries
+# Gradle
 build
+.gradle
+!gradle/wrapper/gradle-wrapper.jar
+
+# Project binaries
 out
 classes
