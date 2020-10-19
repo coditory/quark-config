@@ -2,12 +2,16 @@ package com.coditory.configio;
 
 import com.coditory.configio.api.MissingConfigValueException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static com.coditory.configio.ConfigNodeCreator.configNode;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
 
@@ -51,7 +55,7 @@ class MapConfigNode implements ConfigNode {
     @Override
     public ConfigNode mapLeaves(Function<Object, Object> mapper) {
         Map<String, ConfigNode> mapped = values.entrySet().stream()
-                .collect(toMap(Map.Entry::getKey, entry -> entry.getValue().mapLeaves(mapper)));
+                .collect(toMap(Entry::getKey, entry -> entry.getValue().mapLeaves(mapper)));
         return new MapConfigNode(mapped);
     }
 
@@ -66,7 +70,7 @@ class MapConfigNode implements ConfigNode {
         }
         ConfigNode child = getChild(element)
                 .map(c -> c.addIfMissing(parentPath.add(element), subPath.removeFirstElement(), value))
-                .orElseGet(() -> ConfigNode.of(parentPath, subPath, value));
+                .orElseGet(() -> configNode(parentPath, subPath, value));
         return addOrReplaceChild(element, child);
     }
 
@@ -84,7 +88,7 @@ class MapConfigNode implements ConfigNode {
         }
         ConfigNode child = getChild(element)
                 .map(c -> c.addOrThrow(parentPath.add(element), subPath.removeFirstElement(), value))
-                .orElseGet(() -> ConfigNode.of(parentPath, subPath, value));
+                .orElseGet(() -> configNode(parentPath, subPath, value));
         return addOrReplaceChild(element, child);
     }
 
@@ -102,8 +106,48 @@ class MapConfigNode implements ConfigNode {
         }
         ConfigNode child = getChild(element)
                 .map(c -> c.addOrReplace(parentPath.add(element), subPath.removeFirstElement(), value))
-                .orElseGet(() -> ConfigNode.of(parentPath, subPath, value));
+                .orElseGet(() -> configNode(parentPath, subPath, value));
         return addOrReplaceChild(element, child);
+    }
+
+    @Override
+    public MapConfigNode remove(Path parentPath, Path subPath) {
+        if (subPath.isRoot() || !subPath.getFirstElement().isNamed()) {
+            return this;
+        }
+        Path.PathElement element = subPath.getFirstElement();
+        String name = element.getName();
+        if (!values.containsKey(name)) {
+            return this;
+        }
+        Map<String, ConfigNode> result = new HashMap<>(values);
+        result.remove(name);
+        if (subPath.length() > 1) {
+            ConfigNode mappedChild = values.get(name)
+                    .remove(parentPath.add(element), subPath.removeFirstElement());
+            result.put(name, mappedChild);
+        }
+        return new MapConfigNode(result);
+    }
+
+    @Override
+    public MapConfigNode withDefaults(ConfigNode other) {
+        if (!(other instanceof MapConfigNode)) {
+            return this;
+        }
+        MapConfigNode otherMapNode = (MapConfigNode) other;
+        Map<String, ConfigNode> result = new HashMap<>();
+        for (Entry<String, ConfigNode> entry : this.values.entrySet()) {
+            ConfigNode otherChildNode = otherMapNode.values.get(entry.getKey());
+            ConfigNode mergedChildNode = entry.getValue().withDefaults(otherChildNode);
+            result.put(entry.getKey(), mergedChildNode);
+        }
+        for (Entry<String, ConfigNode> entry : otherMapNode.values.entrySet()) {
+            if (!result.containsKey(entry.getKey())) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return new MapConfigNode(result);
     }
 
     private MapConfigNode addOrReplaceChild(Path.PathElement element, ConfigNode node) {

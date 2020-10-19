@@ -45,10 +45,10 @@ class ValueRetrievalSpec extends Specification {
         and:
             config.getStringOrNull("a.e") == null
         and:
-            config.getStringOrDefault("a.e", "X") == "X"
+            config.getString("a.e", "X") == "X"
     }
 
-    def "should return retrieve nested value in a list"() {
+    def "should retrieve nested value in a list"() {
         given:
             Config config = Config.builder()
                     .withValue("a.b[0].c", "AB0C")
@@ -75,5 +75,17 @@ class ValueRetrievalSpec extends Specification {
             config.getString("a.b[0].c") == "AB0C"
         and:
             config.getString("a.b[1]") == "AB1"
+    }
+
+    def "should contain value"() {
+        given:
+            Config config = Config.builder()
+                    .withValue("a.b[0].c", "AB0C")
+                    .withValue("a.b[1]", "AB1")
+                    .build()
+        expect:
+            config.contains("a.b[0].c")
+        and:
+            !config.contains("a.b[0].d")
     }
 }

@@ -1,5 +1,6 @@
 package com.coditory.configio;
 
+import com.coditory.configio.api.InvalidConfigPathException;
 import com.coditory.configio.api.MissingConfigValueException;
 import com.coditory.configio.api.ValueParser;
 
@@ -14,10 +15,10 @@ import java.util.stream.Collectors;
 import static com.coditory.configio.ConfigValueParser.DEFAULT_VALUE_PARSERS;
 import static com.coditory.configio.ConfigValueParser.defaultValueParser;
 import static com.coditory.configio.MapConfigNode.emptyRoot;
+import static com.coditory.configio.Path.root;
 import static com.coditory.configio.Preconditions.expectNonEmpty;
 import static com.coditory.configio.Preconditions.expectNonNull;
 import static com.coditory.configio.SystemEnvironmentNameMapper.mapSystemEnvironmentName;
-import static java.util.Objects.requireNonNull;
 
 public class Config implements ConfigValueExtractor {
     private final static Config EMPTY = new Config(emptyRoot(), defaultValueParser());
@@ -68,22 +69,66 @@ public class Config implements ConfigValueExtractor {
     private final MapConfigNode root;
 
     private Config(MapConfigNode root, ConfigValueParser valueParser) {
-        this.root = requireNonNull(root);
-        this.valueParser = requireNonNull(valueParser);
+        this.root = expectNonNull(root);
+        this.valueParser = expectNonNull(valueParser);
     }
 
     public Map<String, Object> toMap() {
         return root.unwrap();
     }
 
+    public Config copy() {
+        return new Config(root, valueParser);
+    }
+
     public Config subConfig(String path) {
+        expectNonEmpty(path, "path");
         return getAsOptionalSubConfig(path)
                 .orElseThrow(() -> new MissingConfigValueException("Could not get subConfig for path: " + path));
     }
 
     public Config subConfigOrEmpty(String path) {
+        expectNonEmpty(path, "path");
         return getAsOptionalSubConfig(path)
                 .orElseGet(() -> new Config(emptyRoot(), valueParser));
+    }
+
+    public boolean contains(String path) {
+        expectNonEmpty(path, "path");
+        return root.getOptionalNode(Path.parse(path))
+                .isPresent();
+    }
+
+    public Config add(String path, Object value) {
+        expectNonEmpty(path, "path");
+        expectNonNull(value, "value");
+        Path parsed = Path.parse(path);
+        ConfigNode newRoot = root.addOrReplace(root(), parsed, value);
+        if (!(newRoot instanceof MapConfigNode)) {
+            throw new InvalidConfigPathException("Expected root node to be a map. Got: " + newRoot.getClass().getSimpleName());
+        }
+        return new Config((MapConfigNode) newRoot, valueParser);
+    }
+
+    public Config addDefault(String path, Object value) {
+        expectNonEmpty(path, "path");
+        expectNonNull(value, "value");
+        Path parsed = Path.parse(path);
+        MapConfigNode newRoot = root.addIfMissing(root(), parsed, value);
+        return new Config(newRoot, valueParser);
+    }
+
+    public Config addDefaults(Config config) {
+        expectNonNull(config, "config");
+        MapConfigNode mergedRoot = root.withDefaults(config.root);
+        return new Config(mergedRoot, valueParser);
+    }
+
+    public Config remove(String path) {
+        expectNonEmpty(path, "path");
+        Path parsed = Path.parse(path);
+        MapConfigNode newRoot = root.remove(root(), parsed);
+        return new Config(newRoot, valueParser);
     }
 
     private Optional<Config> getAsOptionalSubConfig(String path) {
@@ -187,7 +232,7 @@ public class Config implements ConfigValueExtractor {
             expectNonEmpty(name, "name");
             if (value != null) {
                 Path path = Path.parse(name);
-                root = root.addIfMissing(Path.root(), path, value);
+                root = root.addIfMissing(root(), path, value);
             }
             return this;
         }

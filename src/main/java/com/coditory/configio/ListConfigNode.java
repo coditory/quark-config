@@ -3,11 +3,14 @@ package com.coditory.configio;
 import com.coditory.configio.api.MissingConfigValueException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static com.coditory.configio.ConfigNodeCreator.configNode;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
@@ -50,7 +53,7 @@ class ListConfigNode implements ConfigNode {
         }
         ConfigNode child = getChild(element)
                 .map(c -> c.addIfMissing(parentPath.add(element), subPath.removeFirstElement(), value))
-                .orElseGet(() -> ConfigNode.of(parentPath.add(element), subPath.removeFirstElement(), value));
+                .orElseGet(() -> configNode(parentPath.add(element), subPath.removeFirstElement(), value));
         return addOrReplaceChild(element, child);
     }
 
@@ -68,7 +71,7 @@ class ListConfigNode implements ConfigNode {
         }
         ConfigNode child = getChild(element)
                 .map(c -> c.addOrThrow(parentPath.add(element), subPath.removeFirstElement(), value))
-                .orElseGet(() -> ConfigNode.of(parentPath, subPath, value));
+                .orElseGet(() -> configNode(parentPath, subPath, value));
         return addOrReplaceChild(element, child);
     }
 
@@ -86,8 +89,33 @@ class ListConfigNode implements ConfigNode {
         }
         ConfigNode child = getChild(element)
                 .map(c -> c.addOrReplace(parentPath.add(element), subPath.removeFirstElement(), value))
-                .orElseGet(() -> ConfigNode.of(parentPath, subPath, value));
+                .orElseGet(() -> configNode(parentPath, subPath, value));
         return addOrReplaceChild(element, child);
+    }
+
+    @Override
+    public ListConfigNode withDefaults(ConfigNode other) {
+        return this;
+    }
+
+    @Override
+    public ListConfigNode remove(Path parentPath, Path subPath) {
+        if (subPath.isRoot() || !subPath.getFirstElement().isIndexed()) {
+            return this;
+        }
+        Path.PathElement element = subPath.getFirstElement();
+        int index = element.getIndex();
+        if (index >= values.size()) {
+            return this;
+        }
+        List<ConfigNode> result = new ArrayList<>(values);
+        result.remove(index);
+        if (subPath.length() > 1) {
+            ConfigNode mappedChild = values.get(index)
+                    .remove(parentPath.add(element), subPath.removeFirstElement());
+            result.add(index, mappedChild);
+        }
+        return new ListConfigNode(result);
     }
 
     private ListConfigNode addOrReplaceChild(Path.PathElement element, ConfigNode node) {

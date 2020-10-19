@@ -31,7 +31,7 @@ function generateGetters() {
     javaCode="${javaCode}\n${PAD}${PAD}return get${type}OrDefault(path, null);"
     javaCode="${javaCode}\n${PAD}}"
     javaCode="${javaCode}\n"
-    javaCode="${javaCode}\n${PAD}default ${type} get${type}OrDefault(String path, ${type} defaultValue) {"
+    javaCode="${javaCode}\n${PAD}default ${type} get${type}(String path, ${type} defaultValue) {"
     javaCode="${javaCode}\n${PAD}${PAD}return getOptional${type}(path).orElse(defaultValue);"
     javaCode="${javaCode}\n${PAD}}"
     javaCode="${javaCode}\n"

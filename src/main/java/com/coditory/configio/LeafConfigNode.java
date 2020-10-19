@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static com.coditory.configio.ConfigNodeCreator.configNode;
 import static java.util.Objects.requireNonNull;
 
 class LeafConfigNode implements ConfigNode {
@@ -36,7 +37,7 @@ class LeafConfigNode implements ConfigNode {
     public ConfigNode addOrReplace(Path parentPath, Path subPath, Object value) {
         return subPath.isRoot()
                 ? new LeafConfigNode(value)
-                : ConfigNode.of(parentPath, subPath, value);
+                : configNode(parentPath, subPath, value);
     }
 
     @Override
@@ -48,6 +49,11 @@ class LeafConfigNode implements ConfigNode {
     }
 
     @Override
+    public ConfigNode remove(Path parentPath, Path subPath) {
+        return this;
+    }
+
+    @Override
     public LeafConfigNode addIfMissing(Path parentPath, Path subPath, Object value) {
         return this;
     }
@@ -56,6 +62,11 @@ class LeafConfigNode implements ConfigNode {
     public ConfigNode mapLeaves(Function<Object, Object> mapper) {
         Object mapped = mapper.apply(value);
         return new LeafConfigNode(mapped);
+    }
+
+    @Override
+    public LeafConfigNode withDefaults(ConfigNode other) {
+        return this;
     }
 
     @Override

@@ -19,10 +19,10 @@ interface ConfigValueExtractor {
     }
 
     default <T> T getAsOrNull(Class<T> type, String path) {
-        return getAsOrDefault(type, path, null);
+        return getAs(type, path, null);
     }
 
-    default <T> T getAsOrDefault(Class<T> type, String path, T defaultValue) {
+    default <T> T getAs(Class<T> type, String path, T defaultValue) {
         return getAsOptional(type, path).orElse(defaultValue);
     }
 
@@ -41,10 +41,10 @@ interface ConfigValueExtractor {
     }
 
     default String getStringOrNull(String path) {
-        return getStringOrDefault(path, null);
+        return getString(path, null);
     }
 
-    default String getStringOrDefault(String path, String defaultValue) {
+    default String getString(String path, String defaultValue) {
         return getOptionalString(path).orElse(defaultValue);
     }
 
@@ -60,10 +60,10 @@ interface ConfigValueExtractor {
     }
 
     default Boolean getBooleanOrNull(String path) {
-        return getBooleanOrDefault(path, null);
+        return getBoolean(path, null);
     }
 
-    default Boolean getBooleanOrDefault(String path, Boolean defaultValue) {
+    default Boolean getBoolean(String path, Boolean defaultValue) {
         return getOptionalBoolean(path).orElse(defaultValue);
     }
 
@@ -80,10 +80,10 @@ interface ConfigValueExtractor {
     }
 
     default Short getShortOrNull(String path) {
-        return getShortOrDefault(path, null);
+        return getShort(path, null);
     }
 
-    default Short getShortOrDefault(String path, Short defaultValue) {
+    default Short getShort(String path, Short defaultValue) {
         return getOptionalShort(path).orElse(defaultValue);
     }
 
@@ -100,10 +100,10 @@ interface ConfigValueExtractor {
     }
 
     default Byte getByteOrNull(String path) {
-        return getByteOrDefault(path, null);
+        return getByte(path, null);
     }
 
-    default Byte getByteOrDefault(String path, Byte defaultValue) {
+    default Byte getByte(String path, Byte defaultValue) {
         return getOptionalByte(path).orElse(defaultValue);
     }
 
@@ -120,10 +120,10 @@ interface ConfigValueExtractor {
     }
 
     default Integer getIntegerOrNull(String path) {
-        return getIntegerOrDefault(path, null);
+        return getInteger(path, null);
     }
 
-    default Integer getIntegerOrDefault(String path, Integer defaultValue) {
+    default Integer getInteger(String path, Integer defaultValue) {
         return getOptionalInteger(path).orElse(defaultValue);
     }
 
@@ -140,10 +140,10 @@ interface ConfigValueExtractor {
     }
 
     default Long getLongOrNull(String path) {
-        return getLongOrDefault(path, null);
+        return getLong(path, null);
     }
 
-    default Long getLongOrDefault(String path, Long defaultValue) {
+    default Long getLong(String path, Long defaultValue) {
         return getOptionalLong(path).orElse(defaultValue);
     }
 
@@ -160,10 +160,10 @@ interface ConfigValueExtractor {
     }
 
     default Float getFloatOrNull(String path) {
-        return getFloatOrDefault(path, null);
+        return getFloat(path, null);
     }
 
-    default Float getFloatOrDefault(String path, Float defaultValue) {
+    default Float getFloat(String path, Float defaultValue) {
         return getOptionalFloat(path).orElse(defaultValue);
     }
 
@@ -180,10 +180,10 @@ interface ConfigValueExtractor {
     }
 
     default Double getDoubleOrNull(String path) {
-        return getDoubleOrDefault(path, null);
+        return getDouble(path, null);
     }
 
-    default Double getDoubleOrDefault(String path, Double defaultValue) {
+    default Double getDouble(String path, Double defaultValue) {
         return getOptionalDouble(path).orElse(defaultValue);
     }
 
@@ -200,10 +200,10 @@ interface ConfigValueExtractor {
     }
 
     default BigDecimal getBigDecimalOrNull(String path) {
-        return getBigDecimalOrDefault(path, null);
+        return getBigDecimal(path, null);
     }
 
-    default BigDecimal getBigDecimalOrDefault(String path, BigDecimal defaultValue) {
+    default BigDecimal getBigDecimal(String path, BigDecimal defaultValue) {
         return getOptionalBigDecimal(path).orElse(defaultValue);
     }
 
@@ -220,10 +220,10 @@ interface ConfigValueExtractor {
     }
 
     default Instant getInstantOrNull(String path) {
-        return getInstantOrDefault(path, null);
+        return getInstant(path, null);
     }
 
-    default Instant getInstantOrDefault(String path, Instant defaultValue) {
+    default Instant getInstant(String path, Instant defaultValue) {
         return getOptionalInstant(path).orElse(defaultValue);
     }
 
@@ -240,10 +240,10 @@ interface ConfigValueExtractor {
     }
 
     default ZonedDateTime getZonedDateTimeOrNull(String path) {
-        return getZonedDateTimeOrDefault(path, null);
+        return getZonedDateTime(path, null);
     }
 
-    default ZonedDateTime getZonedDateTimeOrDefault(String path, ZonedDateTime defaultValue) {
+    default ZonedDateTime getZonedDateTime(String path, ZonedDateTime defaultValue) {
         return getOptionalZonedDateTime(path).orElse(defaultValue);
     }
 
@@ -260,10 +260,10 @@ interface ConfigValueExtractor {
     }
 
     default Duration getDurationOrNull(String path) {
-        return getDurationOrDefault(path, null);
+        return getDuration(path, null);
     }
 
-    default Duration getDurationOrDefault(String path, Duration defaultValue) {
+    default Duration getDuration(String path, Duration defaultValue) {
         return getOptionalDuration(path).orElse(defaultValue);
     }
 
@@ -280,10 +280,10 @@ interface ConfigValueExtractor {
     }
 
     default Locale getLocaleOrNull(String path) {
-        return getLocaleOrDefault(path, null);
+        return getLocale(path, null);
     }
 
-    default Locale getLocaleOrDefault(String path, Locale defaultValue) {
+    default Locale getLocale(String path, Locale defaultValue) {
         return getOptionalLocale(path).orElse(defaultValue);
     }
 
@@ -300,10 +300,10 @@ interface ConfigValueExtractor {
     }
 
     default Currency getCurrencyOrNull(String path) {
-        return getCurrencyOrDefault(path, null);
+        return getCurrency(path, null);
     }
 
-    default Currency getCurrencyOrDefault(String path, Currency defaultValue) {
+    default Currency getCurrency(String path, Currency defaultValue) {
         return getOptionalCurrency(path).orElse(defaultValue);
     }
 
