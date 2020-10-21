@@ -15,7 +15,7 @@ dependencies {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_14
+    sourceCompatibility = JavaVersion.VERSION_11
 }
 
 tasks.withType(JavaCompile) {
@@ -31,10 +31,6 @@ tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:-serial"
     options.compilerArgs << "-Xlint:-processing"
     options.compilerArgs << "-Xlint:-try"
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_14
 }
 
 tasks.withType(Test) {
