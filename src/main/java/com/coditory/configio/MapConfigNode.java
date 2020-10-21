@@ -70,7 +70,7 @@ class MapConfigNode implements ConfigNode {
         }
         ConfigNode child = getChild(element)
                 .map(c -> c.addIfMissing(parentPath.add(element), subPath.removeFirstElement(), value))
-                .orElseGet(() -> configNode(parentPath, subPath, value));
+                .orElseGet(() -> configNode(parentPath.add(element), subPath.removeFirstElement(), value));
         return addOrReplaceChild(element, child);
     }
 
@@ -88,25 +88,22 @@ class MapConfigNode implements ConfigNode {
         }
         ConfigNode child = getChild(element)
                 .map(c -> c.addOrThrow(parentPath.add(element), subPath.removeFirstElement(), value))
-                .orElseGet(() -> configNode(parentPath, subPath, value));
+                .orElseGet(() -> configNode(parentPath.add(element), subPath.removeFirstElement(), value));
         return addOrReplaceChild(element, child);
     }
 
     @Override
     public ConfigNode addOrReplace(Path parentPath, Path subPath, Object value) {
         if (subPath.isRoot()) {
-            return new LeafConfigNode(value);
+            return configNode(parentPath, subPath, value);
         }
         Path.PathElement element = subPath.getFirstElement();
         if (element.isIndexed()) {
-            throw new MissingConfigValueException(
-                    "Could not add element on: " + parentPath.add(subPath) +
-                            ". Got a map on: " + parentPath
-            );
+            return configNode(parentPath, subPath, value);
         }
         ConfigNode child = getChild(element)
                 .map(c -> c.addOrReplace(parentPath.add(element), subPath.removeFirstElement(), value))
-                .orElseGet(() -> configNode(parentPath, subPath, value));
+                .orElseGet(() -> configNode(parentPath.add(element), subPath.removeFirstElement(), value));
         return addOrReplaceChild(element, child);
     }
 

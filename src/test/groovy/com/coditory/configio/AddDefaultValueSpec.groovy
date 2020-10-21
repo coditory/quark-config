@@ -4,15 +4,15 @@ import com.coditory.configio.api.InvalidConfigPathException
 import com.coditory.configio.api.MissingConfigValueException
 import spock.lang.Specification
 
-class AddValueSpec extends Specification {
+class AddDefaultValueSpec extends Specification {
     def "should add values to an empty config"() {
         given:
             Config config = Config.empty()
         when:
             config = config
-                    .add("a.b.c", "ABC")
-                    .add("a.d", "AD")
-                    .add("e", ["E0", "E1"])
+                    .addDefault("a.b.c", "ABC")
+                    .addDefault("a.d", "AD")
+                    .addDefault("e", ["E0", "E1"])
         then:
             config.toMap() == [
                     a: [
@@ -23,46 +23,38 @@ class AddValueSpec extends Specification {
             ]
     }
 
-    def "should overwrite previously added values"() {
+    def "should not overwrite previously added values"() {
         given:
             Config config = Config.builder()
                     .withValue("a.b.c", "ABC")
                     .withValue("a.d.e", "ADE")
                     .withValue("e", ["E0", "E1"])
                     .build()
+            Config copy = config.copy()
         when:
             config = config
-                    .add("a.b.c", "X")
-                    .add("a.d", "Y")
-                    .add("e[1]", "Z")
+                    .addDefault("a.b.c", "X")
+                    .addDefault("a.d", "Y")
+                    .addDefault("e[1]", "Z")
         then:
-            config.toMap() == [
-                    a: [
-                            b: [c: "X"],
-                            d: "Y"
-                    ],
-                    e: ["E0", "Z"]
-            ]
+            config.toMap() == copy.toMap()
     }
 
-    def "should add new values to a list values"() {
+    def "should add new values to list of values"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b", [[c: "ABC"], "d", "e"])
+                    .withValue("a.b", [[c: "C"], "e"])
                     .build()
         when:
             config = config
-                    .add("a.b[0].c", "C")
-                    .add("a.b[0].d", "D")
-                    .add("a.b[0].e[0][0]", "E00")
-                    .add("a.b[1]", [z: "Z"])
-                    .add("a.b[3]", "3")
+                    .addDefault("a.b[0].d", "D")
+                    .addDefault("a.b[0].e[0][0]", "E00")
+                    .addDefault("a.b[2]", "3")
         then:
             config.toMap() == [
                     a: [
                             b: [
                                     [c: "C", d: "D", e: [["E00"]]],
-                                    [z: "Z"],
                                     "e",
                                     "3"
                             ]
@@ -70,54 +62,45 @@ class AddValueSpec extends Specification {
             ]
     }
 
-    def "should replace list value with nested value"() {
+    def "should not replace list value with nested value"() {
         given:
             Config config = Config.builder()
                     .withValue("a.b", ["c", "d"])
                     .build()
+            Config copy = config.copy()
         when:
             config = config
-                    .add("a.b.c.d", "D")
+                    .addDefault("a.b.c.d", "D")
         then:
-            config.toMap() == [
-                    a: [b: [c: [d: "D"]]]
-            ]
+            config.toMap() == copy.toMap()
     }
 
-    def "should replace nested value with list value"() {
+    def "should not replace nested value with list value"() {
         given:
             Config config = Config.builder()
                     .withValue("a.b.c.d", "d")
                     .build()
+            Config copy = config.copy()
         when:
             config = config
-                    .add("a.b", ["c", "d"])
+                    .addDefault("a.b", ["c", "d"])
         then:
-            config.toMap() == [
-                    a: [b: ["c", "d"]]
-            ]
+            config.toMap() == copy.toMap()
     }
 
-    def "should replace value with other value"() {
+    def "should not replace value with other value"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b", "B")
-                    .withValue("a.c", "C")
-                    .withValue("a.d", "D")
+                    .withValue("a.b.c.d", "d")
+                    .withValue("a.b.e", "e")
                     .build()
+            Config copy = config.copy()
         when:
             config = config
-                    .add("a.b.c", "X")
-                    .add("a.c", "Y")
-                    .add("a.d", ["Z"])
+                    .addDefault("a.b.c.d", "X")
+                    .addDefault("a.b.e.d", "Y")
         then:
-            config.toMap() == [
-                    a: [
-                            b: [c: "X"],
-                            c: "Y",
-                            d: ["Z"]
-                    ]
-            ]
+            config.toMap() == copy.toMap()
     }
 
     def "should fail adding list item with invalid index"() {
@@ -126,12 +109,12 @@ class AddValueSpec extends Specification {
                     .withValue("a.b", ["c", "d"])
                     .build()
         when:
-            config.add("a.b[3]", "e")
+            config.addDefault("a.b[3]", "e")
         then:
             thrown(MissingConfigValueException)
 
         when:
-            config.add("a.b[-1]", "e")
+            config.addDefault("a.b[-1]", "e")
         then:
             thrown(InvalidConfigPathException)
     }

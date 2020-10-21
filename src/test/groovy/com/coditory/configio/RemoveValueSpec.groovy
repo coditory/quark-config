@@ -1,6 +1,5 @@
 package com.coditory.configio
 
-
 import spock.lang.Specification
 
 class RemoveValueSpec extends Specification {

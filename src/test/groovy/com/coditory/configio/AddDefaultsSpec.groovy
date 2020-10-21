@@ -3,7 +3,7 @@ package com.coditory.configio
 
 import spock.lang.Specification
 
-class ConfigWithDefaultsSpec extends Specification {
+class AddDefaultsSpec extends Specification {
     def "should return sub config merged with other config"() {
         given:
             Config config = Config.builder()

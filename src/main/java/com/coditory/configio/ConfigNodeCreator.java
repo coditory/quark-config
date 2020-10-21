@@ -15,9 +15,9 @@ class ConfigNodeCreator {
         if (path.isRoot()) {
             return result;
         }
-        Path.PathElement element = path.getLastElement();
-        Path currentPath = path.removeLastElement();
+        Path currentPath = path;
         while (!currentPath.isRoot()) {
+            Path.PathElement element = currentPath.getLastElement();
             if (element.isNamed()) {
                 result = new MapConfigNode(Map.of(element.getName(), result));
             } else if (element.isIndexed()) {
@@ -31,7 +31,6 @@ class ConfigNodeCreator {
             } else {
                 throw new InvalidConfigPathException("Unrecognized path element: " + element);
             }
-            element = currentPath.getLastElement();
             currentPath = currentPath.removeLastElement();
         }
         return result;
