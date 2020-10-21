@@ -41,14 +41,6 @@ class LeafConfigNode implements ConfigNode {
     }
 
     @Override
-    public LeafConfigNode addOrThrow(Path parentPath, Path subPath, Object value) {
-        throw new MissingConfigValueException(
-                "Could not add element on: " + parentPath.add(subPath) +
-                        ". Got a leaf node on: " + parentPath
-        );
-    }
-
-    @Override
     public ConfigNode remove(Path parentPath, Path subPath) {
         return this;
     }

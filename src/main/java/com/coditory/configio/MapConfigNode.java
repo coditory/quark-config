@@ -75,24 +75,6 @@ class MapConfigNode implements ConfigNode {
     }
 
     @Override
-    public MapConfigNode addOrThrow(Path parentPath, Path subPath, Object value) {
-        if (subPath.isRoot()) {
-            return this;
-        }
-        Path.PathElement element = subPath.getFirstElement();
-        if (element.isIndexed()) {
-            throw new MissingConfigValueException(
-                    "Could not add element on: " + parentPath.add(subPath) +
-                            ". Got a map on: " + parentPath
-            );
-        }
-        ConfigNode child = getChild(element)
-                .map(c -> c.addOrThrow(parentPath.add(element), subPath.removeFirstElement(), value))
-                .orElseGet(() -> configNode(parentPath.add(element), subPath.removeFirstElement(), value));
-        return addOrReplaceChild(element, child);
-    }
-
-    @Override
     public ConfigNode addOrReplace(Path parentPath, Path subPath, Object value) {
         if (subPath.isRoot()) {
             return configNode(parentPath, subPath, value);

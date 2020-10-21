@@ -124,6 +124,21 @@ public class Config implements ConfigValueExtractor {
         return new Config(mergedRoot, valueParser);
     }
 
+//    public Config resolveWith(Config config) {
+//        // see: https://github.com/pmendelski/kotlin-ktor-sandbox/blob/master/src/main/kotlin/com/coditory/sandbox/infra/config/ConfigLoader.kt
+//        expectNonNull(config, "config");
+//        MapConfigNode lastResolved = null;
+//        MapConfigNode resolved = root;
+//        for (int i = 0; i < 10 && lastResolved != resolved ; ++i) {
+//            lastResolved = resolved;
+//            resolved = lastResolved.resolveWith(config);
+//        }
+//        if (resolved.hasUnresolvedExpressions()) {
+//            throw new RuntimeException();
+//        }
+//        return new Config(resolved, valueParser);
+//    }
+
     public Config remove(String path) {
         expectNonEmpty(path, "path");
         Path parsed = Path.parse(path);

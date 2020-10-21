@@ -10,8 +10,6 @@ interface ConfigNode {
 
     ConfigNode addIfMissing(Path parentPath, Path subPath, Object value);
 
-    ConfigNode addOrThrow(Path parentPath, Path subPath, Object value);
-
     ConfigNode addOrReplace(Path parentPath, Path subPath, Object value);
 
     ConfigNode remove(Path parentPath, Path subPath);

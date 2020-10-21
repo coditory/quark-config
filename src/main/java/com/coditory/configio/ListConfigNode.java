@@ -64,24 +64,6 @@ class ListConfigNode implements ConfigNode {
     }
 
     @Override
-    public ListConfigNode addOrThrow(Path parentPath, Path subPath, Object value) {
-        if (subPath.isRoot()) {
-            return this;
-        }
-        Path.PathElement element = subPath.getFirstElement();
-        if (element.isNamed() || element.getIndex() > values.size()) {
-            throw new MissingConfigValueException(
-                    "Could not add element on: " + parentPath.add(subPath) +
-                            ". Got a list on: " + parentPath + " of size: " + values.size()
-            );
-        }
-        ConfigNode child = getChild(element)
-                .map(c -> c.addOrThrow(parentPath.add(element), subPath.removeFirstElement(), value))
-                .orElseGet(() -> configNode(parentPath.add(element), subPath.removeFirstElement(), value));
-        return addOrReplaceChild(element, child);
-    }
-
-    @Override
     public ConfigNode addOrReplace(Path parentPath, Path subPath, Object value) {
         if (subPath.isRoot()) {
             return configNode(parentPath, subPath, value);
