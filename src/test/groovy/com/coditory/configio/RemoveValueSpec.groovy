@@ -50,7 +50,8 @@ class RemoveValueSpec extends Specification {
                     .withValue("a.b.c", "ABC")
                     .withValue("a.b[0]", "AB0")
                     .build()
-            Config copy = config.copy()
+            Config copy = config
+
         when:
             config = config.remove("a.b[1]")
             config = config.remove("a.b.c.d")
@@ -59,5 +60,4 @@ class RemoveValueSpec extends Specification {
         then:
             config == copy
     }
-
 }

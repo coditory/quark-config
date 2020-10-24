@@ -7,14 +7,16 @@ import com.coditory.configio.api.ValueParser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.coditory.configio.ConfigValueParser.DEFAULT_VALUE_PARSERS;
-import static com.coditory.configio.ConfigValueParser.defaultValueParser;
+import static com.coditory.configio.ConfigValueParser.defaultConfigValueParser;
 import static com.coditory.configio.MapConfigNode.emptyRoot;
 import static com.coditory.configio.Path.root;
 import static com.coditory.configio.Preconditions.expectNonEmpty;
@@ -22,7 +24,7 @@ import static com.coditory.configio.Preconditions.expectNonNull;
 import static com.coditory.configio.SystemEnvironmentNameMapper.mapSystemEnvironmentName;
 
 public class Config implements ConfigValueExtractor {
-    private final static Config EMPTY = new Config(emptyRoot(), defaultValueParser());
+    private final static Config EMPTY = new Config(emptyRoot(), defaultConfigValueParser());
 
     public static Config empty() {
         return EMPTY;
@@ -78,8 +80,8 @@ public class Config implements ConfigValueExtractor {
         return root.unwrap();
     }
 
-    public Config copy() {
-        return new Config(root, valueParser);
+    public Set<Entry<String, Object>> entries() {
+        return root.entries();
     }
 
     public Config subConfig(String path) {
@@ -108,7 +110,7 @@ public class Config implements ConfigValueExtractor {
         if (!(newRoot instanceof MapConfigNode)) {
             throw new InvalidConfigPathException("Expected root node to be a map. Got: " + newRoot.getClass().getSimpleName());
         }
-        return new Config((MapConfigNode) newRoot, valueParser);
+        return withRoot((MapConfigNode) newRoot);
     }
 
     public Config addDefault(String path, Object value) {
@@ -116,17 +118,16 @@ public class Config implements ConfigValueExtractor {
         expectNonNull(value, "value");
         Path parsed = Path.parse(path);
         MapConfigNode newRoot = root.addIfMissing(root(), parsed, value);
-        return new Config(newRoot, valueParser);
+        return withRoot(newRoot);
     }
 
     public Config addDefaults(Config config) {
         expectNonNull(config, "config");
         MapConfigNode mergedRoot = root.withDefaults(config.root);
-        return new Config(mergedRoot, valueParser);
+        return withRoot(mergedRoot);
     }
 
     public Config resolveWith(Config variables) {
-        // see: https://github.com/pmendelski/kotlin-ktor-sandbox/blob/master/src/main/kotlin/com/coditory/sandbox/infra/config/ConfigLoader.kt
         expectNonNull(variables, "variables");
         Config configWithExpressions = this.mapLeaves(ExpressionParser::parse);
         Config configWithExpressionsAndVariables = configWithExpressions
@@ -140,22 +141,45 @@ public class Config implements ConfigValueExtractor {
         return configWithExpressions.mapLeaves(Expression::unwrap);
     }
 
+    private Config addValueParser(ValueParser parser) {
+        expectNonNull(parser, "parser");
+        return withValueParser(valueParser.addParser(parser));
+    }
+
+    private Config withValueParser(ConfigValueParser newConfigValueParser) {
+        return Objects.equals(newConfigValueParser, valueParser)
+                ? this
+                : new Config(root, newConfigValueParser);
+    }
+
+    private Config withValueParsers(List<ValueParser> parsers) {
+        expectNonNull(parsers, "parsers");
+        ConfigValueParser newValueParser = new ConfigValueParser(parsers);
+        return Objects.equals(valueParser, newValueParser)
+                ? this
+                : new Config(root, valueParser);
+    }
+
+    private Config withRoot(MapConfigNode root) {
+        return Objects.equals(this.root, root)
+                ? this
+                : new Config(root, valueParser);
+    }
+
     private boolean anyLeaf(Predicate<Object> predicate) {
         return root.anyLeaf(predicate);
     }
 
     private Config mapLeaves(Function<Object, Object> mapper) {
         MapConfigNode mapped = root.mapLeaves(mapper);
-        return Objects.equals(mapped, root)
-                ? this
-                : new Config(mapped, valueParser);
+        return withRoot(mapped);
     }
 
     public Config remove(String path) {
         expectNonEmpty(path, "path");
         Path parsed = Path.parse(path);
         MapConfigNode newRoot = root.remove(root(), parsed);
-        return new Config(newRoot, valueParser);
+        return withRoot(newRoot);
     }
 
     private Optional<Config> getAsOptionalSubConfig(String path) {
@@ -174,20 +198,6 @@ public class Config implements ConfigValueExtractor {
                 .map(value -> value.getAs(valueParser, type));
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Config config = (Config) o;
-        return valueParser.equals(config.valueParser) &&
-                root.equals(config.root);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(valueParser, root);
-    }
-
     private Optional<ConfigValue> getOptional(String path) {
         expectNonEmpty(path, "path");
         return getOptional(Path.parse(path));
@@ -202,6 +212,20 @@ public class Config implements ConfigValueExtractor {
 
     public boolean isEmpty() {
         return root.isEmpty();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Config config = (Config) o;
+        return valueParser.equals(config.valueParser) &&
+                root.equals(config.root);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(valueParser, root);
     }
 
     static class ConfigBuilder {
@@ -250,7 +274,7 @@ public class Config implements ConfigValueExtractor {
 
         public ConfigBuilder withSystemEnvValues() {
             Map<String, String> mapped = System.getenv().entrySet().stream()
-                    .collect(Collectors.toMap(e -> mapSystemEnvironmentName(e.getKey()), Map.Entry::getValue));
+                    .collect(Collectors.toMap(e -> mapSystemEnvironmentName(e.getKey()), Entry::getValue));
             withValues(mapped);
             return this;
         }

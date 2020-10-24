@@ -1,20 +1,20 @@
 package com.coditory.configio;
 
-import com.coditory.configio.api.MissingConfigValueException;
-
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static com.coditory.configio.ConfigNodeCreator.configNode;
+import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 class MapConfigNode implements ConfigNode {
     private static final MapConfigNode EMPTY_ROOT = new MapConfigNode(Map.of());
@@ -35,6 +35,24 @@ class MapConfigNode implements ConfigNode {
     }
 
     @Override
+    public Set<Entry<String, Object>> entries() {
+        return values.entrySet().stream()
+                .flatMap(entry -> {
+                    ConfigNode node = entry.getValue();
+                    return node.entries().stream()
+                            .map(subEntry -> concatKeys(node, entry.getKey(), subEntry));
+                })
+                .collect(toSet());
+    }
+
+    private Entry<String, Object> concatKeys(ConfigNode node, String parentPath, Entry<String, Object> subEntry) {
+        String key = (node instanceof ListConfigNode)
+                ? parentPath + subEntry.getKey()
+                : parentPath + "." + subEntry.getKey();
+        return Map.entry(key, subEntry.getValue());
+    }
+
+    @Override
     public Optional<ConfigNode> getOptionalNode(Path subPath) {
         if (subPath.isRoot()) {
             return Optional.of(this);
@@ -48,16 +66,16 @@ class MapConfigNode implements ConfigNode {
         if (values.isEmpty()) {
             return Map.of();
         }
-        Map<String, Object> result = new HashMap<>(values.size());
+        Map<String, Object> result = new LinkedHashMap<>(values.size());
         values.forEach((key, value) -> result.put(key, value.unwrap()));
-        return Map.copyOf(result);
+        return unmodifiableMap(result);
     }
 
     @Override
     public MapConfigNode mapLeaves(Function<Object, Object> mapper) {
         HashMap<String, ConfigNode> result = new HashMap<>(values.size());
         boolean childModified = false;
-        for (Entry<String, ConfigNode> entry: values.entrySet()) {
+        for (Entry<String, ConfigNode> entry : values.entrySet()) {
             ConfigNode mapped = entry.getValue().mapLeaves(mapper);
             result.put(entry.getKey(), mapped);
             childModified = childModified || !Objects.equals(mapped, entry.getValue());

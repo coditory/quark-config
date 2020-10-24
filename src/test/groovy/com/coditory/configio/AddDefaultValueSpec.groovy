@@ -30,7 +30,7 @@ class AddDefaultValueSpec extends Specification {
                     .withValue("a.d.e", "ADE")
                     .withValue("e", ["E0", "E1"])
                     .build()
-            Config copy = config.copy()
+            Config copy = config
         when:
             config = config
                     .addDefault("a.b.c", "X")
@@ -67,7 +67,7 @@ class AddDefaultValueSpec extends Specification {
             Config config = Config.builder()
                     .withValue("a.b", ["c", "d"])
                     .build()
-            Config copy = config.copy()
+            Config copy = config
         when:
             config = config
                     .addDefault("a.b.c.d", "D")
@@ -80,7 +80,7 @@ class AddDefaultValueSpec extends Specification {
             Config config = Config.builder()
                     .withValue("a.b.c.d", "d")
                     .build()
-            Config copy = config.copy()
+            Config copy = config
         when:
             config = config
                     .addDefault("a.b", ["c", "d"])
@@ -94,7 +94,7 @@ class AddDefaultValueSpec extends Specification {
                     .withValue("a.b.c.d", "d")
                     .withValue("a.b.e", "e")
                     .build()
-            Config copy = config.copy()
+            Config copy = config
         when:
             config = config
                     .addDefault("a.b.c.d", "X")

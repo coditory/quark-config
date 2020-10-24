@@ -1,7 +1,9 @@
 package com.coditory.configio;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -61,6 +63,11 @@ class LeafConfigNode implements ConfigNode {
     @Override
     public boolean anyLeaf(Predicate<Object> predicate) {
         return predicate.test(value);
+    }
+
+    @Override
+    public Set<Map.Entry<String, Object>> entries() {
+        return Set.of();
     }
 
     @Override

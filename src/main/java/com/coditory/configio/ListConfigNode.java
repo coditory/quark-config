@@ -4,16 +4,21 @@ import com.coditory.configio.api.MissingConfigValueException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static com.coditory.configio.ConfigNodeCreator.configNode;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 class ListConfigNode implements ConfigNode {
     private final List<ConfigNode> values;
@@ -32,6 +37,28 @@ class ListConfigNode implements ConfigNode {
         return values.stream()
                 .map(ConfigNode::unwrap)
                 .collect(toList());
+    }
+
+    @Override
+    public Set<Entry<String, Object>> entries() {
+        Set<Entry<String, Object>> entries = new LinkedHashSet<>();
+        for (int i = 0; i < values.size(); ++i) {
+            final int index = i;
+            ConfigNode node = values.get(i);
+            values.stream()
+                    .flatMap(value -> value.entries().stream())
+                    .map(subEntry -> concatKeys(node, index, subEntry))
+                    .forEach(entries::add);
+        }
+        return entries;
+    }
+
+    private Entry<String, Object> concatKeys(ConfigNode node, int index, Entry<String, Object> subEntry) {
+        String indexString = "[" + index+ "]";
+        String key = (node instanceof ListConfigNode)
+                ? indexString + subEntry.getKey()
+                : indexString + "." + subEntry.getKey();
+        return Map.entry(key, subEntry.getValue());
     }
 
     @Override

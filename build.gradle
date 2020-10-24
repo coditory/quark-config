@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'groovy'
     id 'com.coditory.build' version '0.1.5'
+    id 'com.adarshr.test-logger' version '2.1.1'
 }
 
 repositories {
@@ -9,9 +10,10 @@ repositories {
 }
 
 dependencies {
-    compile 'org.yaml:snakeyaml:1.26'
-    compile 'org.json:json:20200518'
+    implementation 'org.yaml:snakeyaml:1.26'
+    implementation 'com.google.code.gson:gson:2.8.6'
     testImplementation 'org.spockframework:spock-core:2.0-M3-groovy-3.0'
+    testImplementation 'org.spockframework:spock-junit4:2.0-M3-groovy-3.0'
 }
 
 java {

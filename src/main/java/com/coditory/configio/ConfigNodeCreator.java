@@ -4,6 +4,7 @@ import com.coditory.configio.api.InvalidConfigPathException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -45,7 +46,7 @@ class ConfigNodeCreator {
                 return new LeafConfigNode(value);
             }
             Map<String, Object> stringKeyMap = (Map<String, Object>) value;
-            Map<String, ConfigNode> result = new HashMap<>(stringKeyMap.size());
+            Map<String, ConfigNode> result = new LinkedHashMap<>(stringKeyMap.size());
             for (Map.Entry<String, Object> entry : stringKeyMap.entrySet()) {
                 result.put(entry.getKey(), createNodeForValue(entry.getValue()));
             }
