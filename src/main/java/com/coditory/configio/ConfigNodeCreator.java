@@ -37,7 +37,7 @@ class ConfigNodeCreator {
     }
 
     @SuppressWarnings("unchecked")
-    private static ConfigNode createNodeForValue(Object value) {
+    static ConfigNode createNodeForValue(Object value) {
         if (value instanceof Map) {
             Map<Object, Object> map = (Map<Object, Object>) value;
             boolean hasStringKeys = map.keySet().stream().allMatch(k -> k instanceof String);

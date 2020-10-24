@@ -36,6 +36,9 @@ class ConfigValue {
         if (String.class.equals(type)) {
             return (T) getAsString();
         }
+        if (Object.class.equals(type)) {
+            return (T) value;
+        }
         return getOrParse(valueParser, type);
     }
 

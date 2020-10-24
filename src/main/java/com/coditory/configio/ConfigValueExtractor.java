@@ -48,6 +48,25 @@ interface ConfigValueExtractor {
         return getOptionalString(path).orElse(defaultValue);
     }
 
+    // Object API
+
+    default Optional<Object> getOptionalObject(String path) {
+        return getAsOptional(Object.class, path);
+    }
+
+    default Object getObject(String path) {
+        return getOptionalObject(path)
+                .orElseThrow(() -> missingConfigValueForPath(path));
+    }
+
+    default Object getObjectOrNull(String path) {
+        return getObject(path, null);
+    }
+
+    default Object getObject(String path, Object defaultValue) {
+        return getOptionalObject(path).orElse(defaultValue);
+    }
+
     // Boolean API
 
     default Optional<Boolean> getOptionalBoolean(String path) {

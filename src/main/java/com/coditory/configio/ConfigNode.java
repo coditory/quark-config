@@ -2,6 +2,7 @@ package com.coditory.configio;
 
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 interface ConfigNode {
     boolean isEmpty();
@@ -24,5 +25,7 @@ interface ConfigNode {
         return getOptionalNode(subPath)
                 .map(ConfigNode::unwrap);
     }
+
+    boolean anyLeaf(Predicate<Object> predicate);
 }
 

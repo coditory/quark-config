@@ -8,7 +8,7 @@ PAD="    "
 
 function generateGetters() {
   local -r types=(
-    "String" "Boolean" "Short" "Byte" "Integer" "Long" "Float" "Double"
+    "String" "Object" "Boolean" "Short" "Byte" "Integer" "Long" "Float" "Double"
     "BigDecimal" "Instant" "ZonedDateTime" "Duration" "Locale" "Currency"
   )
   local -r javaFile="$DIR/../java/com/coditory/configio/ConfigValueExtractor.java"

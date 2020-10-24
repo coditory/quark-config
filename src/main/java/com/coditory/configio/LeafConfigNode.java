@@ -1,12 +1,12 @@
 package com.coditory.configio;
 
-import com.coditory.configio.api.MissingConfigValueException;
-
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static com.coditory.configio.ConfigNodeCreator.configNode;
+import static com.coditory.configio.ConfigNodeCreator.createNodeForValue;
 import static java.util.Objects.requireNonNull;
 
 class LeafConfigNode implements ConfigNode {
@@ -53,7 +53,14 @@ class LeafConfigNode implements ConfigNode {
     @Override
     public ConfigNode mapLeaves(Function<Object, Object> mapper) {
         Object mapped = mapper.apply(value);
-        return new LeafConfigNode(mapped);
+        return Objects.equals(mapped, value)
+                ? this
+                : createNodeForValue(mapped);
+    }
+
+    @Override
+    public boolean anyLeaf(Predicate<Object> predicate) {
+        return predicate.test(value);
     }
 
     @Override

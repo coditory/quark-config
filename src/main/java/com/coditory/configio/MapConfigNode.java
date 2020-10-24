@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static com.coditory.configio.ConfigNodeCreator.configNode;
 import static java.util.Objects.requireNonNull;
@@ -53,10 +54,23 @@ class MapConfigNode implements ConfigNode {
     }
 
     @Override
-    public ConfigNode mapLeaves(Function<Object, Object> mapper) {
-        Map<String, ConfigNode> mapped = values.entrySet().stream()
-                .collect(toMap(Entry::getKey, entry -> entry.getValue().mapLeaves(mapper)));
-        return new MapConfigNode(mapped);
+    public MapConfigNode mapLeaves(Function<Object, Object> mapper) {
+        HashMap<String, ConfigNode> result = new HashMap<>(values.size());
+        boolean childModified = false;
+        for (Entry<String, ConfigNode> entry: values.entrySet()) {
+            ConfigNode mapped = entry.getValue().mapLeaves(mapper);
+            result.put(entry.getKey(), mapped);
+            childModified = childModified || !Objects.equals(mapped, entry.getValue());
+        }
+        return childModified
+                ? new MapConfigNode(result)
+                : this;
+    }
+
+    @Override
+    public boolean anyLeaf(Predicate<Object> predicate) {
+        return values.values().stream()
+                .anyMatch(predicate);
     }
 
     @Override

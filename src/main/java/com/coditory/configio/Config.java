@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.coditory.configio.ConfigValueParser.DEFAULT_VALUE_PARSERS;
@@ -124,20 +125,31 @@ public class Config implements ConfigValueExtractor {
         return new Config(mergedRoot, valueParser);
     }
 
-//    public Config resolveWith(Config config) {
-//        // see: https://github.com/pmendelski/kotlin-ktor-sandbox/blob/master/src/main/kotlin/com/coditory/sandbox/infra/config/ConfigLoader.kt
-//        expectNonNull(config, "config");
-//        MapConfigNode lastResolved = null;
-//        MapConfigNode resolved = root;
-//        for (int i = 0; i < 10 && lastResolved != resolved ; ++i) {
-//            lastResolved = resolved;
-//            resolved = lastResolved.resolveWith(config);
-//        }
-//        if (resolved.hasUnresolvedExpressions()) {
-//            throw new RuntimeException();
-//        }
-//        return new Config(resolved, valueParser);
-//    }
+    public Config resolveWith(Config variables) {
+        // see: https://github.com/pmendelski/kotlin-ktor-sandbox/blob/master/src/main/kotlin/com/coditory/sandbox/infra/config/ConfigLoader.kt
+        expectNonNull(variables, "variables");
+        Config configWithExpressions = this.mapLeaves(ExpressionParser::parse);
+        Config configWithExpressionsAndVariables = configWithExpressions
+                .addDefaults(variables)
+                .mapLeaves(ExpressionParser::parse);
+        ExpressionResolver resolver = new ExpressionResolver(configWithExpressionsAndVariables);
+        configWithExpressions = this.mapLeaves(ExpressionParser::parse).mapLeaves(resolver::resolve);
+        if (configWithExpressions.anyLeaf(Expression::isExpression)) {
+            throw new RuntimeException("???");
+        }
+        return configWithExpressions.mapLeaves(Expression::unwrap);
+    }
+
+    private boolean anyLeaf(Predicate<Object> predicate) {
+        return root.anyLeaf(predicate);
+    }
+
+    private Config mapLeaves(Function<Object, Object> mapper) {
+        MapConfigNode mapped = root.mapLeaves(mapper);
+        return Objects.equals(mapped, root)
+                ? this
+                : new Config(mapped, valueParser);
+    }
 
     public Config remove(String path) {
         expectNonEmpty(path, "path");

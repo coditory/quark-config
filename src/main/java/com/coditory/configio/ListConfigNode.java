@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static com.coditory.configio.ConfigNodeCreator.configNode;
 import static java.util.Objects.requireNonNull;
@@ -90,6 +91,12 @@ class ListConfigNode implements ConfigNode {
     }
 
     @Override
+    public boolean anyLeaf(Predicate<Object> predicate) {
+        return values.stream()
+                .anyMatch(predicate);
+    }
+
+    @Override
     public ListConfigNode remove(Path parentPath, Path subPath) {
         if (subPath.isRoot() || !subPath.getFirstElement().isIndexed()) {
             return this;
@@ -131,11 +138,17 @@ class ListConfigNode implements ConfigNode {
     }
 
     @Override
-    public ConfigNode mapLeaves(Function<Object, Object> mapper) {
-        List<ConfigNode> mapped = values.stream()
-                .map(child -> child.mapLeaves(mapper))
-                .collect(toList());
-        return new ListConfigNode(mapped);
+    public ListConfigNode mapLeaves(Function<Object, Object> mapper) {
+        List<ConfigNode> result = new ArrayList<>(values.size());
+        boolean childMapped = false;
+        for (ConfigNode child : values) {
+            ConfigNode mapped = child.mapLeaves(mapper);
+            result.add(mapped);
+            childMapped = childMapped || Objects.equals(mapped, child);
+        }
+        return childMapped
+                ? new ListConfigNode(result)
+                : this;
     }
 
     @Override
