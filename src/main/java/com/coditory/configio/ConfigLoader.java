@@ -11,8 +11,11 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.coditory.configio.ConfigLoader.ConfigSource.CLASSPATH;
 import static com.coditory.configio.ConfigLoader.ConfigSource.FILE_SYSTEM;
@@ -35,20 +38,51 @@ public class ConfigLoader {
         }
     }
 
+    public static Config loadSystemProperties() {
+        LinkedHashMap<String, Object> result = new LinkedHashMap<>();
+        for (Map.Entry<Object, Object> entry: System.getProperties().entrySet()) {
+            String rawKey = entry.getKey().toString();
+            String key = rawKey.startsWith("java.version.")
+                    ? rawKey.replaceFirst("java\\.version\\.", "java.")
+                    : rawKey;
+            result.put(key, entry.getValue());
+        }
+        return Config.of(result);
+    }
+
+    public static Config loadSystemEnvironment() {
+        return Config.of(System.getenv());
+    }
+
     public static Config loadFromClasspathInAnyFormat(String path) {
         return loadInAnyFormat(CLASSPATH, path);
     }
 
     public static Config loadFromClasspath(String path) {
-        return load(CLASSPATH, path);
+        return load(CLASSPATH, path)
+                .orElseThrow(() -> new ConfigioException(
+                        "Could not load configuration. " +
+                                "File was not found on classpath: " + path));
     }
 
     public static Config loadFromSystemFileInAnyFormat(String path) {
         return loadInAnyFormat(FILE_SYSTEM, path);
     }
 
-    public static Config loadFromSystemFile(String path) {
-        return load(FILE_SYSTEM, path);
+    public static Config loadFromFileSystemOrEmpty(String path) {
+        return loadFromFileSystemOrDefault(path, Config.empty());
+    }
+
+    public static Config loadFromFileSystemOrDefault(String path, Config defaultConfig) {
+        return load(FILE_SYSTEM, path)
+                .orElse(defaultConfig);
+    }
+
+    public static Config loadFromFileSystem(String path) {
+        return load(FILE_SYSTEM, path)
+                .orElseThrow(() -> new ConfigioException(
+                        "Could not load configuration. " +
+                            "File was not found on file system: " + path));
     }
 
     private static Config loadInAnyFormat(ConfigSource configSource, String path) {
@@ -68,13 +102,13 @@ public class ConfigLoader {
                         "Files were not found on " + configSource + ": " + filePaths));
     }
 
-    private static Config load(ConfigSource configSource, String path) {
+    private static Optional<Config> load(ConfigSource configSource, String path) {
         Config config = configSource.load(path);
         if (config == null) {
             throw new ConfigioException("Could not load configuration. " +
                     "File was not found on " + configSource + ": " + path);
         }
-        return config;
+        return Optional.ofNullable(configSource.load(path));
     }
 }
 

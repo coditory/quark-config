@@ -4,24 +4,20 @@ import com.coditory.configio.Config
 import com.coditory.configio.ConfigLoader
 import com.coditory.configio.api.ConfigioException
 import com.coditory.configio.api.ConfigioParsingException
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
+import com.coditory.configio.base.UsesFiles
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import static com.coditory.configio.base.ConfigFormatsSamples.*
 
-class LoadFileSystemConfigSpec extends Specification {
-    @Rule
-    TemporaryFolder temporaryFolder
-
+class LoadFileSystemConfigSpec extends Specification implements UsesFiles {
     @Unroll
     def "should load #extension config from system file"() {
         given:
             String content = sampleConfigPerExt(extension)
             File file = writeFile("test-loading.$extension", content)
         when:
-            Config config = ConfigLoader.loadFromSystemFile(file.getPath())
+            Config config = ConfigLoader.loadFromFileSystem(file.getPath())
         then:
             config.toMap() == sampleConfigMapPerExt(extension)
         where:
@@ -34,7 +30,7 @@ class LoadFileSystemConfigSpec extends Specification {
             String content = sampleInvalidConfigPerExt(extension)
             File file = writeFile("test-invalid.$extension", content)
         when:
-            ConfigLoader.loadFromSystemFile(file.getPath())
+            ConfigLoader.loadFromFileSystem(file.getPath())
         then:
             ConfigioParsingException e = thrown(ConfigioParsingException)
             e.message.startsWith("Could not parse configuration from file system:")
@@ -82,7 +78,7 @@ class LoadFileSystemConfigSpec extends Specification {
         given:
             File file = writeFile("test-invalid-ext.abc", "content")
         when:
-            ConfigLoader.loadFromSystemFile(file.getPath())
+            ConfigLoader.loadFromFileSystem(file.getPath())
         then:
             ConfigioException e = thrown(ConfigioException)
             e.getMessage().stripMargin("Unrecognized config format for file path:")
@@ -90,8 +86,8 @@ class LoadFileSystemConfigSpec extends Specification {
 
     def "should throw error when loading non-existent file in any format"() {
         given:
-            String path = temporaryFolder.getRoot()
-                    .toPath().resolve("test-non-existent")
+            String path = tempDirectory.toPath()
+                    .resolve("test-non-existent")
         when:
             ConfigLoader.loadFromSystemFileInAnyFormat(path)
         then:
@@ -103,23 +99,16 @@ class LoadFileSystemConfigSpec extends Specification {
     def "should throw error when loading non-existent file #extension"() {
         given:
             String configName = "test-non-existent"
-            String path = temporaryFolder.getRoot()
-                    .toPath().resolve("$configName.$extension")
+            String path = tempDirectory.toPath()
+                    .resolve("$configName.$extension")
 
         when:
-            ConfigLoader.loadFromSystemFile(path)
+            ConfigLoader.loadFromFileSystem(path)
         then:
             ConfigioException e = thrown(ConfigioException)
             e.message.startsWith("Could not load configuration. File was not found on FILE_SYSTEM: ")
 
         where:
             extension << SAMPLE_CONFIGS_EXTENSIONS
-    }
-
-    private File writeFile(String fileName, String content) {
-        File file = temporaryFolder
-                .newFile(fileName)
-        file.write(content.stripMargin().trim())
-        return file
     }
 }

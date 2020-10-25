@@ -4,26 +4,19 @@ import com.coditory.configio.Config
 import com.coditory.configio.ConfigLoader
 import com.coditory.configio.api.ConfigioException
 import com.coditory.configio.api.ConfigioParsingException
-import com.coditory.configio.base.ClassLoaderStub
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
+import com.coditory.configio.base.UsesFiles
 import spock.lang.Specification
 import spock.lang.Unroll
 
 import static com.coditory.configio.base.ConfigFormatsSamples.*
 
-class LoadClasspathConfigSpec extends Specification {
-    @Rule
-    TemporaryFolder temporaryFolder
-
-    ClassLoaderStub classLoader = new ClassLoaderStub()
-
+class LoadClasspathConfigSpec extends Specification implements UsesFiles {
     @Unroll
     def "should load #extension config from system file"() {
         given:
             String content = sampleConfigPerExt(extension)
             String fileName = "test-loading.$extension"
-            writeFile(fileName, content)
+            writeClasspathFile(fileName, content)
         when:
             Config config = loadFromClasspath(fileName)
         then:
@@ -37,7 +30,7 @@ class LoadClasspathConfigSpec extends Specification {
         given:
             String content = sampleInvalidConfigPerExt(extension)
             String fileName = "test-invalid.$extension"
-            writeFile(fileName, content)
+            writeClasspathFile(fileName, content)
         when:
             loadFromClasspath(fileName)
         then:
@@ -52,7 +45,7 @@ class LoadClasspathConfigSpec extends Specification {
         given:
             String content = sampleConfigPerExt(extension)
             String configName = "test-without-extension"
-            writeFile("$configName.$extension", content)
+            writeClasspathFile("$configName.$extension", content)
         when:
             Config config = loadFromClasspathInAnyFormat(configName)
         then:
@@ -65,10 +58,10 @@ class LoadClasspathConfigSpec extends Specification {
     def "should load #extension before others: #others"() {
         given:
             String configName = "test-order"
-            writeFile("$configName.$extension", content)
+            writeClasspathFile("$configName.$extension", content)
         and:
             others.each {
-                writeFile("$configName.$it", sampleConfigPerExt(it))
+                writeClasspathFile("$configName.$it", sampleConfigPerExt(it))
             }
         when:
             Config config = loadFromClasspathInAnyFormat(configName)
@@ -92,7 +85,7 @@ class LoadClasspathConfigSpec extends Specification {
     def "should throw error when loading invalid file extension"() {
         given:
             String fileName = "test-invalid-ext.abc"
-            writeFile(fileName, "content")
+            writeClasspathFile(fileName, "content")
         when:
             loadFromClasspath(fileName)
         then:
@@ -113,22 +106,14 @@ class LoadClasspathConfigSpec extends Specification {
     }
 
     private Config loadFromClasspath(String path) {
-        return classLoader.setupInThreadContext({
+        return stubClassLoader {
             ConfigLoader.loadFromClasspath(path)
-        })
+        }
     }
 
     private Config loadFromClasspathInAnyFormat(String path) {
-        return classLoader.setupInThreadContext({
+        return stubClassLoader {
             ConfigLoader.loadFromClasspathInAnyFormat(path)
-        })
-    }
-
-    private File writeFile(String fileName, String content) {
-        File file = temporaryFolder
-                .newFile(fileName)
-        classLoader.add(fileName, file)
-        file.write(content.stripMargin().trim())
-        return file
+        }
     }
 }

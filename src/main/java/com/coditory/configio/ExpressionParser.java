@@ -42,16 +42,12 @@ class ExpressionParser {
                 }
                 expression = true;
                 i += 1;
-            } else if ('}' == c) {
-                if (expression) {
-                    if (chunk.length() > 0) {
-                        nodes.add(parseExpression(chunk.toString().trim()));
-                        chunk = new StringBuilder();
-                    }
-                    expression = false;
-                } else {
-                    throw new RuntimeException("Unopened expression in template: \"" + template + "\"");
+            } else if ('}' == c && expression) {
+                if (chunk.length() > 0) {
+                    nodes.add(parseExpression(chunk.toString().trim()));
+                    chunk = new StringBuilder();
                 }
+                expression = false;
             } else {
                 chunk.append(c);
             }

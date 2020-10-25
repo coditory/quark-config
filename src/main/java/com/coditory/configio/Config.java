@@ -30,7 +30,7 @@ public class Config implements ConfigValueExtractor {
         return EMPTY;
     }
 
-    public static Config of(Map<String, Object> values) {
+    public static Config of(Map<String, ?> values) {
         expectNonNull(values, "values");
         return builder()
                 .withValues(values)
@@ -127,6 +127,12 @@ public class Config implements ConfigValueExtractor {
         return withRoot(mergedRoot);
     }
 
+    public Config addOverrides(Config config) {
+        expectNonNull(config, "config");
+        MapConfigNode mergedRoot = config.root.withDefaults(this.root);
+        return withRoot(mergedRoot);
+    }
+
     public Config resolveWith(Config variables) {
         expectNonNull(variables, "variables");
         Config configWithExpressions = this.mapLeaves(ExpressionParser::parse);
@@ -173,6 +179,10 @@ public class Config implements ConfigValueExtractor {
     private Config mapLeaves(Function<Object, Object> mapper) {
         MapConfigNode mapped = root.mapLeaves(mapper);
         return withRoot(mapped);
+    }
+
+    MapConfigNode getRoot() {
+        return root;
     }
 
     public Config remove(String path) {
