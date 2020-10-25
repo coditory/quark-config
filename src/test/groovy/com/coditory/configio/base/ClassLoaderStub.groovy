@@ -1,9 +1,12 @@
 package com.coditory.configio.base
 
+import groovy.transform.CompileStatic
+
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Supplier
 
+@CompileStatic
 class ClassLoaderStub extends ClassLoader {
     private final Map<String, URL> overrides = new ConcurrentHashMap<>()
 

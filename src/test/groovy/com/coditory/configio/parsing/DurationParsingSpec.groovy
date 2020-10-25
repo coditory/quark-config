@@ -48,7 +48,7 @@ class DurationParsingSpec extends Specification {
 
     private Duration parse(String value) {
         String name = "value"
-        return Config.fromMap(Map.of(name, value))
+        return Config.of(Map.of(name, value))
                 .getAs(Duration, name)
     }
 }

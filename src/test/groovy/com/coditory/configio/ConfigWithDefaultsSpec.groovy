@@ -1,9 +1,8 @@
 package com.coditory.configio
 
-
 import spock.lang.Specification
 
-class AddDefaultsSpec extends Specification {
+class ConfigWithDefaultsSpec extends Specification {
     def "should return sub config merged with other config"() {
         given:
             Config config = Config.builder()
@@ -16,7 +15,7 @@ class AddDefaultsSpec extends Specification {
                     .withValue("a.x", "AX")
                     .build()
         when:
-            Config result = config.addDefaults(other)
+            Config result = config.withDefaults(other)
         then:
             result.toMap() == [
                     a: [
@@ -44,7 +43,7 @@ class AddDefaultsSpec extends Specification {
                     .withValue("e", "Z")
                     .build()
         when:
-            Config result = config.addDefaults(other)
+            Config result = config.withDefaults(other)
         then:
             result.toMap() == [
                     a: [
@@ -68,7 +67,7 @@ class AddDefaultsSpec extends Specification {
                     .withValue("a.b[2]", "AB2")
                     .build()
         when:
-            Config result = config.addDefaults(other)
+            Config result = config.withDefaults(other)
         then:
             result.toMap() == [
                     a: [

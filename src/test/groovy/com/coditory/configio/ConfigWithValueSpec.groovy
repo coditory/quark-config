@@ -4,15 +4,15 @@ import com.coditory.configio.api.InvalidConfigPathException
 import com.coditory.configio.api.MissingConfigValueException
 import spock.lang.Specification
 
-class AddValueSpec extends Specification {
+class ConfigWithValueSpec extends Specification {
     def "should add values to an empty config"() {
         given:
             Config config = Config.empty()
         when:
             config = config
-                    .add("a.b.c", "ABC")
-                    .add("a.d", "AD")
-                    .add("e", ["E0", "E1"])
+                    .withValue("a.b.c", "ABC")
+                    .withValue("a.d", "AD")
+                    .withValue("e", ["E0", "E1"])
         then:
             config.toMap() == [
                     a: [
@@ -32,9 +32,9 @@ class AddValueSpec extends Specification {
                     .build()
         when:
             config = config
-                    .add("a.b.c", "X")
-                    .add("a.d", "Y")
-                    .add("e[1]", "Z")
+                    .withValue("a.b.c", "X")
+                    .withValue("a.d", "Y")
+                    .withValue("e[1]", "Z")
         then:
             config.toMap() == [
                     a: [
@@ -52,11 +52,11 @@ class AddValueSpec extends Specification {
                     .build()
         when:
             config = config
-                    .add("a.b[0].c", "C")
-                    .add("a.b[0].d", "D")
-                    .add("a.b[0].e[0][0]", "E00")
-                    .add("a.b[1]", [z: "Z"])
-                    .add("a.b[3]", "3")
+                    .withValue("a.b[0].c", "C")
+                    .withValue("a.b[0].d", "D")
+                    .withValue("a.b[0].e[0][0]", "E00")
+                    .withValue("a.b[1]", [z: "Z"])
+                    .withValue("a.b[3]", "3")
         then:
             config.toMap() == [
                     a: [
@@ -77,7 +77,7 @@ class AddValueSpec extends Specification {
                     .build()
         when:
             config = config
-                    .add("a.b.c.d", "D")
+                    .withValue("a.b.c.d", "D")
         then:
             config.toMap() == [
                     a: [b: [c: [d: "D"]]]
@@ -91,7 +91,7 @@ class AddValueSpec extends Specification {
                     .build()
         when:
             config = config
-                    .add("a.b", ["c", "d"])
+                    .withValue("a.b", ["c", "d"])
         then:
             config.toMap() == [
                     a: [b: ["c", "d"]]
@@ -107,9 +107,9 @@ class AddValueSpec extends Specification {
                     .build()
         when:
             config = config
-                    .add("a.b.c", "X")
-                    .add("a.c", "Y")
-                    .add("a.d", ["Z"])
+                    .withValue("a.b.c", "X")
+                    .withValue("a.c", "Y")
+                    .withValue("a.d", ["Z"])
         then:
             config.toMap() == [
                     a: [
@@ -126,12 +126,12 @@ class AddValueSpec extends Specification {
                     .withValue("a.b", ["c", "d"])
                     .build()
         when:
-            config.add("a.b[3]", "e")
+            config.withValue("a.b[3]", "e")
         then:
             thrown(MissingConfigValueException)
 
         when:
-            config.add("a.b[-1]", "e")
+            config.withValue("a.b[-1]", "e")
         then:
             thrown(InvalidConfigPathException)
     }

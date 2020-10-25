@@ -18,7 +18,7 @@ class StringParsingSpec extends Specification {
 
     private String parse(String value) {
         String name = "value"
-        return Config.fromMap(Map.of(name, value))
+        return Config.of(Map.of(name, value))
                 .getAs(String, name)
     }
 }

@@ -29,7 +29,7 @@ class DoubleParsingSpec extends Specification {
 
     private Double parse(String value) {
         String name = "value"
-        return Config.fromMap(Map.of(name, value))
+        return Config.of(Map.of(name, value))
                 .getAs(Double, name)
     }
 }

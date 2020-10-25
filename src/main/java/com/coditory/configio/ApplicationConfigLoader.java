@@ -1,39 +1,55 @@
 package com.coditory.configio;
 
-public class ApplicationConfigLoader {
-    public static ApplicationConfigLoader applicationConfigLoader() {
-        return new ApplicationConfigLoader();
-    }
+import java.util.Map;
 
+import static com.coditory.configio.Preconditions.expectNonBlank;
+import static com.coditory.configio.Preconditions.expectNonNull;
+
+public class ApplicationConfigLoader {
     private String[] args = null;
     private String argsPrefix = "config";
+    private Map<String, String> argsAliases = Map.of();
     private String profileArgument = "profile";
     private String defaultProfile = "local";
     private String externalConfigFileArgument = "config.external";
     private String configBaseName = "application";
 
+    ApplicationConfigLoader() {
+        // deliberately empty
+    }
+
     public ApplicationConfigLoader withArgs(String[] args) {
-        this.args = args;
+        this.args = expectNonNull(args, "args");
+        return this;
+    }
+
+    public ApplicationConfigLoader withArgsAliases(Map<String, String> argsAliases) {
+        this.argsAliases = expectNonNull(argsAliases, "argsAliases");
+        return this;
+    }
+
+    public ApplicationConfigLoader withArgsConfigPrefix(String argsPrefix) {
+        this.argsPrefix = expectNonBlank(argsPrefix, "argsPrefix");
         return this;
     }
 
     public ApplicationConfigLoader withProfileArgument(String profileArgument) {
-        this.profileArgument = profileArgument;
+        this.profileArgument = expectNonBlank(profileArgument, "profileArgument");
         return this;
     }
 
     public ApplicationConfigLoader withDefaultProfile(String defaultProfile) {
-        this.defaultProfile = defaultProfile;
+        this.defaultProfile = expectNonBlank(defaultProfile, "defaultProfile");
         return this;
     }
 
     public ApplicationConfigLoader withExternalConfigFileArgument(String externalConfigFileArgument) {
-        this.externalConfigFileArgument = externalConfigFileArgument;
+        this.externalConfigFileArgument = expectNonBlank(externalConfigFileArgument, "externalConfigFileArgument");
         return this;
     }
 
     public ApplicationConfigLoader withConfigBaseName(String configBaseName) {
-        this.configBaseName = configBaseName;
+        this.configBaseName = expectNonBlank(configBaseName, "configBaseName");
         return this;
     }
 
@@ -42,17 +58,17 @@ public class ApplicationConfigLoader {
         Config filteredArgsConfig = filteredArgsConfig(allArgsConfig);
         Config externalConfig = externalConfig(allArgsConfig);
         Config profileConfig = profileConfig(allArgsConfig);
-        Config config = ConfigLoader.loadFromClasspathInAnyFormat(configBaseName);
+        Config config = ConfigLoader.loadFromClasspath(configBaseName);
         Config resolveConfig = Config.builder()
                 .withValue("system", ConfigLoader.loadSystemProperties())
                 .withValue("env", ConfigLoader.loadSystemEnvironment())
                 .withValue("args", allArgsConfig)
                 .build();
         return config
-                .addOverrides(profileConfig)
-                .addOverrides(externalConfig)
-                .addOverrides(filteredArgsConfig)
-                .resolveWith(resolveConfig);
+                .withValues(profileConfig)
+                .withValues(externalConfig)
+                .withValues(filteredArgsConfig)
+                .resolveExpressions(resolveConfig);
     }
 
     private Config profileConfig(Config argsConfig) {
@@ -60,13 +76,13 @@ public class ApplicationConfigLoader {
                 ? argsConfig.getString(profileArgument, defaultProfile)
                 : defaultProfile;
         return profile != null
-                ? ConfigLoader.loadFromClasspathInAnyFormat(configBaseName + "-" + profile)
+                ? ConfigLoader.loadFromClasspathOrEmpty(configBaseName + "-" + profile)
                 : Config.empty();
     }
 
     private Config allArgsConfig() {
         return args != null
-                ? Config.fromArgs(args)
+                ? ConfigLoader.loadFromArgs(args, argsAliases)
                 : Config.empty();
     }
 
@@ -78,7 +94,7 @@ public class ApplicationConfigLoader {
                 ? config.remove(profileArgument)
                 : config;
         return argsPrefix != null
-                ? config.subConfig(argsPrefix)
+                ? config.getSubConfigOrEmpty(argsPrefix)
                 : config;
     }
 

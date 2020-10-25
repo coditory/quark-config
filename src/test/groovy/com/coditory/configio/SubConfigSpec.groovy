@@ -12,12 +12,12 @@ class SubConfigSpec extends Specification {
                     .withValue("e", "E")
                     .build()
         expect:
-            config.subConfig("a").toMap() == [
+            config.getSubConfig("a").toMap() == [
                     b: [c: "ABC"],
                     d: "AD"
             ]
         and:
-            config.subConfig("a.b").toMap() == [c: "ABC"]
+            config.getSubConfig("a.b").toMap() == [c: "ABC"]
     }
 
     def "should return sub config from nested values with a list"() {
@@ -27,11 +27,11 @@ class SubConfigSpec extends Specification {
                     .withValue("a.b[1]", "AB1")
                     .build()
         expect:
-            config.subConfig("a").toMap() == [
+            config.getSubConfig("a").toMap() == [
                     b: [[c: "AB0C"], "AB1"]
             ]
         and:
-            config.subConfig("a.b[0]").toMap() == [c: "AB0C"]
+            config.getSubConfig("a.b[0]").toMap() == [c: "AB0C"]
     }
 
     def "should return empty sub config"() {
@@ -41,9 +41,9 @@ class SubConfigSpec extends Specification {
                     .withValue("a.b[1]", "AB1")
                     .build()
         expect:
-            config.subConfigOrEmpty("a.b[2]").isEmpty()
+            config.getSubConfigOrEmpty("a.b[2]").isEmpty()
         and:
-            config.subConfigOrEmpty("b").isEmpty()
+            config.getSubConfigOrEmpty("b").isEmpty()
     }
 
     def "should throw error on empty sub config"() {
@@ -54,13 +54,13 @@ class SubConfigSpec extends Specification {
                     .build()
 
         when:
-            config.subConfig("a.b[2]").isEmpty()
+            config.getSubConfig("a.b[2]")
         then:
             MissingConfigValueException e = thrown(MissingConfigValueException)
-            e.message == "Could not get subConfig for path: a.b[2]"
+            e.message == "Missing config value for path: a.b[2]"
 
         when:
-            config.subConfig("b").isEmpty()
+            config.getSubConfig("b").isEmpty()
         then:
             thrown(MissingConfigValueException)
     }

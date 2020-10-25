@@ -1,24 +1,23 @@
 package com.coditory.configio;
 
 import com.coditory.configio.ConfigParser.ConfigFormat;
-import com.coditory.configio.api.ConfigioException;
-import com.coditory.configio.api.ConfigioParsingException;
-import org.yaml.snakeyaml.error.YAMLException;
+import com.coditory.configio.api.ConfigException;
+import com.coditory.configio.api.ConfigLoadException;
+import com.coditory.configio.api.ConfigParseException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 import static com.coditory.configio.ConfigLoader.ConfigSource.CLASSPATH;
 import static com.coditory.configio.ConfigLoader.ConfigSource.FILE_SYSTEM;
+import static com.coditory.configio.Preconditions.expectNonNull;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
@@ -33,9 +32,13 @@ public class ConfigLoader {
             this.configLoader = requireNonNull(configLoader);
         }
 
-        Config load(String path) {
+        Optional<Config> load(String path) {
             return configLoader.load(path);
         }
+    }
+
+    public static ApplicationConfigLoader applicationConfig() {
+        return new ApplicationConfigLoader();
     }
 
     public static Config loadSystemProperties() {
@@ -54,19 +57,31 @@ public class ConfigLoader {
         return Config.of(System.getenv());
     }
 
-    public static Config loadFromClasspathInAnyFormat(String path) {
-        return loadInAnyFormat(CLASSPATH, path);
+    public static Config loadFromArgs(String[] args) {
+        expectNonNull(args, "args");
+        return loadFromArgs(args, Map.of());
+    }
+
+    public static Config loadFromArgs(String[] args, Map<String, String> aliases) {
+        expectNonNull(args, "args");
+        expectNonNull(aliases, "aliases");
+        Map<String, Object> values = new ArgumentsParser(aliases).parse(args);
+        return Config.of(values);
+    }
+
+    public static Config loadFromClasspathOrEmpty(String path) {
+        return loadFromClasspathOrDefault(path, Config.empty());
+    }
+
+    public static Config loadFromClasspathOrDefault(String path, Config defaultConfig) {
+        return load(CLASSPATH, path)
+                .orElse(defaultConfig);
     }
 
     public static Config loadFromClasspath(String path) {
         return load(CLASSPATH, path)
-                .orElseThrow(() -> new ConfigioException(
-                        "Could not load configuration. " +
-                                "File was not found on classpath: " + path));
-    }
-
-    public static Config loadFromSystemFileInAnyFormat(String path) {
-        return loadInAnyFormat(FILE_SYSTEM, path);
+                .orElseThrow(() -> new ConfigLoadException(
+                        "Configuration file not found on classpath: " + path));
     }
 
     public static Config loadFromFileSystemOrEmpty(String path) {
@@ -80,74 +95,64 @@ public class ConfigLoader {
 
     public static Config loadFromFileSystem(String path) {
         return load(FILE_SYSTEM, path)
-                .orElseThrow(() -> new ConfigioException(
-                        "Could not load configuration. " +
-                            "File was not found on file system: " + path));
-    }
-
-    private static Config loadInAnyFormat(ConfigSource configSource, String path) {
-        List<String> filePathsWithExtensions = ConfigFormat.getExtensions().stream()
-                .map(ext -> path + "." + ext)
-                .collect(toList());
-        List<String> filePaths = new ArrayList<>(filePathsWithExtensions.size() + 1);
-        if (ConfigFormat.containsConfigExtension(path)) {
-            filePaths.add(path);
-        }
-        filePaths.addAll(filePathsWithExtensions);
-        return filePaths.stream()
-                .map(configSource::load)
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElseThrow(() -> new ConfigioException("Could not load configuration. " +
-                        "Files were not found on " + configSource + ": " + filePaths));
+                .orElseThrow(() -> new ConfigLoadException(
+                        "Configuration file not found on file system: " + path));
     }
 
     private static Optional<Config> load(ConfigSource configSource, String path) {
-        Config config = configSource.load(path);
-        if (config == null) {
-            throw new ConfigioException("Could not load configuration. " +
-                    "File was not found on " + configSource + ": " + path);
-        }
-        return Optional.ofNullable(configSource.load(path));
+        return ConfigFormat.containsConfigExtension(path)
+            ? configSource.load(path)
+            : loadInAnyFormat(configSource, path);
+    }
+
+    private static Optional<Config> loadInAnyFormat(ConfigSource configSource, String path) {
+        List<String> filePathsWithExtensions = ConfigFormat.getExtensions().stream()
+                .map(ext -> path + "." + ext)
+                .collect(toList());
+        return filePathsWithExtensions.stream()
+                .map(configSource::load)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .findFirst();
     }
 }
 
 interface ConfigSourceLoader {
-    Config load(String path);
+    Optional<Config> load(String path);
 }
 
 class ClasspathConfigLoader implements ConfigSourceLoader {
     @Override
-    public Config load(String path) {
+    public Optional<Config> load(String path) {
         ConfigFormat format = ConfigFormat.getFormatForFilePath(path);
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         URL url = classLoader.getResource(path);
         if (url == null) {
-            return null;
+            return Optional.empty();
         }
         try {
             InputStream stream = url.openStream();
-            return format.parse(stream);
+            return Optional.of(format.parse(stream));
         } catch (Exception e) {
-            throw new ConfigioParsingException("Could not parse configuration from classpath file: " + path, e);
+            throw new ConfigParseException("Could not parse configuration from classpath file: " + path, e);
         }
     }
 }
 
 class FileSystemConfigLoader implements ConfigSourceLoader {
     @Override
-    public Config load(String path) {
+    public Optional<Config> load(String path) {
         ConfigFormat format = ConfigFormat.getFormatForFilePath(path);
         InputStream stream;
         try {
             stream = Files.newInputStream(Path.of(path));
         } catch (IOException e) {
-            return null;
+            return Optional.empty();
         }
         try {
-            return format.parse(stream);
+            return Optional.of(format.parse(stream));
         } catch (Exception e) {
-            throw new ConfigioParsingException("Could not parse configuration from file system: " + path, e);
+            throw new ConfigParseException("Could not parse configuration from file system: " + path, e);
         }
     }
 }

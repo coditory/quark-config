@@ -1,7 +1,5 @@
 package com.coditory.configio;
 
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -29,11 +27,11 @@ final class Preconditions {
         return value;
     }
 
-    static String expectNonEmpty(String value) {
-        return expectNonEmpty(value, "Expected non empty string. Got: " + value);
+    static String expectNonBlank(String value) {
+        return expectNonBlank(value, "Expected non blank string. Got: " + value);
     }
 
-    static String expectNonEmpty(String value, String message) {
+    static String expectNonBlank(String value, String message) {
         if (value == null || value.trim().isEmpty()) {
             throw new IllegalArgumentException(message);
         }

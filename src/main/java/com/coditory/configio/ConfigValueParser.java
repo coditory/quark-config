@@ -1,6 +1,6 @@
 package com.coditory.configio;
 
-import com.coditory.configio.api.ConfigioParsingException;
+import com.coditory.configio.api.ConfigParseException;
 import com.coditory.configio.api.ValueParser;
 
 import java.math.BigDecimal;
@@ -56,7 +56,7 @@ class ConfigValueParser {
         return valueParsers.stream()
                 .filter(p -> p.isApplicable(type, value))
                 .findFirst()
-                .orElseThrow(() -> new ConfigioParsingException("No parser for type: " + type))
+                .orElseThrow(() -> new ConfigParseException("No parser for type: " + type))
                 .parse(type, value);
     }
 

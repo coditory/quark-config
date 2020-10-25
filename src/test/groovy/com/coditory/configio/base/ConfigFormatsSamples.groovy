@@ -1,5 +1,8 @@
 package com.coditory.configio.base
 
+import groovy.transform.CompileStatic
+
+@CompileStatic
 class ConfigFormatsSamples {
     static final String SAMPLE_YML_CONFIG = """
     |server.port: 8080
@@ -32,17 +35,17 @@ class ConfigFormatsSamples {
     |==
     """.stripMargin().trim()
 
-    private static final Map<String, Object> SAMPLE_CONFIG_MAP = [
-            server: Map.copyOf([port: 8080]),
+    private static final Map<String, ?> SAMPLE_CONFIG_MAP = [
+            server: [port: 8080],
             other : "other"
     ].asImmutable()
 
-    private static final Map<String, Object> SAMPLE_CONFIG_MAP_FOR_PROPERTIES = [
+    private static final Map<String, ?> SAMPLE_CONFIG_MAP_FOR_PROPERTIES = [
             server: [port: "8080"],
             other : "other"
     ].asImmutable()
 
-    static Map<String, Object> sampleConfigMapPerExt(String extension) {
+    static Map<String, ?> sampleConfigMapPerExt(String extension) {
         return extension == "properties"
                 ? SAMPLE_CONFIG_MAP_FOR_PROPERTIES
                 : SAMPLE_CONFIG_MAP

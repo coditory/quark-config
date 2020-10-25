@@ -1,9 +1,8 @@
 package com.coditory.configio;
 
-import com.coditory.configio.api.ConfigioException;
+import com.coditory.configio.api.ConfigException;
 import com.coditory.configio.api.InvalidConfigPathException;
 
-import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,7 +10,6 @@ import java.util.Objects;
 
 import static com.coditory.configio.Preconditions.expectNonEmpty;
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.filtering;
 import static java.util.stream.Collectors.toList;
 
 class Path {
@@ -146,7 +144,7 @@ class Path {
 
     public Path removePrefix(Path other) {
         if (!this.startsWith(other)) {
-            throw new ConfigioException("Could not remove path prefix. Paths do not match. " +
+            throw new ConfigException("Could not remove path prefix. Paths do not match. " +
                     "Original: " + this + ". Prefix: " + other);
         }
         if (this.equals(other)) {
@@ -230,7 +228,7 @@ class Path {
             if (name == null || name.isBlank()) {
                 throw new InvalidConfigPathException("Got blank path element");
             }
-            this.name = expectNonEmpty(name, "name");
+            this.name = Preconditions.expectNonBlank(name, "name");
         }
 
         @Override

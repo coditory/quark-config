@@ -1,6 +1,6 @@
 package com.coditory.configio;
 
-import com.coditory.configio.api.ConfigioParsingException;
+import com.coditory.configio.api.ConfigParseException;
 
 class BooleanParser {
     static Boolean parseBoolean(String value) {
@@ -11,6 +11,6 @@ class BooleanParser {
         if ("false".equals(normalized)) {
             return false;
         }
-        throw new ConfigioParsingException("Could not parse boolean value: " + value);
+        throw new ConfigParseException("Could not parse boolean value: " + value);
     }
 }

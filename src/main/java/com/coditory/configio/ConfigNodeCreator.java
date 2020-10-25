@@ -3,7 +3,6 @@ package com.coditory.configio;
 import com.coditory.configio.api.InvalidConfigPathException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +51,9 @@ class ConfigNodeCreator {
             Map<String, Object> stringKeyMap = (Map<String, Object>) value;
             Map<String, ConfigNode> result = new LinkedHashMap<>(stringKeyMap.size());
             for (Map.Entry<String, Object> entry : stringKeyMap.entrySet()) {
-                result.put(entry.getKey(), createNodeForValue(entry.getValue()));
+                Path path = Path.parse(entry.getKey());
+                ConfigNode child = configNode(Path.root(), path.removeFirstElement(), entry.getValue());
+                result.put(path.getFirstElement().getName(), child);
             }
             return new MapConfigNode(result);
         }

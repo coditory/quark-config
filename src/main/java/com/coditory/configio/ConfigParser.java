@@ -1,7 +1,7 @@
 package com.coditory.configio;
 
-import com.coditory.configio.api.ConfigioException;
-import com.coditory.configio.api.ConfigioParsingException;
+import com.coditory.configio.api.ConfigException;
+import com.coditory.configio.api.ConfigParseException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.yaml.snakeyaml.Yaml;
@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
@@ -42,7 +40,7 @@ public class ConfigParser {
             try {
                 return parser.parse(input);
             } catch (Exception e) {
-                throw new ConfigioParsingException("Could not parse config", e);
+                throw new ConfigParseException("Could not parse config", e);
             }
         }
 
@@ -50,7 +48,7 @@ public class ConfigParser {
             try {
                 return parser.parse(inputStream);
             } catch (Exception e) {
-                throw new ConfigioParsingException("Could not parse config", e);
+                throw new ConfigParseException("Could not parse config", e);
             }
         }
 
@@ -67,7 +65,7 @@ public class ConfigParser {
             return stream(ConfigFormat.values())
                     .filter(format -> format.filePathMatches(filePath))
                     .findFirst()
-                    .orElseThrow(() -> new ConfigioException("Unrecognized config format for file path: " + filePath));
+                    .orElseThrow(() -> new ConfigException("Unrecognized config format for file path: " + filePath));
         }
 
         static boolean containsConfigExtension(String filePath) {
@@ -185,7 +183,7 @@ class PropertiesConfigParser implements ConfigFormatParser {
             String key = Objects.toString(entry.getKey());
             map.put(key, entry.getValue());
         }
-        return Config.fromMap(map);
+        return Config.of(map);
     }
 
     @Override

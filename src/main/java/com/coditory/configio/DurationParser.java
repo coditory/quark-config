@@ -1,6 +1,6 @@
 package com.coditory.configio;
 
-import com.coditory.configio.api.ConfigioParsingException;
+import com.coditory.configio.api.ConfigParseException;
 
 import java.time.Duration;
 import java.time.format.DateTimeParseException;
@@ -27,14 +27,14 @@ class DurationParser {
                     ? durationParse("PT" + (int) durationNumber + unit)
                     : durationParse("PT" + durationNumber + unit);
         }
-        throw new ConfigioParsingException("Could not parse Duration value: " + value);
+        throw new ConfigParseException("Could not parse Duration value: " + value);
     }
 
     private static Duration durationParse(String value) {
         try {
             return Duration.parse(value);
         } catch (DateTimeParseException e) {
-            throw new ConfigioParsingException("Could not parse Duration value: " + value);
+            throw new ConfigParseException("Could not parse Duration value: " + value);
         }
     }
 }

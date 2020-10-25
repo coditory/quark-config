@@ -32,7 +32,7 @@ class CurrencyParsingSpec extends Specification {
 
     private Currency parse(String value) {
         String name = "value"
-        return Config.fromMap(Map.of(name, value))
+        return Config.of(Map.of(name, value))
                 .getAs(Currency, name)
     }
 }

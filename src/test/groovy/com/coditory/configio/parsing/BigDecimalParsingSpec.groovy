@@ -29,7 +29,7 @@ class BigDecimalParsingSpec extends Specification {
 
     private BigDecimal parse(String value) {
         String name = "value"
-        return Config.fromMap(Map.of(name, value))
+        return Config.of(Map.of(name, value))
                 .getAs(BigDecimal, name)
     }
 }

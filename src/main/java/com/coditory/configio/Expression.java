@@ -1,5 +1,7 @@
 package com.coditory.configio;
 
+import com.coditory.configio.api.UnresolvedConfigExpression;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -19,6 +21,13 @@ class Expression {
                 : value;
     }
 
+    static Object failOnUnresolved(Object value) {
+        if (value instanceof Expression) {
+            Expression expression = (Expression) value;
+            throw new UnresolvedConfigExpression("Unresolved config expression: " + expression.getExpression());
+        }
+        return value;
+    }
 
     private final String expression;
     private final List<ExpressionNode> expressionNodes;

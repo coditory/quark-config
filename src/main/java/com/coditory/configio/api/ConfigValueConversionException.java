@@ -1,6 +1,6 @@
 package com.coditory.configio.api;
 
-public class ConfigValueConversionException extends ConfigioException {
+public class ConfigValueConversionException extends ConfigException {
     public ConfigValueConversionException(Class<?> type, String path, Object value) {
         this(type, path, value, null);
     }

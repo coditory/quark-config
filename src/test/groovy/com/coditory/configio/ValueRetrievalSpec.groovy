@@ -4,7 +4,7 @@ import com.coditory.configio.api.MissingConfigValueException
 import spock.lang.Specification
 
 class ValueRetrievalSpec extends Specification {
-    def "should retrieve nested values by path"() {
+    def "should return nested values by path"() {
         given:
             Config config = Config.builder()
                     .withValue("a.b.c", "ABC")
@@ -19,7 +19,7 @@ class ValueRetrievalSpec extends Specification {
             config.getString("e") == "E"
     }
 
-    def "should return retrieve nested value from inserted map"() {
+    def "should return nested value from inserted map"() {
         given:
             Config config = Config.builder()
                     .withValue("a", [b: [c: "ABC"], d: "AD"])
@@ -30,7 +30,7 @@ class ValueRetrievalSpec extends Specification {
             config.getString("a.d") == "AD"
     }
 
-    def "should not retrieve missing value"() {
+    def "should not return missing value"() {
         given:
             Config config = Config.builder()
                     .withValue("a.b.c", "ABC")
@@ -48,7 +48,7 @@ class ValueRetrievalSpec extends Specification {
             config.getString("a.e", "X") == "X"
     }
 
-    def "should retrieve nested value in a list"() {
+    def "should return nested value in a list"() {
         given:
             Config config = Config.builder()
                     .withValue("a.b[0].c", "AB0C")
@@ -66,7 +66,7 @@ class ValueRetrievalSpec extends Specification {
             config.getStringOrNull("a.b.d") == null
     }
 
-    def "should return retrieve nested value from inserted list"() {
+    def "should return nested value from inserted list"() {
         given:
             Config config = Config.builder()
                     .withValue("a.b", [[c: "AB0C"], "AB1"])
@@ -75,6 +75,15 @@ class ValueRetrievalSpec extends Specification {
             config.getString("a.b[0].c") == "AB0C"
         and:
             config.getString("a.b[1]") == "AB1"
+    }
+
+    def "should return nested value from inserted map with path in key"() {
+        given:
+            Config config = Config.builder()
+                    .withValue("a.b", ["c.d": "D"])
+                    .build()
+        expect:
+            config.getString("a.b.c.d") == "D"
     }
 
     def "should contain value"() {

@@ -88,7 +88,7 @@ class MapConfigNode implements ConfigNode {
     @Override
     public boolean anyLeaf(Predicate<Object> predicate) {
         return values.values().stream()
-                .anyMatch(predicate);
+                .anyMatch(value -> value.anyLeaf(predicate));
     }
 
     @Override

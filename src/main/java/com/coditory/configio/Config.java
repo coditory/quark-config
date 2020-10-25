@@ -1,27 +1,20 @@
 package com.coditory.configio;
 
 import com.coditory.configio.api.InvalidConfigPathException;
-import com.coditory.configio.api.MissingConfigValueException;
 import com.coditory.configio.api.ValueParser;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import static com.coditory.configio.ConfigValueParser.DEFAULT_VALUE_PARSERS;
 import static com.coditory.configio.ConfigValueParser.defaultConfigValueParser;
 import static com.coditory.configio.MapConfigNode.emptyRoot;
 import static com.coditory.configio.Path.root;
-import static com.coditory.configio.Preconditions.expectNonEmpty;
+import static com.coditory.configio.Preconditions.expectNonBlank;
 import static com.coditory.configio.Preconditions.expectNonNull;
-import static com.coditory.configio.SystemEnvironmentNameMapper.mapSystemEnvironmentName;
+import static com.coditory.configio.api.MissingConfigValueException.missingConfigValueForPath;
 
 public class Config implements ConfigValueExtractor {
     private final static Config EMPTY = new Config(emptyRoot(), defaultConfigValueParser());
@@ -34,33 +27,6 @@ public class Config implements ConfigValueExtractor {
         expectNonNull(values, "values");
         return builder()
                 .withValues(values)
-                .build();
-    }
-
-    public static Config fromArgs(String... args) {
-        expectNonNull(args, "args");
-        return builder()
-                .withArguments(args)
-                .build();
-    }
-
-    public static Config fromArgs(Map<String, String> aliases, String... args) {
-        expectNonNull(args, "args");
-        return builder()
-                .withArguments(aliases, args)
-                .build();
-    }
-
-    public static Config fromMap(Map<String, Object> values) {
-        expectNonNull(values, "values");
-        return builder()
-                .withValues(values)
-                .build();
-    }
-
-    public static Config fromSystemEnv() {
-        return builder()
-                .withSystemEnvValues()
                 .build();
     }
 
@@ -84,26 +50,28 @@ public class Config implements ConfigValueExtractor {
         return root.entries();
     }
 
-    public Config subConfig(String path) {
-        expectNonEmpty(path, "path");
-        return getAsOptionalSubConfig(path)
-                .orElseThrow(() -> new MissingConfigValueException("Could not get subConfig for path: " + path));
-    }
-
-    public Config subConfigOrEmpty(String path) {
-        expectNonEmpty(path, "path");
-        return getAsOptionalSubConfig(path)
-                .orElseGet(() -> new Config(emptyRoot(), valueParser));
-    }
-
     public boolean contains(String path) {
-        expectNonEmpty(path, "path");
+        expectNonBlank(path, "path");
         return root.getOptionalNode(Path.parse(path))
                 .isPresent();
     }
 
-    public Config add(String path, Object value) {
-        expectNonEmpty(path, "path");
+    public Config withDefault(String path, Object value) {
+        expectNonBlank(path, "path");
+        expectNonNull(value, "value");
+        Path parsed = Path.parse(path);
+        MapConfigNode newRoot = root.addIfMissing(root(), parsed, value);
+        return withRoot(newRoot);
+    }
+
+    public Config withDefaults(Config config) {
+        expectNonNull(config, "config");
+        MapConfigNode mergedRoot = root.withDefaults(config.root);
+        return withRoot(mergedRoot);
+    }
+
+    public Config withValue(String path, Object value) {
+        expectNonBlank(path, "path");
         expectNonNull(value, "value");
         Path parsed = Path.parse(path);
         ConfigNode newRoot = root.addOrReplace(root(), parsed, value);
@@ -113,41 +81,42 @@ public class Config implements ConfigValueExtractor {
         return withRoot((MapConfigNode) newRoot);
     }
 
-    public Config addDefault(String path, Object value) {
-        expectNonEmpty(path, "path");
-        expectNonNull(value, "value");
-        Path parsed = Path.parse(path);
-        MapConfigNode newRoot = root.addIfMissing(root(), parsed, value);
-        return withRoot(newRoot);
-    }
-
-    public Config addDefaults(Config config) {
-        expectNonNull(config, "config");
-        MapConfigNode mergedRoot = root.withDefaults(config.root);
-        return withRoot(mergedRoot);
-    }
-
-    public Config addOverrides(Config config) {
+    public Config withValues(Config config) {
         expectNonNull(config, "config");
         MapConfigNode mergedRoot = config.root.withDefaults(this.root);
         return withRoot(mergedRoot);
     }
 
-    public Config resolveWith(Config variables) {
-        expectNonNull(variables, "variables");
-        Config configWithExpressions = this.mapLeaves(ExpressionParser::parse);
-        Config configWithExpressionsAndVariables = configWithExpressions
-                .addDefaults(variables)
-                .mapLeaves(ExpressionParser::parse);
-        ExpressionResolver resolver = new ExpressionResolver(configWithExpressionsAndVariables);
-        configWithExpressions = this.mapLeaves(ExpressionParser::parse).mapLeaves(resolver::resolve);
-        if (configWithExpressions.anyLeaf(Expression::isExpression)) {
-            throw new RuntimeException("???");
-        }
-        return configWithExpressions.mapLeaves(Expression::unwrap);
+    public Config resolveExpressionsOrFail() {
+        return resolveExpressionsOrFail(Config.empty());
     }
 
-    private Config addValueParser(ValueParser parser) {
+    public Config resolveExpressionsOrFail(Config variables) {
+        expectNonNull(variables, "variables");
+        return resolveExpressions(variables, Expression::failOnUnresolved);
+    }
+
+    public Config resolveExpressions() {
+        return resolveExpressions(Config.empty());
+    }
+
+    public Config resolveExpressions(Config variables) {
+        expectNonNull(variables, "variables");
+        return resolveExpressions(variables, Expression::unwrap);
+    }
+
+    private Config resolveExpressions(Config variables, Function<Object, Object> leafMapper) {
+        Config configWithExpressions = this.mapLeaves(ExpressionParser::parse);
+        Config configWithExpressionsAndVariables = configWithExpressions
+                .withDefaults(variables)
+                .mapLeaves(ExpressionParser::parse);
+        ExpressionResolver resolver = new ExpressionResolver(configWithExpressionsAndVariables);
+        return this.mapLeaves(ExpressionParser::parse)
+                .mapLeaves(resolver::resolve)
+                .mapLeaves(leafMapper);
+    }
+
+    private Config withValueParser(ValueParser parser) {
         expectNonNull(parser, "parser");
         return withValueParser(valueParser.addParser(parser));
     }
@@ -186,20 +155,34 @@ public class Config implements ConfigValueExtractor {
     }
 
     public Config remove(String path) {
-        expectNonEmpty(path, "path");
+        expectNonBlank(path, "path");
         Path parsed = Path.parse(path);
         MapConfigNode newRoot = root.remove(root(), parsed);
         return withRoot(newRoot);
     }
 
-    private Optional<Config> getAsOptionalSubConfig(String path) {
-        expectNonNull(path, "path");
+    public Config getSubConfig(String path) {
+        expectNonBlank(path, "path");
+        return getSubConfigOptional(path)
+                .orElseThrow(() -> missingConfigValueForPath(path));
+    }
+
+    public Config getSubConfigOrEmpty(String path) {
+        expectNonBlank(path, "path");
+        return getSubConfig(path, withRoot(emptyRoot()));
+    }
+
+    public Config getSubConfig(String path, Config defaultValue) {
+        expectNonBlank(path, "path");
+        return getSubConfigOptional(path)
+                .orElse(defaultValue);
+    }
+
+    public Optional<Config> getSubConfigOptional(String path) {
+        expectNonBlank(path, "path");
         return root.getOptionalNode(Path.parse(path))
-                .map(node ->
-                    node instanceof MapConfigNode
-                            ? new Config((MapConfigNode) node, valueParser)
-                            : null
-                );
+                .filter(node -> node instanceof MapConfigNode)
+                .map(node -> new Config((MapConfigNode) node, valueParser));
     }
 
     @Override
@@ -209,11 +192,10 @@ public class Config implements ConfigValueExtractor {
     }
 
     private Optional<ConfigValue> getOptional(String path) {
-        expectNonEmpty(path, "path");
+        expectNonBlank(path, "path");
         return getOptional(Path.parse(path));
     }
 
-    @SuppressWarnings("unchecked")
     private Optional<ConfigValue> getOptional(Path path) {
         expectNonNull(path, "path");
         return root.getOptional(path)
@@ -269,31 +251,16 @@ public class Config implements ConfigValueExtractor {
             return this;
         }
 
-        public ConfigBuilder withArguments(String... args) {
-            expectNonNull(args, "args");
-            return withArguments(Map.of(), args);
-        }
-
-        public ConfigBuilder withArguments(Map<String, String> aliases, String... args) {
-            expectNonNull(args, "args");
-            expectNonNull(aliases, "aliases");
-            Map<String, Object> values = new ArgumentsParser(aliases).parse(args);
-            withValues(values);
-            return this;
-        }
-
-        public ConfigBuilder withSystemEnvValues() {
-            Map<String, String> mapped = System.getenv().entrySet().stream()
-                    .collect(Collectors.toMap(e -> mapSystemEnvironmentName(e.getKey()), Entry::getValue));
-            withValues(mapped);
-            return this;
-        }
-
         public ConfigBuilder withValue(String name, Object value) {
-            expectNonEmpty(name, "name");
+            expectNonBlank(name, "name");
             if (value != null) {
                 Path path = Path.parse(name);
-                root = root.addIfMissing(root(), path, value);
+                if (path.isRoot() || !path.getFirstElement().isNamed()) {
+                    throw new InvalidConfigPathException(
+                            "Expected non empty path to a named element. " +
+                            "Example: a.b. Got: " + path);
+                }
+                root = (MapConfigNode) root.addOrReplace(root(), path, value);
             }
             return this;
         }

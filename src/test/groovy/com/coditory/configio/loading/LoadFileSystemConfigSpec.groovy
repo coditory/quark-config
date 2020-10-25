@@ -2,13 +2,17 @@ package com.coditory.configio.loading
 
 import com.coditory.configio.Config
 import com.coditory.configio.ConfigLoader
-import com.coditory.configio.api.ConfigioException
-import com.coditory.configio.api.ConfigioParsingException
+import com.coditory.configio.api.ConfigException
+import com.coditory.configio.api.ConfigLoadException
+import com.coditory.configio.api.ConfigParseException
 import com.coditory.configio.base.UsesFiles
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import static com.coditory.configio.base.ConfigFormatsSamples.*
+import static com.coditory.configio.base.ConfigFormatsSamples.SAMPLE_CONFIGS_EXTENSIONS
+import static com.coditory.configio.base.ConfigFormatsSamples.sampleConfigMapPerExt
+import static com.coditory.configio.base.ConfigFormatsSamples.sampleConfigPerExt
+import static com.coditory.configio.base.ConfigFormatsSamples.sampleInvalidConfigPerExt
 
 class LoadFileSystemConfigSpec extends Specification implements UsesFiles {
     @Unroll
@@ -32,7 +36,7 @@ class LoadFileSystemConfigSpec extends Specification implements UsesFiles {
         when:
             ConfigLoader.loadFromFileSystem(file.getPath())
         then:
-            ConfigioParsingException e = thrown(ConfigioParsingException)
+            ConfigParseException e = thrown(ConfigParseException)
             e.message.startsWith("Could not parse configuration from file system:")
         where:
             extension << SAMPLE_CONFIGS_EXTENSIONS
@@ -46,7 +50,7 @@ class LoadFileSystemConfigSpec extends Specification implements UsesFiles {
             File file = writeFile("$configName.$extension", content)
             String path = file.getPath().replace("$configName.$extension", configName)
         when:
-            Config config = ConfigLoader.loadFromSystemFileInAnyFormat(path)
+            Config config = ConfigLoader.loadFromFileSystem(path)
         then:
             config.toMap() == sampleConfigMapPerExt(extension)
         where:
@@ -64,7 +68,7 @@ class LoadFileSystemConfigSpec extends Specification implements UsesFiles {
                 writeFile("$configName.$it", sampleConfigPerExt(it))
             }
         when:
-            Config config = ConfigLoader.loadFromSystemFileInAnyFormat(path)
+            Config config = ConfigLoader.loadFromFileSystem(path)
         then:
             config.getString("value") == extension
         where:
@@ -80,7 +84,7 @@ class LoadFileSystemConfigSpec extends Specification implements UsesFiles {
         when:
             ConfigLoader.loadFromFileSystem(file.getPath())
         then:
-            ConfigioException e = thrown(ConfigioException)
+            ConfigException e = thrown(ConfigException)
             e.getMessage().stripMargin("Unrecognized config format for file path:")
     }
 
@@ -89,10 +93,10 @@ class LoadFileSystemConfigSpec extends Specification implements UsesFiles {
             String path = tempDirectory.toPath()
                     .resolve("test-non-existent")
         when:
-            ConfigLoader.loadFromSystemFileInAnyFormat(path)
+            ConfigLoader.loadFromFileSystem(path)
         then:
-            ConfigioException e = thrown(ConfigioException)
-            e.message.startsWith("Could not load configuration. Files were not found on FILE_SYSTEM: [")
+            ConfigLoadException e = thrown(ConfigLoadException)
+            e.message.startsWith("Configuration file not found on file system: ")
     }
 
     @Unroll
@@ -105,8 +109,8 @@ class LoadFileSystemConfigSpec extends Specification implements UsesFiles {
         when:
             ConfigLoader.loadFromFileSystem(path)
         then:
-            ConfigioException e = thrown(ConfigioException)
-            e.message.startsWith("Could not load configuration. File was not found on FILE_SYSTEM: ")
+            ConfigLoadException e = thrown(ConfigLoadException)
+            e.message.startsWith("Configuration file not found on file system: ")
 
         where:
             extension << SAMPLE_CONFIGS_EXTENSIONS

@@ -1,5 +1,6 @@
 # Intellij Idea project files
 .idea
+!.idea/codeStyles
 *.iml
 *.ipr
 *.iws

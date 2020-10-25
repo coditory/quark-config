@@ -31,12 +31,12 @@ interface ConfigValueExtractor {
 
     // String API
 
-    default Optional<String> getOptionalString(String path) {
+    default Optional<String> getStringOptional(String path) {
         return getAsOptional(String.class, path);
     }
 
     default String getString(String path) {
-        return getOptionalString(path)
+        return getStringOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
@@ -45,17 +45,17 @@ interface ConfigValueExtractor {
     }
 
     default String getString(String path, String defaultValue) {
-        return getOptionalString(path).orElse(defaultValue);
+        return getStringOptional(path).orElse(defaultValue);
     }
 
     // Object API
 
-    default Optional<Object> getOptionalObject(String path) {
+    default Optional<Object> getObjectOptional(String path) {
         return getAsOptional(Object.class, path);
     }
 
     default Object getObject(String path) {
-        return getOptionalObject(path)
+        return getObjectOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
@@ -64,17 +64,17 @@ interface ConfigValueExtractor {
     }
 
     default Object getObject(String path, Object defaultValue) {
-        return getOptionalObject(path).orElse(defaultValue);
+        return getObjectOptional(path).orElse(defaultValue);
     }
 
     // Boolean API
 
-    default Optional<Boolean> getOptionalBoolean(String path) {
+    default Optional<Boolean> getBooleanOptional(String path) {
         return getAsOptional(Boolean.class, path);
     }
 
     default Boolean getBoolean(String path) {
-        return getOptionalBoolean(path)
+        return getBooleanOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
@@ -83,18 +83,18 @@ interface ConfigValueExtractor {
     }
 
     default Boolean getBoolean(String path, Boolean defaultValue) {
-        return getOptionalBoolean(path).orElse(defaultValue);
+        return getBooleanOptional(path).orElse(defaultValue);
     }
 
 
     // Short API
 
-    default Optional<Short> getOptionalShort(String path) {
+    default Optional<Short> getShortOptional(String path) {
         return getAsOptional(Short.class, path);
     }
 
     default Short getShort(String path) {
-        return getOptionalShort(path)
+        return getShortOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
@@ -103,18 +103,18 @@ interface ConfigValueExtractor {
     }
 
     default Short getShort(String path, Short defaultValue) {
-        return getOptionalShort(path).orElse(defaultValue);
+        return getShortOptional(path).orElse(defaultValue);
     }
 
 
     // Byte API
 
-    default Optional<Byte> getOptionalByte(String path) {
+    default Optional<Byte> getByteOptional(String path) {
         return getAsOptional(Byte.class, path);
     }
 
     default Byte getByte(String path) {
-        return getOptionalByte(path)
+        return getByteOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
@@ -123,18 +123,18 @@ interface ConfigValueExtractor {
     }
 
     default Byte getByte(String path, Byte defaultValue) {
-        return getOptionalByte(path).orElse(defaultValue);
+        return getByteOptional(path).orElse(defaultValue);
     }
 
 
     // Integer API
 
-    default Optional<Integer> getOptionalInteger(String path) {
+    default Optional<Integer> getIntegerOptional(String path) {
         return getAsOptional(Integer.class, path);
     }
 
     default Integer getInteger(String path) {
-        return getOptionalInteger(path)
+        return getIntegerOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
@@ -143,18 +143,18 @@ interface ConfigValueExtractor {
     }
 
     default Integer getInteger(String path, Integer defaultValue) {
-        return getOptionalInteger(path).orElse(defaultValue);
+        return getIntegerOptional(path).orElse(defaultValue);
     }
 
 
     // Long API
 
-    default Optional<Long> getOptionalLong(String path) {
+    default Optional<Long> getLongOptional(String path) {
         return getAsOptional(Long.class, path);
     }
 
     default Long getLong(String path) {
-        return getOptionalLong(path)
+        return getLongOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
@@ -163,18 +163,18 @@ interface ConfigValueExtractor {
     }
 
     default Long getLong(String path, Long defaultValue) {
-        return getOptionalLong(path).orElse(defaultValue);
+        return getLongOptional(path).orElse(defaultValue);
     }
 
 
     // Float API
 
-    default Optional<Float> getOptionalFloat(String path) {
+    default Optional<Float> getFloatOptional(String path) {
         return getAsOptional(Float.class, path);
     }
 
     default Float getFloat(String path) {
-        return getOptionalFloat(path)
+        return getFloatOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
@@ -183,18 +183,18 @@ interface ConfigValueExtractor {
     }
 
     default Float getFloat(String path, Float defaultValue) {
-        return getOptionalFloat(path).orElse(defaultValue);
+        return getFloatOptional(path).orElse(defaultValue);
     }
 
 
     // Double API
 
-    default Optional<Double> getOptionalDouble(String path) {
+    default Optional<Double> getDoubleOptional(String path) {
         return getAsOptional(Double.class, path);
     }
 
     default Double getDouble(String path) {
-        return getOptionalDouble(path)
+        return getDoubleOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
@@ -203,18 +203,18 @@ interface ConfigValueExtractor {
     }
 
     default Double getDouble(String path, Double defaultValue) {
-        return getOptionalDouble(path).orElse(defaultValue);
+        return getDoubleOptional(path).orElse(defaultValue);
     }
 
 
     // BigDecimal API
 
-    default Optional<BigDecimal> getOptionalBigDecimal(String path) {
+    default Optional<BigDecimal> getBigDecimalOptional(String path) {
         return getAsOptional(BigDecimal.class, path);
     }
 
     default BigDecimal getBigDecimal(String path) {
-        return getOptionalBigDecimal(path)
+        return getBigDecimalOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
@@ -223,18 +223,18 @@ interface ConfigValueExtractor {
     }
 
     default BigDecimal getBigDecimal(String path, BigDecimal defaultValue) {
-        return getOptionalBigDecimal(path).orElse(defaultValue);
+        return getBigDecimalOptional(path).orElse(defaultValue);
     }
 
 
     // Instant API
 
-    default Optional<Instant> getOptionalInstant(String path) {
+    default Optional<Instant> getInstantOptional(String path) {
         return getAsOptional(Instant.class, path);
     }
 
     default Instant getInstant(String path) {
-        return getOptionalInstant(path)
+        return getInstantOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
@@ -243,18 +243,18 @@ interface ConfigValueExtractor {
     }
 
     default Instant getInstant(String path, Instant defaultValue) {
-        return getOptionalInstant(path).orElse(defaultValue);
+        return getInstantOptional(path).orElse(defaultValue);
     }
 
 
     // ZonedDateTime API
 
-    default Optional<ZonedDateTime> getOptionalZonedDateTime(String path) {
+    default Optional<ZonedDateTime> getZonedDateTimeOptional(String path) {
         return getAsOptional(ZonedDateTime.class, path);
     }
 
     default ZonedDateTime getZonedDateTime(String path) {
-        return getOptionalZonedDateTime(path)
+        return getZonedDateTimeOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
@@ -263,18 +263,18 @@ interface ConfigValueExtractor {
     }
 
     default ZonedDateTime getZonedDateTime(String path, ZonedDateTime defaultValue) {
-        return getOptionalZonedDateTime(path).orElse(defaultValue);
+        return getZonedDateTimeOptional(path).orElse(defaultValue);
     }
 
 
     // Duration API
 
-    default Optional<Duration> getOptionalDuration(String path) {
+    default Optional<Duration> getDurationOptional(String path) {
         return getAsOptional(Duration.class, path);
     }
 
     default Duration getDuration(String path) {
-        return getOptionalDuration(path)
+        return getDurationOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
@@ -283,18 +283,18 @@ interface ConfigValueExtractor {
     }
 
     default Duration getDuration(String path, Duration defaultValue) {
-        return getOptionalDuration(path).orElse(defaultValue);
+        return getDurationOptional(path).orElse(defaultValue);
     }
 
 
     // Locale API
 
-    default Optional<Locale> getOptionalLocale(String path) {
+    default Optional<Locale> getLocaleOptional(String path) {
         return getAsOptional(Locale.class, path);
     }
 
     default Locale getLocale(String path) {
-        return getOptionalLocale(path)
+        return getLocaleOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
@@ -303,18 +303,18 @@ interface ConfigValueExtractor {
     }
 
     default Locale getLocale(String path, Locale defaultValue) {
-        return getOptionalLocale(path).orElse(defaultValue);
+        return getLocaleOptional(path).orElse(defaultValue);
     }
 
 
     // Currency API
 
-    default Optional<Currency> getOptionalCurrency(String path) {
+    default Optional<Currency> getCurrencyOptional(String path) {
         return getAsOptional(Currency.class, path);
     }
 
     default Currency getCurrency(String path) {
-        return getOptionalCurrency(path)
+        return getCurrencyOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
@@ -323,7 +323,7 @@ interface ConfigValueExtractor {
     }
 
     default Currency getCurrency(String path, Currency defaultValue) {
-        return getOptionalCurrency(path).orElse(defaultValue);
+        return getCurrencyOptional(path).orElse(defaultValue);
     }
 
 }

@@ -2,13 +2,17 @@ package com.coditory.configio.loading
 
 import com.coditory.configio.Config
 import com.coditory.configio.ConfigLoader
-import com.coditory.configio.api.ConfigioException
-import com.coditory.configio.api.ConfigioParsingException
+import com.coditory.configio.api.ConfigException
+import com.coditory.configio.api.ConfigLoadException
+import com.coditory.configio.api.ConfigParseException
 import com.coditory.configio.base.UsesFiles
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import static com.coditory.configio.base.ConfigFormatsSamples.*
+import static com.coditory.configio.base.ConfigFormatsSamples.SAMPLE_CONFIGS_EXTENSIONS
+import static com.coditory.configio.base.ConfigFormatsSamples.sampleConfigMapPerExt
+import static com.coditory.configio.base.ConfigFormatsSamples.sampleConfigPerExt
+import static com.coditory.configio.base.ConfigFormatsSamples.sampleInvalidConfigPerExt
 
 class LoadClasspathConfigSpec extends Specification implements UsesFiles {
     @Unroll
@@ -34,7 +38,7 @@ class LoadClasspathConfigSpec extends Specification implements UsesFiles {
         when:
             loadFromClasspath(fileName)
         then:
-            ConfigioParsingException e = thrown(ConfigioParsingException)
+            ConfigParseException e = thrown(ConfigParseException)
             e.message.startsWith("Could not parse configuration from classpath file:")
         where:
             extension << SAMPLE_CONFIGS_EXTENSIONS
@@ -47,7 +51,7 @@ class LoadClasspathConfigSpec extends Specification implements UsesFiles {
             String configName = "test-without-extension"
             writeClasspathFile("$configName.$extension", content)
         when:
-            Config config = loadFromClasspathInAnyFormat(configName)
+            Config config = loadFromClasspath(configName)
         then:
             config.toMap() == sampleConfigMapPerExt(extension)
         where:
@@ -64,7 +68,7 @@ class LoadClasspathConfigSpec extends Specification implements UsesFiles {
                 writeClasspathFile("$configName.$it", sampleConfigPerExt(it))
             }
         when:
-            Config config = loadFromClasspathInAnyFormat(configName)
+            Config config = loadFromClasspath(configName)
         then:
             config.getString("value") == extension
         where:
@@ -76,10 +80,10 @@ class LoadClasspathConfigSpec extends Specification implements UsesFiles {
 
     def "should throw error when loading non-existent file in any format"() {
         when:
-            loadFromClasspathInAnyFormat("test-non-existent")
+            loadFromClasspath("test-non-existent")
         then:
-            ConfigioException e = thrown(ConfigioException)
-            e.message.startsWith("Could not load configuration. Files were not found on CLASSPATH: [")
+            ConfigLoadException e = thrown(ConfigLoadException)
+            e.message.startsWith("Configuration file not found on classpath: ")
     }
 
     def "should throw error when loading invalid file extension"() {
@@ -89,7 +93,7 @@ class LoadClasspathConfigSpec extends Specification implements UsesFiles {
         when:
             loadFromClasspath(fileName)
         then:
-            ConfigioException e = thrown(ConfigioException)
+            ConfigException e = thrown(ConfigException)
             e.getMessage().stripMargin("Unrecognized config format for file path:")
     }
 
@@ -98,8 +102,8 @@ class LoadClasspathConfigSpec extends Specification implements UsesFiles {
         when:
             ConfigLoader.loadFromClasspath("test-non-existent.$extension")
         then:
-            ConfigioException e = thrown(ConfigioException)
-            e.message.startsWith("Could not load configuration. File was not found on CLASSPATH: ")
+            ConfigLoadException e = thrown(ConfigLoadException)
+            e.message.startsWith("Configuration file not found on classpath: ")
 
         where:
             extension << SAMPLE_CONFIGS_EXTENSIONS
@@ -108,12 +112,6 @@ class LoadClasspathConfigSpec extends Specification implements UsesFiles {
     private Config loadFromClasspath(String path) {
         return stubClassLoader {
             ConfigLoader.loadFromClasspath(path)
-        }
-    }
-
-    private Config loadFromClasspathInAnyFormat(String path) {
-        return stubClassLoader {
-            ConfigLoader.loadFromClasspathInAnyFormat(path)
         }
     }
 }

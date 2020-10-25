@@ -30,7 +30,7 @@ class ShortParsingSpec extends Specification {
 
     private Short parse(String value) {
         String name = "value"
-        return Config.fromMap(Map.of(name, value))
+        return Config.of(Map.of(name, value))
                 .getAs(Short, name)
     }
 }

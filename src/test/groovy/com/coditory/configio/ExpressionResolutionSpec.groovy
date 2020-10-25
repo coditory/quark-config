@@ -1,9 +1,10 @@
 package com.coditory.configio
 
+import com.coditory.configio.api.UnresolvedConfigExpression
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class ConfigResolutionSpec extends Specification {
+class ExpressionResolutionSpec extends Specification {
     def "should resolve config with reference to config value"() {
         given:
             Config config = Config.builder()
@@ -11,7 +12,7 @@ class ConfigResolutionSpec extends Specification {
                     .withValue("a.c", "C")
                     .build()
         when:
-            Config resolved = config.resolveWith(Config.empty())
+            Config resolved = config.resolveExpressions()
         then:
             resolved.toMap() == [
                     a: [
@@ -29,7 +30,7 @@ class ConfigResolutionSpec extends Specification {
                     .withValue("a.d", "\${a.c}")
                     .build()
         when:
-            Config resolved = config.resolveWith(Config.empty())
+            Config resolved = config.resolveExpressions()
         then:
             resolved.toMap() == [
                     a: [
@@ -48,7 +49,7 @@ class ConfigResolutionSpec extends Specification {
                     .withValue("a.d", "C-\${a.c}___B-\${a.b}")
                     .build()
         when:
-            Config resolved = config.resolveWith(Config.empty())
+            Config resolved = config.resolveExpressions()
         then:
             resolved.toMap() == [
                     a: [
@@ -65,12 +66,10 @@ class ConfigResolutionSpec extends Specification {
                     .withValue("a.b", "\${a.b}")
                     .build()
         when:
-            Config resolved = config.resolveWith(Config.empty())
+            Config resolved = config.resolveExpressions()
         then:
             resolved.toMap() == [
-                    a: [
-                            b: "\${a.b}"
-                    ]
+                    a: [b: "\${a.b}"]
             ]
     }
 
@@ -82,7 +81,7 @@ class ConfigResolutionSpec extends Specification {
                     .withValue("a.d", "\${a.b}")
                     .build()
         when:
-            Config resolved = config.resolveWith(Config.empty())
+            Config resolved = config.resolveExpressions()
         then:
             resolved.toMap() == [
                     a: [
@@ -100,7 +99,7 @@ class ConfigResolutionSpec extends Specification {
                     .withValue("a.d", "\${a.b}")
                     .build()
         when:
-            Config resolved = config.resolveWith(Config.empty())
+            Config resolved = config.resolveExpressions()
         then:
             resolved.toMap() == [
                     a: [
@@ -117,7 +116,7 @@ class ConfigResolutionSpec extends Specification {
                     .withValue("b", "\${a}")
                     .build()
         when:
-            Config resolved = config.resolveWith(Config.empty())
+            Config resolved = config.resolveExpressions()
         then:
             resolved.getInteger("a") == 123
     }
@@ -128,7 +127,7 @@ class ConfigResolutionSpec extends Specification {
                     .withValue("a", "\${b ?: 'A'}")
                     .build()
         when:
-            Config resolved = config.resolveWith(Config.empty())
+            Config resolved = config.resolveExpressions()
         then:
             resolved.toMap() == [a: "A"]
     }
@@ -140,7 +139,7 @@ class ConfigResolutionSpec extends Specification {
                     .withValue("a", "\${b ?: c ?: 'A'}")
                     .build()
         when:
-            Config resolved = config.resolveWith(Config.of(variables))
+            Config resolved = config.resolveExpressions(Config.of(variables))
         then:
             resolved.toMap() == expected
 
@@ -154,5 +153,51 @@ class ConfigResolutionSpec extends Specification {
             [b: "\${a}"]         || [a: "A"]
             [b: "\${c}"]         || [a: "A"]
             [b: "\${c}", c: "C"] || [a: "C"]
+    }
+
+    @Unroll
+    def "should not modify incorrect expression #expression"() {
+        given:
+            Config config = Config.builder()
+                    .withValue("a", expression)
+                    .build()
+        when:
+            Config resolved = config.resolveExpressions()
+        then:
+            resolved.toMap() == [a: expression]
+
+        where:
+            expression << [
+                    "a}",
+                    "{a}",
+                    "}}}",
+                    "{{{",
+                    "{}",
+                    "\${a"
+            ]
+    }
+
+    def "should throw error on a reference to itself"() {
+        given:
+            Config config = Config.builder()
+                    .withValue("a.b", "\${a.b}")
+                    .build()
+        when:
+            config.resolveExpressionsOrFail()
+        then:
+            UnresolvedConfigExpression exception = thrown(UnresolvedConfigExpression)
+            exception.message == "Unresolved config expression: \${a.b}"
+    }
+
+    def "should throw error on an unresolved reference"() {
+        given:
+            Config config = Config.builder()
+                    .withValue("a.b", "\${a.d}")
+                    .build()
+        when:
+            config.resolveExpressionsOrFail()
+        then:
+            UnresolvedConfigExpression exception = thrown(UnresolvedConfigExpression)
+            exception.message == "Unresolved config expression: \${a.d}"
     }
 }

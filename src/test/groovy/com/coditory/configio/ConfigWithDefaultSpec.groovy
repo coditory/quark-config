@@ -4,15 +4,15 @@ import com.coditory.configio.api.InvalidConfigPathException
 import com.coditory.configio.api.MissingConfigValueException
 import spock.lang.Specification
 
-class AddDefaultValueSpec extends Specification {
+class ConfigWithDefaultSpec extends Specification {
     def "should add values to an empty config"() {
         given:
             Config config = Config.empty()
         when:
             config = config
-                    .addDefault("a.b.c", "ABC")
-                    .addDefault("a.d", "AD")
-                    .addDefault("e", ["E0", "E1"])
+                    .withDefault("a.b.c", "ABC")
+                    .withDefault("a.d", "AD")
+                    .withDefault("e", ["E0", "E1"])
         then:
             config.toMap() == [
                     a: [
@@ -33,9 +33,9 @@ class AddDefaultValueSpec extends Specification {
             Config copy = config
         when:
             config = config
-                    .addDefault("a.b.c", "X")
-                    .addDefault("a.d", "Y")
-                    .addDefault("e[1]", "Z")
+                    .withDefault("a.b.c", "X")
+                    .withDefault("a.d", "Y")
+                    .withDefault("e[1]", "Z")
         then:
             config.toMap() == copy.toMap()
     }
@@ -47,9 +47,9 @@ class AddDefaultValueSpec extends Specification {
                     .build()
         when:
             config = config
-                    .addDefault("a.b[0].d", "D")
-                    .addDefault("a.b[0].e[0][0]", "E00")
-                    .addDefault("a.b[2]", "3")
+                    .withDefault("a.b[0].d", "D")
+                    .withDefault("a.b[0].e[0][0]", "E00")
+                    .withDefault("a.b[2]", "3")
         then:
             config.toMap() == [
                     a: [
@@ -70,7 +70,7 @@ class AddDefaultValueSpec extends Specification {
             Config copy = config
         when:
             config = config
-                    .addDefault("a.b.c.d", "D")
+                    .withDefault("a.b.c.d", "D")
         then:
             config.toMap() == copy.toMap()
     }
@@ -83,7 +83,7 @@ class AddDefaultValueSpec extends Specification {
             Config copy = config
         when:
             config = config
-                    .addDefault("a.b", ["c", "d"])
+                    .withDefault("a.b", ["c", "d"])
         then:
             config.toMap() == copy.toMap()
     }
@@ -97,8 +97,8 @@ class AddDefaultValueSpec extends Specification {
             Config copy = config
         when:
             config = config
-                    .addDefault("a.b.c.d", "X")
-                    .addDefault("a.b.e.d", "Y")
+                    .withDefault("a.b.c.d", "X")
+                    .withDefault("a.b.e.d", "Y")
         then:
             config.toMap() == copy.toMap()
     }
@@ -109,12 +109,12 @@ class AddDefaultValueSpec extends Specification {
                     .withValue("a.b", ["c", "d"])
                     .build()
         when:
-            config.addDefault("a.b[3]", "e")
+            config.withDefault("a.b[3]", "e")
         then:
             thrown(MissingConfigValueException)
 
         when:
-            config.addDefault("a.b[-1]", "e")
+            config.withDefault("a.b[-1]", "e")
         then:
             thrown(InvalidConfigPathException)
     }

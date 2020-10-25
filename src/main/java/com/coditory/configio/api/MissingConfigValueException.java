@@ -1,6 +1,6 @@
 package com.coditory.configio.api;
 
-public class MissingConfigValueException extends ConfigioException {
+public class MissingConfigValueException extends ConfigException {
     public static MissingConfigValueException missingConfigValueForPath(String path) {
         return new MissingConfigValueException("Missing config value for path: " + path);
     }

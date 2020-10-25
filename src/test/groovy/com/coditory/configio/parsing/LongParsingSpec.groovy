@@ -30,7 +30,7 @@ class LongParsingSpec extends Specification {
 
     private Long parse(String value) {
         String name = "value"
-        return Config.fromMap(Map.of(name, value))
+        return Config.of(Map.of(name, value))
                 .getAs(Long, name)
     }
 }
