@@ -3,7 +3,6 @@ package com.coditory.configio;
 import com.coditory.configio.api.ConfigValueConversionException;
 
 import java.util.Map;
-import java.util.function.Function;
 
 import static com.coditory.configio.Preconditions.expectNonNull;
 
@@ -16,20 +15,8 @@ class ConfigValue {
         this.value = expectNonNull(value);
     }
 
-    public Path getPath() {
-        return path;
-    }
-
-    public Object unwrap() {
-        return value;
-    }
-
-    public ConfigValue mapValue(Function<Object, Object> mapper) {
-        return new ConfigValue(path, mapper.apply(value));
-    }
-
     @SuppressWarnings("unchecked")
-    public <T> T getAs(ConfigValueParser valueParser, Class<T> type) {
+    <T> T getAs(ConfigValueParser valueParser, Class<T> type) {
         if (Config.class.equals(type)) {
             return (T) getAsConfig();
         }

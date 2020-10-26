@@ -1,7 +1,7 @@
 package com.coditory.configio.loading
 
 import com.coditory.configio.Config
-import com.coditory.configio.ConfigLoader
+import com.coditory.configio.ConfigFactory
 import com.coditory.configio.api.ConfigException
 import com.coditory.configio.api.ConfigLoadException
 import com.coditory.configio.api.ConfigParseException
@@ -21,7 +21,7 @@ class LoadFileSystemConfigSpec extends Specification implements UsesFiles {
             String content = sampleConfigPerExt(extension)
             File file = writeFile("test-loading.$extension", content)
         when:
-            Config config = ConfigLoader.loadFromFileSystem(file.getPath())
+            Config config = ConfigFactory.loadFromFileSystem(file.getPath())
         then:
             config.toMap() == sampleConfigMapPerExt(extension)
         where:
@@ -34,7 +34,7 @@ class LoadFileSystemConfigSpec extends Specification implements UsesFiles {
             String content = sampleInvalidConfigPerExt(extension)
             File file = writeFile("test-invalid.$extension", content)
         when:
-            ConfigLoader.loadFromFileSystem(file.getPath())
+            ConfigFactory.loadFromFileSystem(file.getPath())
         then:
             ConfigParseException e = thrown(ConfigParseException)
             e.message.startsWith("Could not parse configuration from file system:")
@@ -50,7 +50,7 @@ class LoadFileSystemConfigSpec extends Specification implements UsesFiles {
             File file = writeFile("$configName.$extension", content)
             String path = file.getPath().replace("$configName.$extension", configName)
         when:
-            Config config = ConfigLoader.loadFromFileSystem(path)
+            Config config = ConfigFactory.loadFromFileSystem(path)
         then:
             config.toMap() == sampleConfigMapPerExt(extension)
         where:
@@ -68,7 +68,7 @@ class LoadFileSystemConfigSpec extends Specification implements UsesFiles {
                 writeFile("$configName.$it", sampleConfigPerExt(it))
             }
         when:
-            Config config = ConfigLoader.loadFromFileSystem(path)
+            Config config = ConfigFactory.loadFromFileSystem(path)
         then:
             config.getString("value") == extension
         where:
@@ -82,7 +82,7 @@ class LoadFileSystemConfigSpec extends Specification implements UsesFiles {
         given:
             File file = writeFile("test-invalid-ext.abc", "content")
         when:
-            ConfigLoader.loadFromFileSystem(file.getPath())
+            ConfigFactory.loadFromFileSystem(file.getPath())
         then:
             ConfigException e = thrown(ConfigException)
             e.getMessage().stripMargin("Unrecognized config format for file path:")
@@ -93,7 +93,7 @@ class LoadFileSystemConfigSpec extends Specification implements UsesFiles {
             String path = tempDirectory.toPath()
                     .resolve("test-non-existent")
         when:
-            ConfigLoader.loadFromFileSystem(path)
+            ConfigFactory.loadFromFileSystem(path)
         then:
             ConfigLoadException e = thrown(ConfigLoadException)
             e.message.startsWith("Configuration file not found on file system: ")
@@ -107,7 +107,7 @@ class LoadFileSystemConfigSpec extends Specification implements UsesFiles {
                     .resolve("$configName.$extension")
 
         when:
-            ConfigLoader.loadFromFileSystem(path)
+            ConfigFactory.loadFromFileSystem(path)
         then:
             ConfigLoadException e = thrown(ConfigLoadException)
             e.message.startsWith("Configuration file not found on file system: ")

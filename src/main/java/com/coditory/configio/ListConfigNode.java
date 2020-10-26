@@ -2,23 +2,13 @@ package com.coditory.configio;
 
 import com.coditory.configio.api.MissingConfigValueException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import static com.coditory.configio.ConfigNodeCreator.configNode;
-import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 
 class ListConfigNode implements ConfigNode {
     private final List<ConfigNode> values;
@@ -40,24 +30,20 @@ class ListConfigNode implements ConfigNode {
     }
 
     @Override
-    public Set<Entry<String, Object>> entries() {
-        Set<Entry<String, Object>> entries = new LinkedHashSet<>();
+    public List<Entry<Path, Object>> entries() {
+        List<Entry<Path, Object>> entries = new ArrayList<>(values.size());
         for (int i = 0; i < values.size(); ++i) {
             final int index = i;
-            ConfigNode node = values.get(i);
-            values.stream()
-                    .flatMap(value -> value.entries().stream())
-                    .map(subEntry -> concatKeys(node, index, subEntry))
+            values.get(i).entries().stream()
+                    .map(subEntry -> concatKeys(index, subEntry))
                     .forEach(entries::add);
         }
         return entries;
     }
 
-    private Entry<String, Object> concatKeys(ConfigNode node, int index, Entry<String, Object> subEntry) {
-        String indexString = "[" + index+ "]";
-        String key = (node instanceof ListConfigNode)
-                ? indexString + subEntry.getKey()
-                : indexString + "." + subEntry.getKey();
+    private Entry<Path, Object> concatKeys(int childIndex, Entry<Path, Object> subEntry) {
+        Path key = Path.single(childIndex)
+                .add(subEntry.getKey());
         return Map.entry(key, subEntry.getValue());
     }
 
@@ -87,18 +73,18 @@ class ListConfigNode implements ConfigNode {
         }
         ConfigNode child = getChild(element)
                 .map(c -> c.addIfMissing(parentPath.add(element), subPath.removeFirstElement(), value))
-                .orElseGet(() -> configNode(parentPath.add(element), subPath.removeFirstElement(), value));
+                .orElseGet(() -> configNode(subPath.removeFirstElement(), value));
         return addOrReplaceChild(element, child);
     }
 
     @Override
     public ConfigNode addOrReplace(Path parentPath, Path subPath, Object value) {
         if (subPath.isRoot()) {
-            return configNode(parentPath, subPath, value);
+            return configNode(subPath, value);
         }
         Path.PathElement element = subPath.getFirstElement();
         if (element.isNamed()) {
-            return configNode(parentPath, subPath, value);
+            return configNode(subPath, value);
         }
         if (element.getIndex() > values.size()) {
             throw new MissingConfigValueException(
@@ -108,7 +94,7 @@ class ListConfigNode implements ConfigNode {
         }
         ConfigNode child = getChild(element)
                 .map(c -> c.addOrReplace(parentPath.add(element), subPath.removeFirstElement(), value))
-                .orElseGet(() -> configNode(parentPath.add(element), subPath.removeLastElement(), value));
+                .orElseGet(() -> configNode(subPath.removeFirstElement(), value));
         return addOrReplaceChild(element, child);
     }
 

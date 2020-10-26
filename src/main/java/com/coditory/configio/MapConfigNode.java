@@ -1,20 +1,14 @@
 package com.coditory.configio;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static com.coditory.configio.ConfigNodeCreator.configNode;
 import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.toList;
 
 class MapConfigNode implements ConfigNode {
     private static final MapConfigNode EMPTY_ROOT = new MapConfigNode(Map.of());
@@ -35,20 +29,18 @@ class MapConfigNode implements ConfigNode {
     }
 
     @Override
-    public Set<Entry<String, Object>> entries() {
+    public List<Entry<Path, Object>> entries() {
         return values.entrySet().stream()
-                .flatMap(entry -> {
-                    ConfigNode node = entry.getValue();
-                    return node.entries().stream()
-                            .map(subEntry -> concatKeys(node, entry.getKey(), subEntry));
-                })
-                .collect(toSet());
+                .flatMap(entry -> entry.getValue()
+                        .entries().stream()
+                        .map(subEntry -> concatKeys(entry.getKey(), subEntry))
+                )
+                .collect(toList());
     }
 
-    private Entry<String, Object> concatKeys(ConfigNode node, String parentPath, Entry<String, Object> subEntry) {
-        String key = (node instanceof ListConfigNode)
-                ? parentPath + subEntry.getKey()
-                : parentPath + "." + subEntry.getKey();
+    private Entry<Path, Object> concatKeys(String childKey, Entry<Path, Object> subEntry) {
+        Path key = Path.single(childKey)
+                .add(subEntry.getKey());
         return Map.entry(key, subEntry.getValue());
     }
 
@@ -102,22 +94,22 @@ class MapConfigNode implements ConfigNode {
         }
         ConfigNode child = getChild(element)
                 .map(c -> c.addIfMissing(parentPath.add(element), subPath.removeFirstElement(), value))
-                .orElseGet(() -> configNode(parentPath.add(element), subPath.removeFirstElement(), value));
+                .orElseGet(() -> configNode(subPath.removeFirstElement(), value));
         return addOrReplaceChild(element, child);
     }
 
     @Override
     public ConfigNode addOrReplace(Path parentPath, Path subPath, Object value) {
         if (subPath.isRoot()) {
-            return configNode(parentPath, subPath, value);
+            return configNode(subPath, value);
         }
         Path.PathElement element = subPath.getFirstElement();
         if (element.isIndexed()) {
-            return configNode(parentPath, subPath, value);
+            return configNode(subPath, value);
         }
         ConfigNode child = getChild(element)
                 .map(c -> c.addOrReplace(parentPath.add(element), subPath.removeFirstElement(), value))
-                .orElseGet(() -> configNode(parentPath.add(element), subPath.removeFirstElement(), value));
+                .orElseGet(() -> configNode(subPath.removeFirstElement(), value));
         return addOrReplaceChild(element, child);
     }
 

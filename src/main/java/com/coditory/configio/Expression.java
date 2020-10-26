@@ -11,10 +11,6 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 class Expression {
-    static boolean isExpression(Object object) {
-        return object instanceof Expression;
-    }
-
     static Object unwrap(Object value) {
         return value instanceof Expression
                 ? ((Expression) value).getExpression()

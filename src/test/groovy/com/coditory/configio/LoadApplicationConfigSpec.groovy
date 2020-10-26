@@ -3,7 +3,7 @@ package com.coditory.configio
 import com.coditory.configio.base.UsesFiles
 import spock.lang.Specification
 
-import static com.coditory.configio.ConfigLoader.applicationConfig
+import static ConfigFactory.configApplicationLoader
 
 class LoadApplicationConfigSpec extends Specification implements UsesFiles {
     def "should add values to an empty config"() {
@@ -25,7 +25,7 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
             """)
         when:
             Config config = stubClassLoader {
-                applicationConfig()
+                configApplicationLoader()
                         .withArgs(
                                 "--profile", "prod",
                                 "--config.d", "ARGS",

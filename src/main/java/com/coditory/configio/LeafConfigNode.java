@@ -1,9 +1,6 @@
 package com.coditory.configio;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -39,7 +36,7 @@ class LeafConfigNode implements ConfigNode {
     public ConfigNode addOrReplace(Path parentPath, Path subPath, Object value) {
         return subPath.isRoot()
                 ? new LeafConfigNode(value)
-                : configNode(parentPath, subPath, value);
+                : configNode(subPath, value);
     }
 
     @Override
@@ -66,8 +63,8 @@ class LeafConfigNode implements ConfigNode {
     }
 
     @Override
-    public Set<Map.Entry<String, Object>> entries() {
-        return Set.of();
+    public List<Map.Entry<Path, Object>> entries() {
+        return List.of(Map.entry(Path.root(), value));
     }
 
     @Override

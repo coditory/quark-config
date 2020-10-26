@@ -1,7 +1,7 @@
 package com.coditory.configio.loading
 
 import com.coditory.configio.Config
-import com.coditory.configio.ConfigLoader
+import com.coditory.configio.ConfigFactory
 import com.coditory.configio.api.ConfigException
 import com.coditory.configio.api.ConfigLoadException
 import com.coditory.configio.api.ConfigParseException
@@ -100,7 +100,7 @@ class LoadClasspathConfigSpec extends Specification implements UsesFiles {
     @Unroll
     def "should throw error when loading non-existent file #extension"() {
         when:
-            ConfigLoader.loadFromClasspath("test-non-existent.$extension")
+            ConfigFactory.loadFromClasspath("test-non-existent.$extension")
         then:
             ConfigLoadException e = thrown(ConfigLoadException)
             e.message.startsWith("Configuration file not found on classpath: ")
@@ -111,7 +111,7 @@ class LoadClasspathConfigSpec extends Specification implements UsesFiles {
 
     private Config loadFromClasspath(String path) {
         return stubClassLoader {
-            ConfigLoader.loadFromClasspath(path)
+            ConfigFactory.loadFromClasspath(path)
         }
     }
 }

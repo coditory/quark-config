@@ -6,8 +6,8 @@ import com.coditory.configio.api.ValueParser;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
+import static com.coditory.configio.ConfigFormat.JSON;
 import static com.coditory.configio.ConfigValueParser.DEFAULT_VALUE_PARSERS;
 import static com.coditory.configio.ConfigValueParser.defaultConfigValueParser;
 import static com.coditory.configio.MapConfigNode.emptyRoot;
@@ -15,6 +15,8 @@ import static com.coditory.configio.Path.root;
 import static com.coditory.configio.Preconditions.expectNonBlank;
 import static com.coditory.configio.Preconditions.expectNonNull;
 import static com.coditory.configio.api.MissingConfigValueException.missingConfigValueForPath;
+import static java.util.Map.entry;
+import static java.util.stream.Collectors.toList;
 
 public class Config implements ConfigValueExtractor {
     private final static Config EMPTY = new Config(emptyRoot(), defaultConfigValueParser());
@@ -46,8 +48,11 @@ public class Config implements ConfigValueExtractor {
         return root.unwrap();
     }
 
-    public Set<Entry<String, Object>> entries() {
-        return root.entries();
+    public List<Entry<String, Object>> entries() {
+        return root.entries()
+                .stream()
+                .map(entry -> entry(entry.getKey().toString(), entry.getValue()))
+                .collect(toList());
     }
 
     public boolean contains(String path) {
@@ -105,6 +110,15 @@ public class Config implements ConfigValueExtractor {
         return resolveExpressions(variables, Expression::unwrap);
     }
 
+    public String toJson() {
+        return ConfigFormatter.toJson(this);
+    }
+
+    public String toJsonWithExposedSecrets() {
+        // TODO: finish me
+        return ConfigFormatter.toJson(this);
+    }
+
     private Config resolveExpressions(Config variables, Function<Object, Object> leafMapper) {
         Config configWithExpressions = this.mapLeaves(ExpressionParser::parse);
         Config configWithExpressionsAndVariables = configWithExpressions
@@ -116,9 +130,15 @@ public class Config implements ConfigValueExtractor {
                 .mapLeaves(leafMapper);
     }
 
-    private Config withValueParser(ValueParser parser) {
+    public Config withValueParser(ValueParser parser) {
         expectNonNull(parser, "parser");
         return withValueParser(valueParser.addParser(parser));
+    }
+
+    public Config withValueParsers(List<ValueParser> parsers) {
+        expectNonNull(parsers, "parsers");
+        ConfigValueParser newValueParser = new ConfigValueParser(parsers);
+        return withValueParser(newValueParser);
     }
 
     private Config withValueParser(ConfigValueParser newConfigValueParser) {
@@ -127,22 +147,10 @@ public class Config implements ConfigValueExtractor {
                 : new Config(root, newConfigValueParser);
     }
 
-    private Config withValueParsers(List<ValueParser> parsers) {
-        expectNonNull(parsers, "parsers");
-        ConfigValueParser newValueParser = new ConfigValueParser(parsers);
-        return Objects.equals(valueParser, newValueParser)
-                ? this
-                : new Config(root, valueParser);
-    }
-
     private Config withRoot(MapConfigNode root) {
         return Objects.equals(this.root, root)
                 ? this
                 : new Config(root, valueParser);
-    }
-
-    private boolean anyLeaf(Predicate<Object> predicate) {
-        return root.anyLeaf(predicate);
     }
 
     private Config mapLeaves(Function<Object, Object> mapper) {
@@ -258,7 +266,7 @@ public class Config implements ConfigValueExtractor {
                 if (path.isRoot() || !path.getFirstElement().isNamed()) {
                     throw new InvalidConfigPathException(
                             "Expected non empty path to a named element. " +
-                            "Example: a.b. Got: " + path);
+                                    "Example: a.b. Got: " + path);
                 }
                 root = (MapConfigNode) root.addOrReplace(root(), path, value);
             }

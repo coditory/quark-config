@@ -10,7 +10,7 @@ import java.util.Map;
 import static java.util.stream.Collectors.toList;
 
 class ConfigNodeCreator {
-    static ConfigNode configNode(Path parentPath, Path path, Object value) {
+    static ConfigNode configNode(Path path, Object value) {
         ConfigNode result = createNodeForValue(value);
         if (path.isRoot()) {
             return result;
@@ -22,10 +22,10 @@ class ConfigNodeCreator {
                 result = new MapConfigNode(Map.of(element.getName(), result));
             } else if (element.isIndexed()) {
                 int index = element.getIndex();
-                if (index != 0) {
-                    throw new InvalidConfigPathException("Invalid path: " + parentPath + ". Expected index 0.");
-                }
                 List<ConfigNode> values = new ArrayList<>();
+                for (int i = 0; i < index; ++i) {
+                    values.add(null);
+                }
                 values.add(index, result);
                 result = new ListConfigNode(values);
             } else {
@@ -52,7 +52,7 @@ class ConfigNodeCreator {
             Map<String, ConfigNode> result = new LinkedHashMap<>(stringKeyMap.size());
             for (Map.Entry<String, Object> entry : stringKeyMap.entrySet()) {
                 Path path = Path.parse(entry.getKey());
-                ConfigNode child = configNode(Path.root(), path.removeFirstElement(), entry.getValue());
+                ConfigNode child = configNode(path.removeFirstElement(), entry.getValue());
                 result.put(path.getFirstElement().getName(), child);
             }
             return new MapConfigNode(result);

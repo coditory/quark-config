@@ -19,6 +19,14 @@ class Path {
         return ROOT;
     }
 
+    static Path single(int index) {
+        return of(List.of(new IndexedPathElement(index)));
+    }
+
+    static Path single(String name) {
+        return of(List.of(new NamedPathElement(name)));
+    }
+
     private static Path of(List<PathElement> chunks) {
         return chunks.isEmpty()
                 ? ROOT

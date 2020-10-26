@@ -72,6 +72,6 @@ class ConfigFromArgumentsSpec extends Specification {
     }
 
     private Config configFromArgs(List<String> args, Map<String, String> aliases = [:]) {
-        return ConfigLoader.loadFromArgs(args as String[], aliases)
+        return ConfigFactory.buildFromArgs(args as String[], aliases)
     }
 }

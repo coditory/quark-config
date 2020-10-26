@@ -35,7 +35,6 @@ class PathValidationSpec extends Specification {
             path << [
                     "a[x]",
                     "a[-1]",
-                    "a[1]",
                     "a..b",
                     "a. .b"
             ]
