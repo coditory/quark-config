@@ -3,11 +3,14 @@ package com.coditory.configio;
 import com.coditory.configio.api.InvalidConfigPathException;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 class ConfigNodeCreator {
     static ConfigNode configNode(Path path, Object value) {
@@ -22,10 +25,10 @@ class ConfigNodeCreator {
                 result = new MapConfigNode(Map.of(element.getName(), result));
             } else if (element.isIndexed()) {
                 int index = element.getIndex();
-                List<ConfigNode> values = new ArrayList<>();
-                for (int i = 0; i < index; ++i) {
-                    values.add(null);
+                if (index != 0) {
+                    throw new InvalidConfigPathException("First list element must start with index 0. Got: " + index);
                 }
+                List<ConfigNode> values = new ArrayList<>();
                 values.add(index, result);
                 result = new ListConfigNode(values);
             } else {
@@ -49,12 +52,14 @@ class ConfigNodeCreator {
                 return new LeafConfigNode(value);
             }
             Map<String, Object> stringKeyMap = (Map<String, Object>) value;
-            Map<String, ConfigNode> result = new LinkedHashMap<>(stringKeyMap.size());
-            for (Map.Entry<String, Object> entry : stringKeyMap.entrySet()) {
-                Path path = Path.parse(entry.getKey());
-                ConfigNode child = configNode(path.removeFirstElement(), entry.getValue());
-                result.put(path.getFirstElement().getName(), child);
-            }
+            Map<String, ConfigNode> result = stringKeyMap.entrySet().stream()
+                    .sorted(Entry.comparingByKey())
+                    .map(entry -> {
+                        Path path = Path.parse(entry.getKey());
+                        ConfigNode child = configNode(path.removeFirstElement(), entry.getValue());
+                        return Map.entry(path.getFirstElement().getName(), child);
+                    })
+                    .collect(toMap(Entry::getKey, Entry::getValue));
             return new MapConfigNode(result);
         }
         if (value instanceof List) {

@@ -19,7 +19,11 @@ interface ConfigNode {
 
     ConfigNode withDefaults(ConfigNode root);
 
-    ConfigNode mapLeaves(Function<Object, Object> mapper);
+    ConfigNode mapLeaves(Path parentPath, ConfigValueMapper mapper);
+
+    default ConfigNode mapLeaves(Path parentPath, Function<Object, Object> mapper) {
+        return mapLeaves(parentPath, (path, value) -> mapper.apply(value));
+    }
 
     Optional<ConfigNode> getOptionalNode(Path subPath);
 

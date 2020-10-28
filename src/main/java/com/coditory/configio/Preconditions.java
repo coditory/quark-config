@@ -1,6 +1,6 @@
 package com.coditory.configio;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.function.BiFunction;
 
 final class Preconditions {
@@ -17,46 +17,36 @@ final class Preconditions {
     }
 
     static <T> T expectNonNull(T value) {
-        return expectNonNull(value, "Expected non null value");
+        return expectNonNull(value, "value");
     }
 
-    static <T> T expectNonNull(T value, String message) {
+    static <T> T expectNonNull(T value, String argument) {
         if (value == null) {
-            throw new IllegalArgumentException(message);
+            throw new IllegalArgumentException("Expected non null " + argument);
         }
         return value;
     }
 
     static String expectNonBlank(String value) {
-        return expectNonBlank(value, "Expected non blank string. Got: " + value);
+        return expectNonBlank(value, "value");
     }
 
-    static String expectNonBlank(String value, String message) {
+    static String expectNonBlank(String value, String argument) {
         if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException(message);
+            throw new IllegalArgumentException("Expected non blank " + argument);
         }
         return value;
     }
 
-    static <E> List<E> expectNonEmpty(List<E> list) {
-        return expectNonEmpty(list, "Expected non empty list. Got: " + list);
+    static <E, C extends Collection<E>> C expectNonEmpty(C collection) {
+        return expectNonEmpty(collection, "collection");
     }
 
-    static <E> List<E> expectNonEmpty(List<E> list, String message) {
-        if (list == null || list.isEmpty()) {
-            throw new IllegalArgumentException(message);
+    static <E, C extends Collection<E>> C expectNonEmpty(C collection, String argument) {
+        if (collection == null || collection.isEmpty()) {
+            throw new IllegalArgumentException("Expected non empty " + argument);
         }
-        return list;
-    }
-
-    static void expectStartsWith(Path path, Path prefix) {
-        expectStartsWith(path, prefix, "Expected path " + path + " to start with " + prefix);
-    }
-
-    static void expectStartsWith(Path path, Path prefix, String message) {
-        if (!path.startsWith(prefix)) {
-            throw new IllegalArgumentException(message);
-        }
+        return collection;
     }
 
     static void expect(boolean valid, String message) {

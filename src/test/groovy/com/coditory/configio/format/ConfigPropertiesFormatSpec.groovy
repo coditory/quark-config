@@ -37,4 +37,18 @@ class ConfigPropertiesFormatSpec extends Specification {
         then:
             result.toMap() == config.toMap()
     }
+
+    def "should hide secrets"() {
+        when:
+            String result = ConfigFormatter.toProperties(Config.of([secret: "abc"]))
+        then:
+            result == """secret=***\n"""
+    }
+
+    def "should not hide secrets"() {
+        when:
+            String result = ConfigFormatter.toPropertiesWithSecretsExposed(Config.of([secret: "abc"]))
+        then:
+            result == """secret=abc\n"""
+    }
 }

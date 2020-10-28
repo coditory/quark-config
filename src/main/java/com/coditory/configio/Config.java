@@ -7,19 +7,23 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
 
-import static com.coditory.configio.ConfigFormat.JSON;
 import static com.coditory.configio.ConfigValueParser.DEFAULT_VALUE_PARSERS;
 import static com.coditory.configio.ConfigValueParser.defaultConfigValueParser;
 import static com.coditory.configio.MapConfigNode.emptyRoot;
 import static com.coditory.configio.Path.root;
 import static com.coditory.configio.Preconditions.expectNonBlank;
 import static com.coditory.configio.Preconditions.expectNonNull;
+import static com.coditory.configio.SecretHidingValueMapper.defaultSecretHidingValueMapper;
 import static com.coditory.configio.api.MissingConfigValueException.missingConfigValueForPath;
 import static java.util.Map.entry;
 import static java.util.stream.Collectors.toList;
 
-public class Config implements ConfigValueExtractor {
-    private final static Config EMPTY = new Config(emptyRoot(), defaultConfigValueParser());
+public class Config implements ConfigGetters {
+    private final static Config EMPTY = new Config(
+            emptyRoot(),
+            defaultConfigValueParser(),
+            defaultSecretHidingValueMapper()
+    );
 
     public static Config empty() {
         return EMPTY;
@@ -38,10 +42,16 @@ public class Config implements ConfigValueExtractor {
 
     private final ConfigValueParser valueParser;
     private final MapConfigNode root;
+    private final ConfigValueMapper secretHidingValueMapper;
 
-    private Config(MapConfigNode root, ConfigValueParser valueParser) {
+    private Config(
+            MapConfigNode root,
+            ConfigValueParser valueParser,
+            ConfigValueMapper secretHidingValueMapper
+    ) {
         this.root = expectNonNull(root);
         this.valueParser = expectNonNull(valueParser);
+        this.secretHidingValueMapper = expectNonNull(secretHidingValueMapper);
     }
 
     public Map<String, Object> toMap() {
@@ -96,9 +106,9 @@ public class Config implements ConfigValueExtractor {
         return resolveExpressionsOrFail(Config.empty());
     }
 
-    public Config resolveExpressionsOrFail(Config variables) {
-        expectNonNull(variables, "variables");
-        return resolveExpressions(variables, Expression::failOnUnresolved);
+    public Config resolveExpressionsOrFail(Config expressionsConfig) {
+        expectNonNull(expressionsConfig, "expressionsConfig");
+        return resolveExpressions(expressionsConfig, Expression::failOnUnresolved);
     }
 
     public Config resolveExpressions() {
@@ -110,24 +120,19 @@ public class Config implements ConfigValueExtractor {
         return resolveExpressions(variables, Expression::unwrap);
     }
 
-    public String toJson() {
-        return ConfigFormatter.toJson(this);
-    }
-
-    public String toJsonWithExposedSecrets() {
-        // TODO: finish me
-        return ConfigFormatter.toJson(this);
-    }
-
     private Config resolveExpressions(Config variables, Function<Object, Object> leafMapper) {
-        Config configWithExpressions = this.mapLeaves(ExpressionParser::parse);
+        Config configWithExpressions = this.mapValues(ExpressionParser::parse);
         Config configWithExpressionsAndVariables = configWithExpressions
                 .withDefaults(variables)
-                .mapLeaves(ExpressionParser::parse);
+                .mapValues(ExpressionParser::parse);
         ExpressionResolver resolver = new ExpressionResolver(configWithExpressionsAndVariables);
-        return this.mapLeaves(ExpressionParser::parse)
-                .mapLeaves(resolver::resolve)
-                .mapLeaves(leafMapper);
+        return this.mapValues(ExpressionParser::parse)
+                .mapValues(resolver::resolve)
+                .mapValues(leafMapper);
+    }
+
+    public Config withHiddenSecrets() {
+        return mapValues(secretHidingValueMapper);
     }
 
     public Config withValueParser(ValueParser parser) {
@@ -144,17 +149,21 @@ public class Config implements ConfigValueExtractor {
     private Config withValueParser(ConfigValueParser newConfigValueParser) {
         return Objects.equals(newConfigValueParser, valueParser)
                 ? this
-                : new Config(root, newConfigValueParser);
+                : new Config(root, newConfigValueParser, secretHidingValueMapper);
     }
 
     private Config withRoot(MapConfigNode root) {
         return Objects.equals(this.root, root)
                 ? this
-                : new Config(root, valueParser);
+                : new Config(root, valueParser, secretHidingValueMapper);
     }
 
-    private Config mapLeaves(Function<Object, Object> mapper) {
-        MapConfigNode mapped = root.mapLeaves(mapper);
+    public Config mapValues(Function<Object, Object> mapper) {
+        return mapValues((path, value) -> mapper.apply(value));
+    }
+
+    public Config mapValues(ConfigValueMapper mapper) {
+        MapConfigNode mapped = root.mapLeaves(Path.root(), mapper);
         return withRoot(mapped);
     }
 
@@ -190,7 +199,7 @@ public class Config implements ConfigValueExtractor {
         expectNonBlank(path, "path");
         return root.getOptionalNode(Path.parse(path))
                 .filter(node -> node instanceof MapConfigNode)
-                .map(node -> new Config((MapConfigNode) node, valueParser));
+                .map(node -> withRoot((MapConfigNode) node));
     }
 
     @Override
@@ -231,6 +240,7 @@ public class Config implements ConfigValueExtractor {
     static class ConfigBuilder {
         private MapConfigNode root = emptyRoot();
         private List<ValueParser> valueParsers = new ArrayList<>(DEFAULT_VALUE_PARSERS);
+        private ConfigValueMapper secretHidingValueMapper = defaultSecretHidingValueMapper();
 
         private ConfigBuilder() {
         }
@@ -253,10 +263,27 @@ public class Config implements ConfigValueExtractor {
             return this;
         }
 
+        public ConfigBuilder withSecretHidingValueMapper(ConfigValueMapper secretHidingValueMapper) {
+            secretHidingValueMapper = expectNonNull(secretHidingValueMapper, "secretHidingValueMapper");
+            return this;
+        }
+
+        public ConfigBuilder withConfigFormat(ConfigFormat configFormat) {
+            configFormat = expectNonNull(configFormat, "configFormat");
+            return this;
+        }
+
         public ConfigBuilder withValues(Map<String, ?> values) {
             expectNonNull(values, "values");
-            values.forEach(this::withValue);
+            values.entrySet().stream()
+                    .sorted(Comparator.comparing(Map.Entry::getKey))
+                    .forEach(entry -> withValue(entry.getKey(), entry.getValue()));
             return this;
+        }
+
+        public ConfigBuilder withValues(Config config) {
+            expectNonNull(config, "config");
+            return withValues(config.toMap());
         }
 
         public ConfigBuilder withValue(String name, Object value) {
@@ -274,7 +301,8 @@ public class Config implements ConfigValueExtractor {
         }
 
         public Config build() {
-            return new Config(root, new ConfigValueParser(valueParsers));
+            ConfigValueParser valueParser = new ConfigValueParser(valueParsers);
+            return new Config(root, valueParser, secretHidingValueMapper);
         }
     }
 }

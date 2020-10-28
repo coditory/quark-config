@@ -2,9 +2,12 @@ package com.coditory.configio;
 
 import com.coditory.configio.api.MissingConfigValueException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Function;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import static com.coditory.configio.ConfigNodeCreator.configNode;
@@ -151,13 +154,15 @@ class ListConfigNode implements ConfigNode {
     }
 
     @Override
-    public ListConfigNode mapLeaves(Function<Object, Object> mapper) {
+    public ListConfigNode mapLeaves(Path parentPath, ConfigValueMapper mapper) {
         List<ConfigNode> result = new ArrayList<>(values.size());
         boolean childMapped = false;
-        for (ConfigNode child : values) {
-            ConfigNode mapped = child.mapLeaves(mapper);
+        for (int i = 0; i < values.size(); ++i) {
+            Path path = parentPath.add(i);
+            ConfigNode child = values.get(i);
+            ConfigNode mapped = child.mapLeaves(path, mapper);
             result.add(mapped);
-            childMapped = childMapped || Objects.equals(mapped, child);
+            childMapped = childMapped || !Objects.equals(mapped, child);
         }
         return childMapped
                 ? new ListConfigNode(result)

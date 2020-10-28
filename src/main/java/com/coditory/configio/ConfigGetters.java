@@ -10,7 +10,7 @@ import java.util.Optional;
 
 import static com.coditory.configio.api.MissingConfigValueException.missingConfigValueForPath;
 
-interface ConfigValueExtractor {
+interface ConfigGetters {
     <T> Optional<T> getAsOptional(Class<T> type, String path);
 
     default <T> T getAs(Class<T> type, String path) {

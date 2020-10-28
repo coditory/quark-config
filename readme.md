@@ -1,6 +1,7 @@
-# Configio
+# Config
 
 Java configuration library.
 
-## TODO
-- Add: ConfigSecretHider
+TODO
+- unify exceptions
+- inspect code

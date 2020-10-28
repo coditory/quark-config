@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import static com.coditory.configio.Preconditions.expectNonEmpty;
+import static com.coditory.configio.Preconditions.expectNonBlank;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
@@ -181,6 +181,14 @@ class Path {
         return true;
     }
 
+    public Path add(String element) {
+        return add(new NamedPathElement(element));
+    }
+
+    public Path add(int index) {
+        return add(new IndexedPathElement(index));
+    }
+
     public Path add(Path subPath) {
         List<PathElement> elements = new ArrayList<>();
         elements.addAll(this.elements);
@@ -226,6 +234,7 @@ class Path {
 
     interface PathElementMapper<T> {
         T mapName(String name);
+
         T mapIndex(int index);
     }
 
@@ -236,7 +245,7 @@ class Path {
             if (name == null || name.isBlank()) {
                 throw new InvalidConfigPathException("Got blank path element");
             }
-            this.name = Preconditions.expectNonBlank(name, "name");
+            this.name = expectNonBlank(name, "name");
         }
 
         @Override

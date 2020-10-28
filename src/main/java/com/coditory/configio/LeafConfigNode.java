@@ -1,7 +1,9 @@
 package com.coditory.configio;
 
-import java.util.*;
-import java.util.function.Function;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import static com.coditory.configio.ConfigNodeCreator.configNode;
@@ -50,8 +52,8 @@ class LeafConfigNode implements ConfigNode {
     }
 
     @Override
-    public ConfigNode mapLeaves(Function<Object, Object> mapper) {
-        Object mapped = mapper.apply(value);
+    public ConfigNode mapLeaves(Path parentPath, ConfigValueMapper mapper) {
+        Object mapped = mapper.mapValue(parentPath.toString(), value);
         return Objects.equals(mapped, value)
                 ? this
                 : createNodeForValue(mapped);

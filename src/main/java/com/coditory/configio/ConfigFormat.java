@@ -4,6 +4,7 @@ import com.coditory.configio.api.ConfigException;
 import com.coditory.configio.api.ConfigParseException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.ByteArrayInputStream;
@@ -15,6 +16,7 @@ import java.util.*;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 enum ConfigFormat {
     YAML(List.of("yml", "yaml"), new YamlConfigParser()),
@@ -97,7 +99,9 @@ enum ConfigFormat {
 
         @Override
         public String stringify(Config config) {
-            Yaml yaml = new Yaml();
+            DumperOptions options = new DumperOptions();
+            options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+            Yaml yaml = new Yaml(options);
             return yaml.dump(config.toMap());
         }
     }
@@ -142,14 +146,9 @@ enum ConfigFormat {
             if (properties.isEmpty()) {
                 return Config.empty();
             }
-            List<Map.Entry<Object, Object>> entries = new ArrayList<>(properties.entrySet());
-            Map<String, Object> map = new LinkedHashMap<>();
-            // properties are read in reversed order
-            for (int i = entries.size() - 1; i >= 0; --i) {
-                Map.Entry<Object, Object> entry = entries.get(i);
-                String key = Objects.toString(entry.getKey());
-                map.put(key, entry.getValue());
-            }
+            Map<String, Object> map = properties.entrySet().stream()
+                    .map(entry -> Map.entry(Objects.toString(entry.getKey()), entry.getValue()))
+                    .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
             return Config.of(map);
         }
 

@@ -1,8 +1,12 @@
 package com.coditory.configio;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Function;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import static com.coditory.configio.ConfigNodeCreator.configNode;
@@ -64,11 +68,12 @@ class MapConfigNode implements ConfigNode {
     }
 
     @Override
-    public MapConfigNode mapLeaves(Function<Object, Object> mapper) {
+    public MapConfigNode mapLeaves(Path parentPath, ConfigValueMapper mapper) {
         HashMap<String, ConfigNode> result = new HashMap<>(values.size());
         boolean childModified = false;
         for (Entry<String, ConfigNode> entry : values.entrySet()) {
-            ConfigNode mapped = entry.getValue().mapLeaves(mapper);
+            Path path = parentPath.add(entry.getKey());
+            ConfigNode mapped = entry.getValue().mapLeaves(path, mapper);
             result.put(entry.getKey(), mapped);
             childModified = childModified || !Objects.equals(mapped, entry.getValue());
         }

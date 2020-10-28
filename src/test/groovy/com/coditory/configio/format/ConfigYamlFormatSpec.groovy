@@ -19,10 +19,12 @@ class ConfigYamlFormatSpec extends Specification {
     |a:
     |  b: B
     |  c:
-    |  - {d: D}
+    |  - d: D
     |  - C1
     |e: E
-    |f: [F0, F1]
+    |f:
+    |- F0
+    |- F1
     """.stripMargin().trim() + "\n"
 
     def "should serialize config to yaml"() {
@@ -37,5 +39,19 @@ class ConfigYamlFormatSpec extends Specification {
             Config result = ConfigFactory.parseYaml(yaml)
         then:
             result.toMap() == config.toMap()
+    }
+
+    def "should hide secrets"() {
+        when:
+            String result = ConfigFormatter.toYaml(Config.of([secret: "abc"]))
+        then:
+            result == """secret: '***'\n"""
+    }
+
+    def "should not hide secrets"() {
+        when:
+            String result = ConfigFormatter.toYamlWithSecretsExposed(Config.of([secret: "abc"]))
+        then:
+            result == """secret: abc\n"""
     }
 }
