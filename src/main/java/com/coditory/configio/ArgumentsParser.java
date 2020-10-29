@@ -8,10 +8,6 @@ import static com.coditory.configio.Preconditions.expectNonNull;
 class ArgumentsParser {
     private final Map<String, String> aliases;
 
-    ArgumentsParser() {
-        this(Map.of());
-    }
-
     ArgumentsParser(Map<String, String> aliases) {
         this.aliases = Map.copyOf(aliases);
     }

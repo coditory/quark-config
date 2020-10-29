@@ -8,7 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 class DurationParser {
-    private static final Pattern pattern = Pattern.compile("\\d+(\\.\\d+)?\\ *(ms|s|m|h)");
+    private static final Pattern pattern = Pattern.compile("\\d+(\\.\\d+)? *(ms|s|m|h)");
 
     static Duration parseDuration(String value) {
         if (value.startsWith("-P") || value.startsWith("P")) {

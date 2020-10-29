@@ -223,6 +223,10 @@ public class Config implements ConfigGetters {
         return root.isEmpty();
     }
 
+    public boolean isNotEmpty() {
+        return !isEmpty();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -237,7 +241,7 @@ public class Config implements ConfigGetters {
         return Objects.hash(valueParser, root);
     }
 
-    static class ConfigBuilder {
+    public static class ConfigBuilder {
         private MapConfigNode root = emptyRoot();
         private List<ValueParser> valueParsers = new ArrayList<>(DEFAULT_VALUE_PARSERS);
         private ConfigValueMapper secretHidingValueMapper = defaultSecretHidingValueMapper();
@@ -247,7 +251,9 @@ public class Config implements ConfigGetters {
 
         public ConfigBuilder withValueParser(ValueParser parser) {
             expectNonNull(parser, "parser");
+            List<ValueParser> valueParsers = new ArrayList<>(this.valueParsers);
             valueParsers.add(parser);
+            this.valueParsers = List.copyOf(valueParsers);
             return this;
         }
 
@@ -259,17 +265,12 @@ public class Config implements ConfigGetters {
 
         public ConfigBuilder withValueParsers(List<ValueParser> parsers) {
             expectNonNull(parsers, "parsers");
-            valueParsers = List.copyOf(parsers);
+            this.valueParsers = List.copyOf(parsers);
             return this;
         }
 
         public ConfigBuilder withSecretHidingValueMapper(ConfigValueMapper secretHidingValueMapper) {
-            secretHidingValueMapper = expectNonNull(secretHidingValueMapper, "secretHidingValueMapper");
-            return this;
-        }
-
-        public ConfigBuilder withConfigFormat(ConfigFormat configFormat) {
-            configFormat = expectNonNull(configFormat, "configFormat");
+            this.secretHidingValueMapper = expectNonNull(secretHidingValueMapper, "secretHidingValueMapper");
             return this;
         }
 
@@ -295,7 +296,7 @@ public class Config implements ConfigGetters {
                             "Expected non empty path to a named element. " +
                                     "Example: a.b. Got: " + path);
                 }
-                root = (MapConfigNode) root.addOrReplace(root(), path, value);
+                this.root = (MapConfigNode) root.addOrReplace(root(), path, value);
             }
             return this;
         }

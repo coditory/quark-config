@@ -66,7 +66,7 @@ class Path {
             throw new IllegalArgumentException("Could not parse path: " + fullPath +
                     ". Problematic chunk: " + chunk);
         }
-        return Arrays.stream(chunk.substring(1, chunk.length() - 1).split("\\]\\["))
+        return Arrays.stream(chunk.substring(1, chunk.length() - 1).split("]\\["))
                 .map(index -> parseIndex(fullPath, index))
                 .collect(toList());
     }

@@ -6,7 +6,7 @@ import java.util.Set;
 import static com.coditory.configio.Preconditions.expectNonBlank;
 import static com.coditory.configio.Preconditions.expectNonEmpty;
 
-class SecretHidingValueMapper implements ConfigValueMapper {
+public class SecretHidingValueMapper implements ConfigValueMapper {
     private static final String DEFAULT_SECRET_REPLACEMENT = "***";
     private static final Set<String> DEFAULT_SECRET_NAMES = Set.of(
             "password", "passwords",
@@ -24,7 +24,7 @@ class SecretHidingValueMapper implements ConfigValueMapper {
     private final Set<String> secretNames;
     private final String secretReplacement;
 
-    SecretHidingValueMapper(Set<String> secretNames, String secretReplacement) {
+    public SecretHidingValueMapper(Set<String> secretNames, String secretReplacement) {
         this.secretNames = Set.copyOf(expectNonEmpty(secretNames, "secretNames"));
         this.secretReplacement = expectNonBlank(secretReplacement, "secretReplacement");
     }
