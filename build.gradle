@@ -1,17 +1,20 @@
 plugins {
     id 'java'
     id 'groovy'
-    id 'com.coditory.build' version '0.1.7'
+    id 'com.coditory.build' version '0.1.9'
 }
 
 repositories {
     jcenter()
 }
 
+group = 'com.coditory.quark'
+description = 'Coditory Quark Configuration Library'
+
 dependencies {
-    implementation 'org.yaml:snakeyaml:1.26'
+    implementation 'org.yaml:snakeyaml:1.27'
     implementation 'com.google.code.gson:gson:2.8.6'
-    testImplementation 'org.spockframework:spock-core:2.0-M3-groovy-3.0'
+    testImplementation 'org.spockframework:spock-core:2.0-M4-groovy-3.0'
     testImplementation 'org.skyscreamer:jsonassert:1.5.0'
 }
 
@@ -24,16 +27,10 @@ tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
     // compile only changed files
     options.incremental = true
-    // skip JsonCreator from Jackson
-    options.compilerArgs << "-parameters"
     // error instead of warn on lint problems
     options.compilerArgs << "-Werror"
     options.compilerArgs << "-Xlint"
     options.compilerArgs << "-Xlint:-serial"
     options.compilerArgs << "-Xlint:-processing"
     options.compilerArgs << "-Xlint:-try"
-}
-
-tasks.withType(Test) {
-    useJUnitPlatform()
 }
