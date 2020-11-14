@@ -59,7 +59,7 @@ class ExpressionParser {
     }
 
     private static ExpressionNode parseExpression(String expression) {
-        List<String> chunks = QuotedSpliterator.splitBy(expression, "?:").stream()
+        List<String> chunks = QuotedSpliterator.splitBy(expression, "?").stream()
                 .map(String::trim)
                 .filter(it -> !it.isBlank())
                 .collect(toList());

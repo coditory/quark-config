@@ -15,6 +15,16 @@ public class ConfigFactory {
         return new ConfigApplicationLoader();
     }
 
+    public static Config loadApplicationConfig() {
+        return configApplicationLoader().load();
+    }
+
+    public static Config loadApplicationConfig(String... args) {
+        return configApplicationLoader()
+                .withArgs(args)
+                .load();
+    }
+
     public static Config buildFromSystemProperties() {
         LinkedHashMap<String, Object> result = new LinkedHashMap<>();
         for (Map.Entry<Object, Object> entry: System.getProperties().entrySet()) {

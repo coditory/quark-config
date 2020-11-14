@@ -52,7 +52,7 @@ class ConfigJsonFormatSpec extends Specification {
 
     def "should not hide secrets"() {
         when:
-            String result = ConfigFormatter.toJsonWithSecretsExposed(Config.of([secret: "abc"]))
+            String result = ConfigFormatter.toJsonWithExposedSecrets(Config.of([secret: "abc"]))
         then:
             assertEquals(result, """{ "secret": "abc" }""", true)
     }

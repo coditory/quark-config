@@ -128,4 +128,17 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
         then:
             config.toMap() == [a: "PROD"]
     }
+
+    def "should fail on unresolved expression"() {
+        given:
+            writeClasspathFile("application.yml", "a: \${x}")
+        when:
+            stubClassLoader {
+                configApplicationLoader()
+                        .load()
+            }
+        then:
+            UnresolvedConfigExpressionException e = thrown(UnresolvedConfigExpressionException)
+            e.message == "Unresolved config expression: \${x}"
+    }
 }

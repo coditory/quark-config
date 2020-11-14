@@ -2,6 +2,7 @@ package com.coditory.quark.config;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -27,6 +28,20 @@ public class Config implements ConfigGetters {
 
     public static Config empty() {
         return EMPTY;
+    }
+
+    public static Config of(String firstKey, Object firstValue, Object... otherEntries) {
+        expectNonBlank(firstKey);
+        expectNonNull(otherEntries);
+        Expectations.expect(otherEntries.length % 2 == 0, "Expected even entries. Got: ", 2 + otherEntries.length);
+        Map<String, Object> entries = new LinkedHashMap<>();
+        entries.put(firstKey, firstValue);
+        for (int i = 0; i < otherEntries.length / 2; i+= 2) {
+            expectNonNull(otherEntries[i], "config key");
+            String key = Objects.toString(otherEntries[i]);
+            entries.put(key, otherEntries[i + 1]);
+        }
+        return of(entries);
     }
 
     public static Config of(Map<String, ?> values) {
@@ -102,22 +117,32 @@ public class Config implements ConfigGetters {
         return withRoot(mergedRoot);
     }
 
-    public Config resolveExpressionsOrFail() {
-        return resolveExpressionsOrFail(Config.empty());
-    }
-
-    public Config resolveExpressionsOrFail(Config expressionsConfig) {
-        expectNonNull(expressionsConfig, "expressionsConfig");
-        return resolveExpressions(expressionsConfig, Expression::failOnUnresolved);
-    }
-
     public Config resolveExpressions() {
         return resolveExpressions(Config.empty());
     }
 
-    public Config resolveExpressions(Config variables) {
-        expectNonNull(variables, "variables");
-        return resolveExpressions(variables, Expression::unwrap);
+    public Config resolveExpressions(Map<String, Object> values) {
+        expectNonNull(values, "values");
+        return resolveExpressions(Config.of(values), Expression::failOnUnresolved);
+    }
+
+    public Config resolveExpressions(Config values) {
+        expectNonNull(values, "values");
+        return resolveExpressions(values, Expression::failOnUnresolved);
+    }
+
+    public Config resolveExpressionsOrSkip() {
+        return resolveExpressionsOrSkip(Config.empty());
+    }
+
+    public Config resolveExpressionsOrSkip(Config values) {
+        expectNonNull(values, "values");
+        return resolveExpressions(values, Expression::unwrap);
+    }
+
+    public Config resolveExpressionsOrSkip(Map<String, Object> values) {
+        expectNonNull(values, "values");
+        return resolveExpressions(Config.of(values), Expression::failOnUnresolved);
     }
 
     private Config resolveExpressions(Config variables, Function<Object, Object> leafMapper) {
@@ -239,6 +264,13 @@ public class Config implements ConfigGetters {
     @Override
     public int hashCode() {
         return Objects.hash(valueParser, root);
+    }
+
+    @Override
+    public String toString() {
+        return withHiddenSecrets()
+                .toMap()
+                .toString();
     }
 
     public static class ConfigBuilder {

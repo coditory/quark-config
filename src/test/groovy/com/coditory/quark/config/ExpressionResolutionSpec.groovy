@@ -11,7 +11,7 @@ class ExpressionResolutionSpec extends Specification {
                     .withValue("a.c", "C")
                     .build()
         when:
-            Config resolved = config.resolveExpressions()
+            Config resolved = config.resolveExpressionsOrSkip()
         then:
             resolved.toMap() == [
                     a: [
@@ -29,7 +29,7 @@ class ExpressionResolutionSpec extends Specification {
                     .withValue("a.d", "\${a.c}")
                     .build()
         when:
-            Config resolved = config.resolveExpressions()
+            Config resolved = config.resolveExpressionsOrSkip()
         then:
             resolved.toMap() == [
                     a: [
@@ -48,7 +48,7 @@ class ExpressionResolutionSpec extends Specification {
                     .withValue("a.d", "C-\${a.c}___B-\${a.b}")
                     .build()
         when:
-            Config resolved = config.resolveExpressions()
+            Config resolved = config.resolveExpressionsOrSkip()
         then:
             resolved.toMap() == [
                     a: [
@@ -65,7 +65,7 @@ class ExpressionResolutionSpec extends Specification {
                     .withValue("a.b", "\${a.b}")
                     .build()
         when:
-            Config resolved = config.resolveExpressions()
+            Config resolved = config.resolveExpressionsOrSkip()
         then:
             resolved.toMap() == [
                     a: [b: "\${a.b}"]
@@ -80,7 +80,7 @@ class ExpressionResolutionSpec extends Specification {
                     .withValue("a.d", "\${a.b}")
                     .build()
         when:
-            Config resolved = config.resolveExpressions()
+            Config resolved = config.resolveExpressionsOrSkip()
         then:
             resolved.toMap() == [
                     a: [
@@ -98,7 +98,7 @@ class ExpressionResolutionSpec extends Specification {
                     .withValue("a.d", "\${a.b}")
                     .build()
         when:
-            Config resolved = config.resolveExpressions()
+            Config resolved = config.resolveExpressionsOrSkip()
         then:
             resolved.toMap() == [
                     a: [
@@ -115,7 +115,7 @@ class ExpressionResolutionSpec extends Specification {
                     .withValue("b", "\${a}")
                     .build()
         when:
-            Config resolved = config.resolveExpressions()
+            Config resolved = config.resolveExpressionsOrSkip()
         then:
             resolved.getInteger("a") == 123
     }
@@ -123,10 +123,10 @@ class ExpressionResolutionSpec extends Specification {
     def "should resolve reference with a default"() {
         given:
             Config config = Config.builder()
-                    .withValue("a", "\${b ?: 'A'}")
+                    .withValue("a", "\${b ? 'A'}")
                     .build()
         when:
-            Config resolved = config.resolveExpressions()
+            Config resolved = config.resolveExpressionsOrSkip()
         then:
             resolved.toMap() == [a: "A"]
     }
@@ -135,10 +135,10 @@ class ExpressionResolutionSpec extends Specification {
     def "should resolve reference with two fallbacks: #variables"() {
         given:
             Config config = Config.builder()
-                    .withValue("a", "\${b ?: c ?: 'A'}")
+                    .withValue("a", "\${b ? c ? 'A'}")
                     .build()
         when:
-            Config resolved = config.resolveExpressions(Config.of(variables))
+            Config resolved = config.resolveExpressionsOrSkip(Config.of(variables))
         then:
             resolved.toMap() == expected
 
@@ -161,7 +161,7 @@ class ExpressionResolutionSpec extends Specification {
                     .withValue("a", expression)
                     .build()
         when:
-            Config resolved = config.resolveExpressions()
+            Config resolved = config.resolveExpressionsOrSkip()
         then:
             resolved.toMap() == [a: expression]
 
@@ -182,7 +182,7 @@ class ExpressionResolutionSpec extends Specification {
                     .withValue("a.b", "\${a.b}")
                     .build()
         when:
-            config.resolveExpressionsOrFail()
+            config.resolveExpressions()
         then:
             UnresolvedConfigExpressionException exception = thrown(UnresolvedConfigExpressionException)
             exception.message == "Unresolved config expression: \${a.b}"
@@ -194,7 +194,7 @@ class ExpressionResolutionSpec extends Specification {
                     .withValue("a.b", "\${a.d}")
                     .build()
         when:
-            config.resolveExpressionsOrFail()
+            config.resolveExpressions()
         then:
             UnresolvedConfigExpressionException exception = thrown(UnresolvedConfigExpressionException)
             exception.message == "Unresolved config expression: \${a.d}"

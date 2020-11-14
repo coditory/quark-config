@@ -30,6 +30,6 @@ class BigDecimalParsingSpec extends Specification {
     private BigDecimal parse(String value) {
         String name = "value"
         return Config.of(Map.of(name, value))
-                .getAs(BigDecimal, name)
+                .get(BigDecimal, name)
     }
 }
