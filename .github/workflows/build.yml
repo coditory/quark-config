@@ -90,5 +90,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           body: ${{ steps.changelog.outputs.description }}
-          tag_name: ${{ steps.changelog.outputs.version }}
-          release_name: Release ${{ steps.changelog.outputs.version }}
+          tag_name: v${{ steps.changelog.outputs.version }}
+          release_name: Release v${{ steps.changelog.outputs.version }}
