@@ -1,16 +1,12 @@
-rootProject.name = "quark-config"
-
 plugins {
-    id("com.gradle.enterprise").version("3.4.1")
+    id("com.gradle.enterprise").version("3.5")
 }
+
+rootProject.name = "quark-config"
 
 gradleEnterprise {
     buildScan {
         termsOfServiceUrl = "https://gradle.com/terms-of-service"
         termsOfServiceAgree = "yes"
-        if (!System.getenv("CI").isNullOrEmpty()) {
-            publishAlways()
-            tag("CI")
-        }
     }
 }
