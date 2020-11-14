@@ -50,7 +50,7 @@ class ConfigYamlFormatSpec extends Specification {
 
     def "should not hide secrets"() {
         when:
-            String result = ConfigFormatter.toYamlWithSecretsExposed(Config.of([secret: "abc"]))
+            String result = ConfigFormatter.toYamlWithExposedSecrets(Config.of([secret: "abc"]))
         then:
             result == """secret: abc\n"""
     }

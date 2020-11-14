@@ -13,7 +13,7 @@ class CustomParserSpec extends Specification {
                     .withValue("value", "someValue")
                     .build()
         when:
-            WrapperX result = config.getAs(WrapperX, "value")
+            WrapperX result = config.get(WrapperX, "value")
         then:
             result == new WrapperX("someValue")
     }
@@ -25,7 +25,7 @@ class CustomParserSpec extends Specification {
                     .withValue("value", "someValue")
                     .build()
         when:
-            WrapperX result = config.getAs(WrapperX, "value")
+            WrapperX result = config.get(WrapperX, "value")
         then:
             result == new WrapperY("someValue")
     }
@@ -38,7 +38,7 @@ class CustomParserSpec extends Specification {
                     .withValue("value", "someValue")
                     .build()
         when:
-            WrapperX result = config.getAs(WrapperX, "value")
+            WrapperX result = config.get(WrapperX, "value")
         then:
             result == new WrapperX("someValue1")
     }
@@ -50,7 +50,7 @@ class CustomParserSpec extends Specification {
                     .withValue("value", "someValue")
                     .build()
         when:
-            config.getAs(WrapperY, "value")
+            config.get(WrapperY, "value")
         then:
             thrown(ConfigValueConversionException)
     }

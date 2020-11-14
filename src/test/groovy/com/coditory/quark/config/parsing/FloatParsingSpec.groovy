@@ -30,6 +30,6 @@ class FloatParsingSpec extends Specification {
     private Float parse(String value) {
         String name = "value"
         return Config.of(Map.of(name, value))
-                .getAs(Float, name)
+                .get(Float, name)
     }
 }

@@ -8,7 +8,7 @@ import static com.coditory.quark.config.Expectations.expectNonNull;
 public class ConfigApplicationLoader {
     private String[] args = null;
     private String argsPrefix = "config";
-    private Map<String, String> argsAliases = Map.of();
+    private Map<String, String> argsAliases = Map.of("p", "profile");
     private String profileArgument = "profile";
     private String defaultProfile = "local";
     private String externalConfigFileArgument = "config.external";

@@ -42,6 +42,6 @@ class ZonedDateTimeParsingSpec extends Specification {
     private ZonedDateTime parse(String value) {
         String name = "value"
         return Config.of(Map.of(name, value))
-                .getAs(ZonedDateTime, name)
+                .get(ZonedDateTime, name)
     }
 }

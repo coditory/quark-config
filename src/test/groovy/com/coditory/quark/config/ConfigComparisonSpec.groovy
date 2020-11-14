@@ -30,9 +30,7 @@ class ConfigComparisonSpec extends Specification {
 
     def "configs with the same values and different parsers should differ"() {
         given:
-            Config config = Config.builder()
-                    .withValue("a", "A")
-                    .build()
+            Config config = Config.of("a", "A")
             Config other = Config.builder()
                     .withValue("a", "A")
                     .withValueParsers(List.of())
@@ -43,12 +41,8 @@ class ConfigComparisonSpec extends Specification {
 
     def "configs with different values and same parsers should differ"() {
         given:
-            Config config = Config.builder()
-                    .withValue("a", "A")
-                    .build()
-            Config other = Config.builder()
-                    .withValue("a", "B")
-                    .build()
+            Config config = Config.of("a", "A")
+            Config other = Config.of("a", "B")
         expect:
             config != other
     }

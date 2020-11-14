@@ -31,6 +31,6 @@ class ShortParsingSpec extends Specification {
     private Short parse(String value) {
         String name = "value"
         return Config.of(Map.of(name, value))
-                .getAs(Short, name)
+                .get(Short, name)
     }
 }

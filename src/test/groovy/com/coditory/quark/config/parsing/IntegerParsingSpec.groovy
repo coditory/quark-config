@@ -31,6 +31,6 @@ class IntegerParsingSpec extends Specification {
     private Integer parse(String value) {
         String name = "value"
         return Config.of(Map.of(name, value))
-                .getAs(Integer, name)
+                .get(Integer, name)
     }
 }

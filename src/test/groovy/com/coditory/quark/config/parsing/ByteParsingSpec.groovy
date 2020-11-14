@@ -31,6 +31,6 @@ class ByteParsingSpec extends Specification {
     private Byte parse(String value) {
         String name = "value"
         return Config.of(Map.of(name, value))
-                .getAs(Byte, name)
+                .get(Byte, name)
     }
 }
