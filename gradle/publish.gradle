@@ -14,12 +14,8 @@ nexusStaging {
 
 jar {
     from(rootProject.projectDir) {
-        include "LICENSE.md"
+        include "LICENSE"
         into "META-INF"
-        expand(
-                copyright: new Date().format("yyyy"),
-                version: project.version
-        )
     }
 }
 
@@ -58,15 +54,15 @@ publishing {
             pom {
                 name = archivesBaseName
                 description = project.description
-                url = 'https://github.com/coditory/coditory-common'
+                url = 'https://github.com/coditory/quark-config'
                 organization {
                     name = "Coditory"
                     url = "https://coditory.com"
                 }
                 licenses {
                     license {
-                        name = 'The Apache License, Version 2.0'
-                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        name = 'MIT License'
+                        url = 'https://opensource.org/licenses/MIT'
                     }
                 }
                 developers {
@@ -77,13 +73,13 @@ publishing {
                     }
                 }
                 scm {
-                    connection = 'scm:git@github.com:coditory/coditory-common.git'
-                    developerConnection = 'scm:git@github.com:coditory/coditory-common.git'
-                    url = 'https://github.com/coditory/coditory-common'
+                    connection = 'scm:git@github.com:coditory/quark-config.git'
+                    developerConnection = 'scm:git@github.com:coditory/quark-config.git'
+                    url = 'https://github.com/coditory/quark-config'
                 }
                 issueManagement {
                     system = "GitHub"
-                    url = "https://github.com/coditory/coditory-common/issues"
+                    url = "https://github.com/coditory/quark-config/issues"
                 }
             }
         }
