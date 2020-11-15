@@ -2,7 +2,7 @@ package com.coditory.quark.config;
 
 import java.util.Map;
 
-import static com.coditory.quark.config.Expectations.expectNonNull;
+import static com.coditory.quark.config.Preconditions.expectNonNull;
 
 class ConfigValue {
     private final Path path;

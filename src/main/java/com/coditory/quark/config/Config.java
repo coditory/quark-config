@@ -12,8 +12,9 @@ import java.util.function.Function;
 
 import static com.coditory.quark.config.ConfigValueParser.DEFAULT_VALUE_PARSERS;
 import static com.coditory.quark.config.ConfigValueParser.defaultConfigValueParser;
-import static com.coditory.quark.config.Expectations.expectNonBlank;
-import static com.coditory.quark.config.Expectations.expectNonNull;
+import static com.coditory.quark.config.Preconditions.expect;
+import static com.coditory.quark.config.Preconditions.expectNonBlank;
+import static com.coditory.quark.config.Preconditions.expectNonNull;
 import static com.coditory.quark.config.MissingConfigValueException.missingConfigValueForPath;
 import static com.coditory.quark.config.SecretHidingValueMapper.defaultSecretHidingValueMapper;
 import static java.util.Map.entry;
@@ -33,7 +34,7 @@ public class Config implements ConfigGetters {
     public static Config of(String firstKey, Object firstValue, Object... otherEntries) {
         expectNonBlank(firstKey);
         expectNonNull(otherEntries);
-        Expectations.expect(otherEntries.length % 2 == 0, "Expected even entries. Got: ", 2 + otherEntries.length);
+        expect(otherEntries.length % 2 == 0, "Expected even entries. Got: ", 2 + otherEntries.length);
         Map<String, Object> entries = new LinkedHashMap<>();
         entries.put(firstKey, firstValue);
         for (int i = 0; i < otherEntries.length / 2; i+= 2) {

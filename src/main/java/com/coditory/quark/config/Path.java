@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import static com.coditory.quark.config.Expectations.expectNonBlank;
+import static com.coditory.quark.config.Preconditions.expectNonBlank;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 

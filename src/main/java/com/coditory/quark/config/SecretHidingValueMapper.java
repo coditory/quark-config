@@ -3,8 +3,8 @@ package com.coditory.quark.config;
 import java.util.Arrays;
 import java.util.Set;
 
-import static com.coditory.quark.config.Expectations.expectNonBlank;
-import static com.coditory.quark.config.Expectations.expectNonEmpty;
+import static com.coditory.quark.config.Preconditions.expectNonBlank;
+import static com.coditory.quark.config.Preconditions.expectNonEmpty;
 
 public class SecretHidingValueMapper implements ConfigValueMapper {
     private static final String DEFAULT_SECRET_REPLACEMENT = "***";

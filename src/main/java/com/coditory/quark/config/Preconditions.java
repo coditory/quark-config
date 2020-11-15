@@ -3,13 +3,11 @@ package com.coditory.quark.config;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import static java.lang.String.format;
 
-final class Expectations {
-    private Expectations() {
+final class Preconditions {
+    private Preconditions() {
         throw new IllegalStateException("Do not instantiate utility class");
     }
 
@@ -17,22 +15,6 @@ final class Expectations {
         if (!valid) {
             throw new IllegalArgumentException(format(message, args));
         }
-    }
-
-    @SafeVarargs
-    public static <T> T expectAll(T value, String name, BiFunction<T, String, T>... expects) {
-        for (BiFunction<T, String, T> expect : expects) {
-            expect.apply(value, name);
-        }
-        return value;
-    }
-
-    @SafeVarargs
-    public static <T> T expectAll(T value, Function<T, T>... expects) {
-        for (Function<T, T> expect : expects) {
-            expect.apply(value);
-        }
-        return value;
     }
 
     public static <T> T expectNonNull(T value) {
@@ -78,42 +60,6 @@ final class Expectations {
     public static <K, V, M extends Map<K, V>> M expectNonEmpty(M value, String name) {
         if (value == null || value.isEmpty()) {
             String message = message("Expected non-empty map", name, value);
-            throw new IllegalArgumentException(message);
-        }
-        return value;
-    }
-
-    public static int expectPositive(int value) {
-        return expectPositive(value, null);
-    }
-
-    public static int expectPositive(int value, String name) {
-        if (value <= 0) {
-            String message = message("Expected positive int", name, value);
-            throw new IllegalArgumentException(message);
-        }
-        return value;
-    }
-
-    public static int expectNegative(int value) {
-        return expectPositive(value, null);
-    }
-
-    public static int expectNegative(int value, String name) {
-        if (value >= 0) {
-            String message = message("Expected negative int", name, value);
-            throw new IllegalArgumentException(message);
-        }
-        return value;
-    }
-
-    public static int expectNonNegative(int value) {
-        return expectPositive(value, null);
-    }
-
-    public static int expectNonNegative(int value, String name) {
-        if (value < 0) {
-            String message = message("Expected non-negative int", name, value);
             throw new IllegalArgumentException(message);
         }
         return value;

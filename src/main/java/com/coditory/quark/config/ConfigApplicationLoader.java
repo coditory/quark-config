@@ -2,8 +2,8 @@ package com.coditory.quark.config;
 
 import java.util.Map;
 
-import static com.coditory.quark.config.Expectations.expectNonBlank;
-import static com.coditory.quark.config.Expectations.expectNonNull;
+import static com.coditory.quark.config.Preconditions.expectNonBlank;
+import static com.coditory.quark.config.Preconditions.expectNonNull;
 
 public class ConfigApplicationLoader {
     private String[] args = null;

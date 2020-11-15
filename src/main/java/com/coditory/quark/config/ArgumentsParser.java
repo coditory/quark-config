@@ -3,7 +3,7 @@ package com.coditory.quark.config;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.coditory.quark.config.Expectations.expectNonNull;
+import static com.coditory.quark.config.Preconditions.expectNonNull;
 
 class ArgumentsParser {
     private final Map<String, String> aliases;
@@ -13,7 +13,7 @@ class ArgumentsParser {
     }
 
     public final Map<String, Object> parse(String... args) {
-        Expectations.expectNonNull(args, "args");
+        expectNonNull(args, "args");
         Map<String, Object> result = new HashMap<>();
         int i = 0;
         while (i < args.length) {
