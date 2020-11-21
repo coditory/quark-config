@@ -4,17 +4,13 @@ plugins {
     id 'jacoco'
     id 'signing'
     id 'com.github.kt3k.coveralls' version '2.10.2'
-    id 'com.coditory.build' version '0.1.10'
+    id 'com.coditory.build' version '0.1.11'
     id 'io.codearte.nexus-staging' version '0.22.0' apply false
     id 'de.marcphilipp.nexus-publish' version '0.4.0' apply false
 }
 
 group = 'com.coditory.quark'
 description = 'Coditory Quark Configuration Library'
-
-repositories {
-    mavenCentral()
-}
 
 dependencies {
     implementation 'org.yaml:snakeyaml:1.27'
@@ -25,37 +21,6 @@ dependencies {
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11
-}
-
-jacocoTestReport {
-    executionData(fileTree(project.buildDir).include("jacoco/*.exec"))
-    reports {
-        xml.enabled = true
-        html.enabled = true
-    }
-}
-
-javadoc {
-    source = sourceSets.main.allJava
-    classpath = configurations.compileClasspath
-    failOnError = false
-    options {
-        memberLevel = JavadocMemberLevel.PUBLIC
-        author = true
-    }
-}
-
-tasks.withType(JavaCompile) {
-    // make all test/main builds use UTF-8
-    options.encoding = 'UTF-8'
-    // compile only changed files
-    options.incremental = true
-    // error instead of warn on lint problems
-    options.compilerArgs << "-Werror"
-    options.compilerArgs << "-Xlint"
-    options.compilerArgs << "-Xlint:-serial"
-    options.compilerArgs << "-Xlint:-processing"
-    options.compilerArgs << "-Xlint:-try"
 }
 
 if (project.hasProperty('publish')) {
