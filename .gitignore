@@ -1,15 +1,10 @@
-# Intellij Idea project files
-.idea
-!.idea/codeStyles
-*.iml
-*.ipr
-*.iws
-
 # Gradle
 build
 .gradle
 !gradle/wrapper/gradle-wrapper.jar
 
-# Project binaries
+# IntelliJ
 out
-classes
+*.iml
+.idea/*
+!.idea/codeStyles
