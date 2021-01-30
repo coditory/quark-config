@@ -257,12 +257,12 @@ ConfigFactory.parseYaml(yaml);
 ConfigFactory.parseJson(json);
 ConfigFactory.parseProperties(properties);
 
-// fomatting a config
+// formatting a config
 ConfigFormatter.toYaml(config);
 ConfigFormatter.toJson(config);
 ConfigFormatter.toProperties(config);
 
-// fomatting a config with exposed secrets
+// formatting a config with exposed secrets
 ConfigFormatter.toYamlWithExposedSecrets(config);
 ConfigFormatter.toJsonWithExposedSecrets(config);
 ConfigFormatter.toPropertiesWithExposedSecrets(config);

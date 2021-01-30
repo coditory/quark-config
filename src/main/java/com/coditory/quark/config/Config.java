@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.coditory.quark.config.ConfigValueParser.DEFAULT_VALUE_PARSERS;
 import static com.coditory.quark.config.ConfigValueParser.defaultConfigValueParser;
@@ -272,6 +273,12 @@ public class Config implements ConfigGetters {
         return withHiddenSecrets()
                 .toMap()
                 .toString();
+    }
+
+    public Map<String, Object> toFlatMap() {
+        return root.entries().stream()
+                .map(entry -> entry(entry.getKey().toString(), entry.getValue()))
+                .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
     }
 
     public static class ConfigBuilder {
