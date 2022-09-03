@@ -5,7 +5,7 @@
 
 > Quark Config is a lightweight and single purpose java library for loading and manipulating configurations
 
-The idea behind was to create a configuration library,
+The idea behind this was to create a configuration library,
 similar to the one created in [Spring Boot](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-external-config)
 of [typesafe](https://github.com/lightbend/config), that is:
 - lightweight, without a burden of a framework
@@ -14,7 +14,7 @@ of [typesafe](https://github.com/lightbend/config), that is:
 - hides secrets when formatting to string
 - provides basic expressions for references and default values
 - provides a collection of parsers for values such as `java.util.Duration`
-- loads an application multi source config with a one-liner
+- loads an application multi-source config with a one-liner
 
 ## Installation
 
@@ -100,7 +100,7 @@ For more examples see the [test cases](src/integration/groovy/com/coditory/quark
 
 #### Config resolution variables
 
-You can use following expression variables to resolve an application config:
+You can use the following expression variables to resolve an application config:
 - `${env.*}` - all system variables from `System.getenv()`
 - `${system.*}` - all system variables from `System.getProperties()`
 - `${args.*}` - all arguments
@@ -116,7 +116,7 @@ Config.of(
     "application.port", 8080
 );
 
-// Create from map
+// Create from a map
 Config.of(Map.of("application.port", 8080));
 
 // Create empty config and add value
@@ -132,7 +132,7 @@ Config.builder()
     .build();
 ```
 
-Config object is immutable. Every time you add a value to a config, new instance is returned:
+The config object is immutable. Every time you add a value to a config, a new config instance is returned:
 ```java
 Config c1 = Config.of("application.port", 8080);
 Config c2 = c1.withValue("application.name", "best-app");
@@ -167,20 +167,20 @@ Config.of(
     "timestamp", "2007-12-03T10:15:30.00Z"
 )
 assert config.getInteger("port") == 8080
-assert config.getInteger("timeout") == Duration.parse("PT1S")
-assert config.getInteger("locale") == new Locale("pl", "PL")
-assert config.getInteger("currency") == Currency.getInstance("PLN")
-assert config.getInteger("timestamp") == Instant.parse("2007-12-03T10:15:30.00Z")
+assert config.getDuration("timeout") == Duration.parse("PT1S")
+assert config.getLocale("locale") == new Locale("pl", "PL")
+assert config.getCurrency("currency") == Currency.getInstance("PLN")
+assert config.getInstant("timestamp") == Instant.parse("2007-12-03T10:15:30.00Z")
 ```
 
-Resolving a subconfig:
+Resolving a sub-config:
 ```java
 Config applicationConfig = config.getSubConfig("application")
 applicationConfig.getInteger("port")
 ```
 
 ### Merging configs
-Two config objects can be merged together:
+Two config objects can be merged:
 
 ```java
 Config config = Config.of(
@@ -201,7 +201,7 @@ config.withValues(other);
 
 ### Config expressions
 
-Config values can use som basic expressions:
+Config values can use some basic expressions:
 ```java
 // Config with references to other value
 Config.builder()
@@ -233,12 +233,13 @@ Config
 
 ### Load config from file
 
-Config can be loaded from:
+The config can be loaded from:
 - classpath file
-- file from file system
+- file from the file system
 
-You don need to specify extension of the configuration file.
+You don't need to specify an extension of the configuration file.
 Quark Config will automatically look for: `*.yml`, `*.yaml`, `*.json`, `*.properties`
+
 ```java
 ConfigFactory.loadFromClasspath("custom-config");
 ConfigFactory.loadFromFileSystem("custom-config");
@@ -246,7 +247,7 @@ ConfigFactory.loadFromFileSystem("custom-config");
 
 ### Parsing and formatting a config
 
-Quarkus Config supports following formats:
+Quark Config supports the following formats:
 - yaml
 - json
 - properties
