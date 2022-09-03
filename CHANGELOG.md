@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+### Changed
+- Update dependencies
 
 ## [0.1.2] - 2021-05-02
 ### Changed
