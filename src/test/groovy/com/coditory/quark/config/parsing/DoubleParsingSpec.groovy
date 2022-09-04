@@ -27,9 +27,29 @@ class DoubleParsingSpec extends Specification {
             value << ["0.0001a", "-a0.0001"]
     }
 
+    def "should parse List of Doubles"() {
+        expect:
+            parseList(["0.0001", "-0.0001"]) == [
+                    0.0001d, -0.0001d
+            ]
+    }
+
+    def "should not parse a list of invalid Doubles"() {
+        when:
+            parseList(["0.0001a", "1"])
+        then:
+            thrown(ConfigValueConversionException)
+    }
+
     private Double parse(String value) {
         String name = "value"
         return Config.of(Map.of(name, value))
                 .get(Double, name)
+    }
+
+    private List<Double> parseList(List<String> values) {
+        String name = "value"
+        return Config.of(Map.of(name, values))
+                .getList(Double, name)
     }
 }

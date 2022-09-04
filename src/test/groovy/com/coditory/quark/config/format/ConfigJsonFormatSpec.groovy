@@ -56,4 +56,11 @@ class ConfigJsonFormatSpec extends Specification {
         then:
             assertEquals(result, """{ "secret": "abc" }""", true)
     }
+
+    def "should deserialize list"() {
+        when:
+            Config result = ConfigFactory.parseJson(json)
+        then:
+            result.getStringList("f") == ["F0", "F1"]
+    }
 }

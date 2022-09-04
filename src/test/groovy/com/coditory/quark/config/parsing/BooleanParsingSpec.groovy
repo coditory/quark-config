@@ -26,9 +26,29 @@ class BooleanParsingSpec extends Specification {
             value << ["TrUee", "fFaLsE", "1", "2"]
     }
 
+    def "should parse List of Booleans"() {
+        expect:
+            parseList(["TrUe", "true", "false"]) == [
+                    true, true, false
+            ]
+    }
+
+    def "should not parse a list of invalid Booleans"() {
+        when:
+            parseList(["TrUee", "true"])
+        then:
+            thrown(ConfigValueConversionException)
+    }
+
     private Boolean parse(String value) {
         String name = "value"
         return Config.of(Map.of(name, value))
                 .get(Boolean, name)
+    }
+
+    private List<Boolean> parseList(List<String> values) {
+        String name = "value"
+        return Config.of(Map.of(name, values))
+                .getList(Boolean, name)
     }
 }

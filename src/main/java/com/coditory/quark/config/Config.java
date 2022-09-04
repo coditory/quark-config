@@ -13,10 +13,10 @@ import java.util.stream.Collectors;
 
 import static com.coditory.quark.config.ConfigValueParser.DEFAULT_VALUE_PARSERS;
 import static com.coditory.quark.config.ConfigValueParser.defaultConfigValueParser;
+import static com.coditory.quark.config.MissingConfigValueException.missingConfigValueForPath;
 import static com.coditory.quark.config.Preconditions.expect;
 import static com.coditory.quark.config.Preconditions.expectNonBlank;
 import static com.coditory.quark.config.Preconditions.expectNonNull;
-import static com.coditory.quark.config.MissingConfigValueException.missingConfigValueForPath;
 import static com.coditory.quark.config.SecretHidingValueMapper.defaultSecretHidingValueMapper;
 import static java.util.Map.entry;
 import static java.util.stream.Collectors.toList;
@@ -38,7 +38,7 @@ public class Config implements ConfigGetters {
         expect(otherEntries.length % 2 == 0, "Expected even entries. Got: ", 2 + otherEntries.length);
         Map<String, Object> entries = new LinkedHashMap<>();
         entries.put(firstKey, firstValue);
-        for (int i = 0; i < otherEntries.length / 2; i+= 2) {
+        for (int i = 0; i < otherEntries.length / 2; i += 2) {
             expectNonNull(otherEntries[i], "config key");
             String key = Objects.toString(otherEntries[i]);
             entries.put(key, otherEntries[i + 1]);
@@ -227,6 +227,12 @@ public class Config implements ConfigGetters {
         return root.getOptionalNode(Path.parse(path))
                 .filter(node -> node instanceof MapConfigNode)
                 .map(node -> withRoot((MapConfigNode) node));
+    }
+
+    @Override
+    public <T> Optional<List<T>> getListAsOptional(Class<T> type, String path) {
+        return getOptional(path)
+                .map(value -> value.getAsList(valueParser, type));
     }
 
     @Override

@@ -28,9 +28,29 @@ class LongParsingSpec extends Specification {
             value << ["100a", "-a100", "1.0", "0.1"]
     }
 
+    def "should parse List of Longs"() {
+        expect:
+            parseList(["0", "-1", "1"]) == [
+                    0L, -1L, 1L
+            ]
+    }
+
+    def "should not parse a list of invalid Longs"() {
+        when:
+            parseList(["100a", "1"])
+        then:
+            thrown(ConfigValueConversionException)
+    }
+
     private Long parse(String value) {
         String name = "value"
         return Config.of(Map.of(name, value))
                 .get(Long, name)
+    }
+
+    private List<Long> parseList(List<String> values) {
+        String name = "value"
+        return Config.of(Map.of(name, values))
+                .getList(Long, name)
     }
 }

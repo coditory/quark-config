@@ -54,4 +54,11 @@ class ConfigYamlFormatSpec extends Specification {
         then:
             result == """secret: abc\n"""
     }
+
+    def "should deserialize list"() {
+        when:
+            Config result = ConfigFactory.parseYaml(yaml)
+        then:
+            result.getStringList("f") == ["F0", "F1"]
+    }
 }

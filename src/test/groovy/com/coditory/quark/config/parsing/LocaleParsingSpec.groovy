@@ -31,9 +31,31 @@ class LocaleParsingSpec extends Specification {
             ]
     }
 
+
+    def "should parse List of Locales"() {
+        expect:
+            parseList(["pl_PL", "en-US"]) == [
+                    new Locale("pl", "PL"),
+                    new Locale("en", "US")
+            ]
+    }
+
+    def "should not parse a list of invalid Locales"() {
+        when:
+            parseList(["plll", "pl_PL"])
+        then:
+            thrown(ConfigValueConversionException)
+    }
+
     private Locale parse(String value) {
         String name = "value"
         return Config.of(Map.of(name, value))
                 .get(Locale, name)
+    }
+
+    private List<Locale> parseList(List<String> values) {
+        String name = "value"
+        return Config.of(Map.of(name, values))
+                .getList(Locale, name)
     }
 }

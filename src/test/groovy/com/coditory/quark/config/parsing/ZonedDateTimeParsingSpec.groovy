@@ -35,6 +35,21 @@ class ZonedDateTimeParsingSpec extends Specification {
             ]
     }
 
+    def "should parse List of ZonedDateTimes"() {
+        expect:
+            parseList(["2011-12-03T10:15:30+01", "2007-12-03T10:15:00+01"]) == [
+                    zonedDateTime("2011-12-03T10:15:30+01"),
+                    zonedDateTime("2007-12-03T10:15:00+01")
+            ]
+    }
+
+    def "should not parse a list of invalid ZonedDateTimes"() {
+        when:
+            parseList(["2007-12-03T10:15:00+01", "2011-12-03T10:15+1"])
+        then:
+            thrown(ConfigValueConversionException)
+    }
+
     static private ZonedDateTime zonedDateTime(String value) {
         return ZonedDateTime.parse(value, ISO_OFFSET_DATE_TIME)
     }
@@ -43,5 +58,11 @@ class ZonedDateTimeParsingSpec extends Specification {
         String name = "value"
         return Config.of(Map.of(name, value))
                 .get(ZonedDateTime, name)
+    }
+
+    private List<ZonedDateTime> parseList(List<String> values) {
+        String name = "value"
+        return Config.of(Map.of(name, values))
+                .getList(ZonedDateTime, name)
     }
 }

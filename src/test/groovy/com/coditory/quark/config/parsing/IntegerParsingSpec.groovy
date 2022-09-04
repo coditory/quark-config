@@ -28,9 +28,29 @@ class IntegerParsingSpec extends Specification {
             value << ["100a", "-a100", "1.0", "0.1"]
     }
 
+    def "should parse List of Integers"() {
+        expect:
+            parseList(["0", "-1", "1"]) == [
+                    0, -1, 1
+            ]
+    }
+
+    def "should not parse a list of invalid Integers"() {
+        when:
+            parseList(["100a", "1"])
+        then:
+            thrown(ConfigValueConversionException)
+    }
+
     private Integer parse(String value) {
         String name = "value"
         return Config.of(Map.of(name, value))
                 .get(Integer, name)
+    }
+
+    private List<Integer> parseList(List<String> values) {
+        String name = "value"
+        return Config.of(Map.of(name, values))
+                .getList(Integer, name)
     }
 }

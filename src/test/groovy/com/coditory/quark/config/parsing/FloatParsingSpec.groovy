@@ -27,9 +27,29 @@ class FloatParsingSpec extends Specification {
             value << ["0.0001a", "-a0.0001"]
     }
 
+    def "should parse List of Floats"() {
+        expect:
+            parseList(["0.0001", "-0.0001"]) == [
+                    0.0001f, -0.0001f
+            ]
+    }
+
+    def "should not parse a list of invalid Floats"() {
+        when:
+            parseList(["0.0001a", "1"])
+        then:
+            thrown(ConfigValueConversionException)
+    }
+
     private Float parse(String value) {
         String name = "value"
         return Config.of(Map.of(name, value))
                 .get(Float, name)
+    }
+
+    private List<Float> parseList(List<String> values) {
+        String name = "value"
+        return Config.of(Map.of(name, values))
+                .getList(Float, name)
     }
 }

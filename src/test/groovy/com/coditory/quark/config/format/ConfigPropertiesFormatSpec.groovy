@@ -51,4 +51,11 @@ class ConfigPropertiesFormatSpec extends Specification {
         then:
             result == """secret=abc\n"""
     }
+
+    def "should deserialize list"() {
+        when:
+            Config result = ConfigFactory.parseProperties(properties)
+        then:
+            result.getStringList("f") == ["F0", "F1"]
+    }
 }

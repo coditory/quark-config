@@ -16,9 +16,22 @@ class StringParsingSpec extends Specification {
             "some text"               || "some text"
     }
 
+    def "should parse List of Strings"() {
+        expect:
+            parseList(["abc", "Def123"]) == [
+                    "abc", "Def123"
+            ]
+    }
+
     private String parse(String value) {
         String name = "value"
         return Config.of(Map.of(name, value))
                 .get(String, name)
+    }
+
+    private List<String> parseList(List<String> values) {
+        String name = "value"
+        return Config.of(Map.of(name, values))
+                .getList(String, name)
     }
 }

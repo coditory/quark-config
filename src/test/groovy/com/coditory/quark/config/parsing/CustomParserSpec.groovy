@@ -18,6 +18,18 @@ class CustomParserSpec extends Specification {
             result == new WrapperX("someValue")
     }
 
+    def "should parse a list using custom parser"() {
+        given:
+            Config config = Config.builder()
+                    .withValueParser(ValueParser.forType(WrapperX, { new WrapperX(it) }))
+                    .withValue("value", ["someValue", "someOtherValue"])
+                    .build()
+        when:
+            List<WrapperX> result = config.getList(WrapperX, "value")
+        then:
+            result == [new WrapperX("someValue"), new WrapperX("someOtherValue")]
+    }
+
     def "should parse subtype value using custom parser"() {
         given:
             Config config = Config.builder()

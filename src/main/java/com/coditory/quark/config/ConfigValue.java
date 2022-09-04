@@ -1,8 +1,11 @@
 package com.coditory.quark.config;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static com.coditory.quark.config.Preconditions.expectNonNull;
+import static java.util.stream.Collectors.toList;
 
 class ConfigValue {
     private final Path path;
@@ -25,6 +28,22 @@ class ConfigValue {
             return (T) value;
         }
         return getOrParse(valueParser, type);
+    }
+
+    @SuppressWarnings("unchecked")
+    <T> List<T> getAsList(ConfigValueParser valueParser, Class<T> type) {
+        if (!(value instanceof List)) {
+            throw new ConfigValueConversionException(List.class, path.toString(), value);
+        }
+        List<Object> rawValues = (List<Object>) value;
+        List<ConfigValue> values = new ArrayList<>();
+        for (int i = 0; i < rawValues.size(); ++i) {
+            Object rawValue = rawValues.get(i);
+            values.add(new ConfigValue(path.add(i), rawValue));
+        }
+        return values.stream()
+                .map(v -> v.getAs(valueParser, type))
+                .collect(toList());
     }
 
     @SuppressWarnings("unchecked")

@@ -28,9 +28,29 @@ class ByteParsingSpec extends Specification {
             value << ["100a", "-a100", "1.0", "0.1"]
     }
 
+    def "should parse List of Bytes"() {
+        expect:
+            parseList(["0", "-1", "1"]) == [
+                    0, -1, 1
+            ] as List<Byte>
+    }
+
+    def "should not parse a list of invalid Bytes"() {
+        when:
+            parseList(["100a", "1"])
+        then:
+            thrown(ConfigValueConversionException)
+    }
+
     private Byte parse(String value) {
         String name = "value"
         return Config.of(Map.of(name, value))
                 .get(Byte, name)
+    }
+
+    private List<Byte> parseList(List<String> values) {
+        String name = "value"
+        return Config.of(Map.of(name, values))
+                .getList(Byte, name)
     }
 }

@@ -27,9 +27,31 @@ class BigDecimalParsingSpec extends Specification {
             value << ["0.0001a", "-a0.0001"]
     }
 
+    def "should parse List of BigDecimals"() {
+        expect:
+            parseList(["0.0001", "-0.0001", "123123.03"]) == [
+                    new BigDecimal("0.0001"),
+                    new BigDecimal("-0.0001"),
+                    new BigDecimal("123123.03")
+            ]
+    }
+
+    def "should not parse a list of invalid BigDecimals"() {
+        when:
+            parseList(["0.0001", "0.0001a"])
+        then:
+            thrown(ConfigValueConversionException)
+    }
+
     private BigDecimal parse(String value) {
         String name = "value"
         return Config.of(Map.of(name, value))
                 .get(BigDecimal, name)
+    }
+
+    private List<BigDecimal> parseList(List<String> values) {
+        String name = "value"
+        return Config.of(Map.of(name, values))
+                .getList(BigDecimal, name)
     }
 }

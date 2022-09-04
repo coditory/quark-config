@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Currency;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -12,6 +13,8 @@ import static com.coditory.quark.config.MissingConfigValueException.missingConfi
 
 interface ConfigGetters {
     <T> Optional<T> getAsOptional(Class<T> type, String path);
+
+    <T> Optional<List<T>> getListAsOptional(Class<T> type, String path);
 
     default <T> T get(Class<T> type, String path) {
         return getAsOptional(type, path)
@@ -24,6 +27,19 @@ interface ConfigGetters {
 
     default <T> T get(Class<T> type, String path, T defaultValue) {
         return getAsOptional(type, path).orElse(defaultValue);
+    }
+
+    default <T> List<T> getList(Class<T> type, String path) {
+        return getListAsOptional(type, path)
+                .orElseThrow(() -> missingConfigValueForPath(path));
+    }
+
+    default <T> List<T> getListOrNull(Class<T> type, String path) {
+        return getList(type, path, null);
+    }
+
+    default <T> List<T> getList(Class<T> type, String path, List<T> defaultValue) {
+        return getListAsOptional(type, path).orElse(defaultValue);
     }
 
     // GETTERS
@@ -313,5 +329,295 @@ interface ConfigGetters {
         return getCurrencyAsOptional(path).orElse(defaultValue);
     }
 
+    // LIST GETTERS
+
+    // String List API
+
+    default Optional<List<String>> getStringListAsOptional(String path) {
+        return getListAsOptional(String.class, path);
+    }
+
+    default List<String> getStringList(String path) {
+        return getStringListAsOptional(path)
+                .orElseThrow(() -> missingConfigValueForPath(path));
+    }
+
+    default List<String> getStringListOrNull(String path) {
+        return getStringList(path, null);
+    }
+
+    default List<String> getStringListOrEmpty(String path) {
+        return getStringList(path, List.of());
+    }
+
+    default List<String> getStringList(String path, List<String> defaultValue) {
+        return getStringListAsOptional(path).orElse(defaultValue);
+    }
+
+    // Object List API
+
+    default Optional<List<Object>> getObjectListAsOptional(String path) {
+        return getListAsOptional(Object.class, path);
+    }
+
+    default List<Object> getObjectList(String path) {
+        return getObjectListAsOptional(path)
+                .orElseThrow(() -> missingConfigValueForPath(path));
+    }
+
+    default List<Object> getObjectListOrNull(String path) {
+        return getObjectList(path, null);
+    }
+
+    default List<Object> getObjectList(String path, List<Object> defaultValue) {
+        return getObjectListAsOptional(path).orElse(defaultValue);
+    }
+
+    // Boolean List API
+
+    default Optional<List<Boolean>> getBooleanListAsOptional(String path) {
+        return getListAsOptional(Boolean.class, path);
+    }
+
+    default List<Boolean> getBooleanList(String path) {
+        return getBooleanListAsOptional(path)
+                .orElseThrow(() -> missingConfigValueForPath(path));
+    }
+
+    default List<Boolean> getBooleanListOrNull(String path) {
+        return getBooleanList(path, null);
+    }
+
+    default List<Boolean> getBooleanList(String path, List<Boolean> defaultValue) {
+        return getBooleanListAsOptional(path).orElse(defaultValue);
+    }
+
+    // Short List API
+
+    default Optional<List<Short>> getShortListAsOptional(String path) {
+        return getListAsOptional(Short.class, path);
+    }
+
+    default List<Short> getShortList(String path) {
+        return getShortListAsOptional(path)
+                .orElseThrow(() -> missingConfigValueForPath(path));
+    }
+
+    default List<Short> getShortListOrNull(String path) {
+        return getShortList(path, null);
+    }
+
+    default List<Short> getShortList(String path, List<Short> defaultValue) {
+        return getShortListAsOptional(path).orElse(defaultValue);
+    }
+
+    // Byte List API
+
+    default Optional<List<Byte>> getByteListAsOptional(String path) {
+        return getListAsOptional(Byte.class, path);
+    }
+
+    default List<Byte> getByteList(String path) {
+        return getByteListAsOptional(path)
+                .orElseThrow(() -> missingConfigValueForPath(path));
+    }
+
+    default List<Byte> getByteListOrNull(String path) {
+        return getByteList(path, null);
+    }
+
+    default List<Byte> getByteList(String path, List<Byte> defaultValue) {
+        return getByteListAsOptional(path).orElse(defaultValue);
+    }
+
+    // Integer List API
+
+    default Optional<List<Integer>> getIntegerListAsOptional(String path) {
+        return getListAsOptional(Integer.class, path);
+    }
+
+    default List<Integer> getIntegerList(String path) {
+        return getIntegerListAsOptional(path)
+                .orElseThrow(() -> missingConfigValueForPath(path));
+    }
+
+    default List<Integer> getIntegerListOrNull(String path) {
+        return getIntegerList(path, null);
+    }
+
+    default List<Integer> getIntegerList(String path, List<Integer> defaultValue) {
+        return getIntegerListAsOptional(path).orElse(defaultValue);
+    }
+
+    // Long List API
+
+    default Optional<List<Long>> getLongListAsOptional(String path) {
+        return getListAsOptional(Long.class, path);
+    }
+
+    default List<Long> getLongList(String path) {
+        return getLongListAsOptional(path)
+                .orElseThrow(() -> missingConfigValueForPath(path));
+    }
+
+    default List<Long> getLongListOrNull(String path) {
+        return getLongList(path, null);
+    }
+
+    default List<Long> getLongList(String path, List<Long> defaultValue) {
+        return getLongListAsOptional(path).orElse(defaultValue);
+    }
+
+    // Float List API
+
+    default Optional<List<Float>> getFloatListAsOptional(String path) {
+        return getListAsOptional(Float.class, path);
+    }
+
+    default List<Float> getFloatList(String path) {
+        return getFloatListAsOptional(path)
+                .orElseThrow(() -> missingConfigValueForPath(path));
+    }
+
+    default List<Float> getFloatListOrNull(String path) {
+        return getFloatList(path, null);
+    }
+
+    default List<Float> getFloatList(String path, List<Float> defaultValue) {
+        return getFloatListAsOptional(path).orElse(defaultValue);
+    }
+
+    // Double List API
+
+    default Optional<List<Double>> getDoubleListAsOptional(String path) {
+        return getListAsOptional(Double.class, path);
+    }
+
+    default List<Double> getDoubleList(String path) {
+        return getDoubleListAsOptional(path)
+                .orElseThrow(() -> missingConfigValueForPath(path));
+    }
+
+    default List<Double> getDoubleListOrNull(String path) {
+        return getDoubleList(path, null);
+    }
+
+    default List<Double> getDoubleList(String path, List<Double> defaultValue) {
+        return getDoubleListAsOptional(path).orElse(defaultValue);
+    }
+
+    // BigDecimal List API
+
+    default Optional<List<BigDecimal>> getBigDecimalListAsOptional(String path) {
+        return getListAsOptional(BigDecimal.class, path);
+    }
+
+    default List<BigDecimal> getBigDecimalList(String path) {
+        return getBigDecimalListAsOptional(path)
+                .orElseThrow(() -> missingConfigValueForPath(path));
+    }
+
+    default List<BigDecimal> getBigDecimalListOrNull(String path) {
+        return getBigDecimalList(path, null);
+    }
+
+    default List<BigDecimal> getBigDecimalList(String path, List<BigDecimal> defaultValue) {
+        return getBigDecimalListAsOptional(path).orElse(defaultValue);
+    }
+
+    // Instant List API
+
+    default Optional<List<Instant>> getInstantListAsOptional(String path) {
+        return getListAsOptional(Instant.class, path);
+    }
+
+    default List<Instant> getInstantList(String path) {
+        return getInstantListAsOptional(path)
+                .orElseThrow(() -> missingConfigValueForPath(path));
+    }
+
+    default List<Instant> getInstantListOrNull(String path) {
+        return getInstantList(path, null);
+    }
+
+    default List<Instant> getInstantList(String path, List<Instant> defaultValue) {
+        return getInstantListAsOptional(path).orElse(defaultValue);
+    }
+
+    // ZonedDateTime List API
+
+    default Optional<List<ZonedDateTime>> getZonedDateTimeListAsOptional(String path) {
+        return getListAsOptional(ZonedDateTime.class, path);
+    }
+
+    default List<ZonedDateTime> getZonedDateTimeList(String path) {
+        return getZonedDateTimeListAsOptional(path)
+                .orElseThrow(() -> missingConfigValueForPath(path));
+    }
+
+    default List<ZonedDateTime> getZonedDateTimeListOrNull(String path) {
+        return getZonedDateTimeList(path, null);
+    }
+
+    default List<ZonedDateTime> getZonedDateTimeList(String path, List<ZonedDateTime> defaultValue) {
+        return getZonedDateTimeListAsOptional(path).orElse(defaultValue);
+    }
+
+    // Duration List API
+
+    default Optional<List<Duration>> getDurationListAsOptional(String path) {
+        return getListAsOptional(Duration.class, path);
+    }
+
+    default List<Duration> getDurationList(String path) {
+        return getDurationListAsOptional(path)
+                .orElseThrow(() -> missingConfigValueForPath(path));
+    }
+
+    default List<Duration> getDurationListOrNull(String path) {
+        return getDurationList(path, null);
+    }
+
+    default List<Duration> getDurationList(String path, List<Duration> defaultValue) {
+        return getDurationListAsOptional(path).orElse(defaultValue);
+    }
+
+    // Locale List API
+
+    default Optional<List<Locale>> getLocaleListAsOptional(String path) {
+        return getListAsOptional(Locale.class, path);
+    }
+
+    default List<Locale> getLocaleList(String path) {
+        return getLocaleListAsOptional(path)
+                .orElseThrow(() -> missingConfigValueForPath(path));
+    }
+
+    default List<Locale> getLocaleListOrNull(String path) {
+        return getLocaleList(path, null);
+    }
+
+    default List<Locale> getLocaleList(String path, List<Locale> defaultValue) {
+        return getLocaleListAsOptional(path).orElse(defaultValue);
+    }
+
+    // Currency List API
+
+    default Optional<List<Currency>> getCurrencyListAsOptional(String path) {
+        return getListAsOptional(Currency.class, path);
+    }
+
+    default List<Currency> getCurrencyList(String path) {
+        return getCurrencyListAsOptional(path)
+                .orElseThrow(() -> missingConfigValueForPath(path));
+    }
+
+    default List<Currency> getCurrencyListOrNull(String path) {
+        return getCurrencyList(path, null);
+    }
+
+    default List<Currency> getCurrencyList(String path, List<Currency> defaultValue) {
+        return getCurrencyListAsOptional(path).orElse(defaultValue);
+    }
 }
 

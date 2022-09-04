@@ -33,9 +33,30 @@ class InstantParsingSpec extends Specification {
             ]
     }
 
+    def "should parse List of Instants"() {
+        expect:
+            parseList(["2007-12-03T10:15:30Z", "2007-12-03T10:15:30.00Z"]) == [
+                    Instant.parse("2007-12-03T10:15:30.00Z"),
+                    Instant.parse("2007-12-03T10:15:30.00Z")
+            ]
+    }
+
+    def "should not parse a list of invalid Instants"() {
+        when:
+            parseList(["2007-12-03T10:15:30.00", "2007-12-03"])
+        then:
+            thrown(ConfigValueConversionException)
+    }
+
     private Instant parse(String value) {
         String name = "value"
         return Config.of(Map.of(name, value))
                 .get(Instant, name)
+    }
+
+    private List<Instant> parseList(List<String> values) {
+        String name = "value"
+        return Config.of(Map.of(name, values))
+                .getList(Instant, name)
     }
 }

@@ -4,6 +4,9 @@
 ### Changed
 - Update dependencies
 
+### Added
+- Support for lists
+
 ## [0.1.2] - 2021-05-02
 ### Changed
 - Update dependencies

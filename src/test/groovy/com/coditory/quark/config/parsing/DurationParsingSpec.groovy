@@ -39,16 +39,37 @@ class DurationParsingSpec extends Specification {
             thrown(ConfigValueConversionException)
         where:
             value << [
-                    "1.5m" ,
+                    "1.5m",
                     "1d",
                     "10.5mss",
                     "1.0.5ms"
             ]
     }
 
+    def "should parse List of Durations"() {
+        expect:
+            parseList(["10ms", "1.5s"]) == [
+                    Duration.parse("PT0.01S"),
+                    Duration.parse("PT1.5S")
+            ]
+    }
+
+    def "should not parse a list of invalid Durations"() {
+        when:
+            parseList(["10.5ms", "10.5mss"])
+        then:
+            thrown(ConfigValueConversionException)
+    }
+
     private Duration parse(String value) {
         String name = "value"
         return Config.of(Map.of(name, value))
                 .get(Duration, name)
+    }
+
+    private List<Duration> parseList(List<String> values) {
+        String name = "value"
+        return Config.of(Map.of(name, values))
+                .getList(Duration, name)
     }
 }

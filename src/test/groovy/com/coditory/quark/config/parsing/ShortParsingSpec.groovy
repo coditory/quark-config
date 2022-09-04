@@ -28,9 +28,29 @@ class ShortParsingSpec extends Specification {
             value << ["100a", "-a100", "1.0", "0.1"]
     }
 
+    def "should parse List of Shorts"() {
+        expect:
+            parseList(["0", "-1", "1"]) == [
+                    0, -1, 1
+            ] as List<Short>
+    }
+
+    def "should not parse a list of invalid Shorts"() {
+        when:
+            parseList(["100a", "1"])
+        then:
+            thrown(ConfigValueConversionException)
+    }
+
     private Short parse(String value) {
         String name = "value"
         return Config.of(Map.of(name, value))
                 .get(Short, name)
+    }
+
+    private List<Short> parseList(List<String> values) {
+        String name = "value"
+        return Config.of(Map.of(name, values))
+                .getList(Short, name)
     }
 }
