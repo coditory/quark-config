@@ -3,8 +3,6 @@ name: Build
 on:
   workflow_dispatch:
   push:
-    paths-ignore:
-      - 'README.md'
 
 jobs:
   build:
@@ -15,20 +13,30 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v1
-      - name: Parse Changelog Entry
-        id: changelog
-        uses: coditory/changelog-parser@v1
-      - name: Get last version
-        id: lasttag
+
+      - name: Get versions
+        id: versions
         shell: bash
-        run: echo ::set-output name=version::$(git describe --abbrev=0 --tags --match 'v[0-9]*' | cut -c2-)
+        run: |
+          declare -r VERSION="$((git describe --abbrev=0 --tags --match 'v[0-9]*.[0-9]*.[0-9]*' 2>/dev/null || echo "v0.0.0") \
+            | cut -c2-)"
+          declare -r MAJOR="$(echo "$VERSION" | cut -d. -f1)"
+          declare -r MINOR="$(echo "$VERSION" | cut -d. -f2)"
+          declare -r PATCH="$(echo "$VERSION" | cut -d. -f3)"
+          declare -r NEXT_VERSION="$MAJOR.$MINOR.$(( $PATCH + 1 ))"
+          echo ::set-output name=version::$VERSION
+          echo ::set-output name=next_version::$NEXT_VERSION
+          echo -e "VERSION: $VERSION\nNEXT_VERSION: $NEXT_VERSION"
+
+      - name: Validate gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
+
       - name: Set up JDK 11
         uses: actions/setup-java@v1
         with:
           java-version: 11
-      - name: Cache Gradle
+
+      - name: Cache gradle
         uses: actions/cache@v2
         with:
           path: |
@@ -36,61 +44,23 @@ jobs:
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
-      - name: Build with Gradle
+
+      - name: Build with gradle
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: ./gradlew build jacocoTestReport coveralls --scan
-      - name: Publish Reports Artifact
-        uses: actions/upload-artifact@v2
-        if: always()
+
+      - name: Create github release
+        uses: ncipollo/release-action@v1
+        if: "github.ref == 'refs/heads/master'"
         with:
-          name: Reports
-          path: build/reports
-      - name: Release
-        if: "github.ref == 'refs/heads/master' && steps.changelog.outputs.version != steps.lasttag.outputs.version"
-        env:
-          PREV_VERSION: ${{ steps.lasttag.outputs.version }}
-          NEXT_VERSION: ${{ steps.changelog.outputs.version }}
+          allowUpdates: true
+          draft: true
+          generateReleaseNotes: true
+          tag: v${{ steps.versions.outputs.next_version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish snapshot to maven central
+        if: "github.ref == 'refs/heads/master'"
         shell: bash
-        run: |
-          git config user.name "Coditory CI"
-          git config user.email "Coditory CI <admin@coditory.com>"
-          if [ -n "$PREV_VERSION" ]; then
-            declare -r ESC_PREV_VERSION="${PREV_VERSION//./\\.}"
-            sed -i "s|^ *version *= *${ESC_PREV_VERSION} *$|version=${NEXT_VERSION}|" gradle.properties
-            sed -i "s|${ESC_PREV_VERSION}|${NEXT_VERSION}|" README.md
-            if [ -n "$(git status --porcelain)" ]; then
-               git add -A
-               git commit -a -m "Release v${NEXT_VERSION}" -m "[ci-skip]"
-               git push origin master
-            fi
-          fi
-          git tag -f "v${NEXT_VERSION}"
-          git push origin --tags
-      - name: Publish Snapshot
-        if: "github.ref != 'refs/heads/master'"
-        env:
-          PREV_VERSION: ${{ steps.lasttag.outputs.version }}
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
-          NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
-          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-        run: ./gradlew publishToSonatype -Pversion="${PREV_VERSION}-${GITHUB_REF#refs/heads/}-SNAPSHOT" -Ppublish
-      - name: Publish Release
-        if: "github.ref == 'refs/heads/master' && steps.changelog.outputs.version != steps.lasttag.outputs.version"
-        env:
-          NEXT_VERSION: ${{ steps.changelog.outputs.version }}
-          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
-          NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
-          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository -Pversion=$NEXT_VERSION -Ppublish
-      - name: Publish GitHub Release
-        if: "github.ref == 'refs/heads/master' && steps.changelog.outputs.version != steps.lasttag.outputs.version"
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          body: ${{ steps.changelog.outputs.description }}
-          tag_name: v${{ steps.changelog.outputs.version }}
-          release_name: Release v${{ steps.changelog.outputs.version }}
+        run: echo ">>> Publish Snapshot ${{ steps.versions.outputs.next_version }}-SNAPSHOT"
