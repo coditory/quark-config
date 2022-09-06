@@ -1,6 +1,6 @@
 # Quark Config
-[![Build Status](https://github.com/coditory/quark-config/workflows/Build/badge.svg?branch=master)](https://github.com/coditory/quark-config/actions?query=workflow%3ABuild+branch%3Amaster)
-[![Coverage Status](https://coveralls.io/repos/github/coditory/quark-config/badge.svg?branch=master)](https://coveralls.io/github/coditory/quark-config?branch=master)
+[![Build Status](https://github.com/coditory/quark-config/workflows/Build/badge.svg)](https://github.com/coditory/quark-config/actions?query=workflow%3ABuild)
+[![Coverage Status](https://coveralls.io/repos/github/coditory/quark-config/badge.svg)](https://coveralls.io/github/coditory/quark-config)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.coditory.quark/quark-config/badge.svg)](https://mvnrepository.com/artifact/com.coditory.quark/quark-config)
 
 > Quark Config is a lightweight and single purpose java library for loading and manipulating configurations
@@ -9,12 +9,13 @@ The idea behind this was to create a configuration library,
 similar to the one created in [Spring Boot](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-external-config)
 of [typesafe](https://github.com/lightbend/config), that is:
 - lightweight, without a burden of a framework
-- supports standard YAML or JSON format
-- provides developer-friendly API
-- hides secrets when formatting to string
-- provides basic expressions for references and default values
+- supports multiple formats YAML, JSON, properties
 - provides a collection of parsers for values such as `java.util.Duration`
 - loads an application multi-source config with a one-liner
+- handles program arguments
+- provides developer-friendly API
+- hides secrets when formatted to string
+- provides basic expressions for references and default values
 
 ## Installation
 
@@ -22,7 +23,7 @@ Add to your `build.gradle`:
 
 ```gradle
 dependencies {
-    implementation "com.coditory.quark:quark-config:<VERSION>"
+    implementation "com.coditory.quark:quark-config:0.1.3"
 }
 ```
 

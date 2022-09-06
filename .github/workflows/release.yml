@@ -1,0 +1,68 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        description: Release version. Default is a version with incremented patch number.
+        required: false
+      publish:
+        type: boolean
+        default: true
+        required: true
+        description: Automatically publish to maven central after release. You can modify release notes after publish.
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: "github.ref == 'refs/heads/master'"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Get versions
+        id: versions
+        shell: bash
+        run: |
+          declare -r VERSION="$((git describe --abbrev=0 --tags --match 'v[0-9]*.[0-9]*.[0-9]*' 2>/dev/null || echo "v0.0.0") | cut -c2-)"
+          declare -r MAJOR="$(echo "$VERSION" | cut -d. -f1)"
+          declare -r MINOR="$(echo "$VERSION" | cut -d. -f2)"
+          declare -r PATCH="$(echo "$VERSION" | cut -d. -f3)"
+          declare -r NEXT_VERSION="$MAJOR.$MINOR.$(( $PATCH + 1 ))"
+          echo ::set-output name=version::$VERSION
+          echo ::set-output name=next_version::$NEXT_VERSION
+          echo -e "VERSION: $VERSION\nNEXT_VERSION: $NEXT_VERSION"
+
+      - name: Update version in README
+        env:
+          PREV_VERSION: ${{ steps.versions.outputs.version }}
+          NEXT_PATCH_VERSION: ${{ steps.versions.outputs.next_version }}
+          NEXT_INPUT_VERSION: ${{ inputs.version }}
+        shell: bash
+        run: |
+          git config user.name "Coditory CI"
+          git config user.email "Coditory CI <admin@coditory.com>"  
+          declare -r NEXT_VERSION="${NEXT_INPUT_VERSION:-$NEXT_PATCH_VERSION}" 
+          declare -r ESC_PREV_VERSION="${PREV_VERSION//./\\.}"
+          echo "Changing: $PREV_VERSION -> $NEXT_VERSION"
+          sed -i "s|${ESC_PREV_VERSION}|${NEXT_VERSION}|" README.md
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            git commit -a -m "Update version in README.md" -m "[ci-skip]"
+            git push origin master
+          else
+            echo "Nothing changed. Skipping commit."
+          fi
+
+      - name: Create github release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          draft: ${{ ! inputs.publish }}
+          generateReleaseNotes: true
+          tag: v${{ steps.versions.outputs.next_version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+

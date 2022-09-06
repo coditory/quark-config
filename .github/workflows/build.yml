@@ -48,14 +48,3 @@ jobs:
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: ./gradlew build jacocoTestReport coveralls --scan
-
-      - name: Create github release
-        uses: ncipollo/release-action@v1
-        if: "github.ref == 'refs/heads/master'"
-        with:
-          allowUpdates: true
-          draft: true
-          generateReleaseNotes: true
-          tag: v${{ steps.versions.outputs.next_version }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-
