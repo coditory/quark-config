@@ -12,6 +12,8 @@ on:
         default: true
         required: true
         description: Automatically publish to maven central after release. You can modify release notes after publish.
+  release:
+    types: [published]
 
 jobs:
   release:
@@ -25,27 +27,34 @@ jobs:
 
       - name: Get versions
         id: versions
+        env:
+          NEXT_INPUT_VERSION: ${{ inputs.version }}
+          TAG_NAME: ${{ github.event.release.tag_name }}
         shell: bash
         run: |
           declare -r VERSION="$((git describe --abbrev=0 --tags --match 'v[0-9]*.[0-9]*.[0-9]*' 2>/dev/null || echo "v0.0.0") | cut -c2-)"
           declare -r MAJOR="$(echo "$VERSION" | cut -d. -f1)"
           declare -r MINOR="$(echo "$VERSION" | cut -d. -f2)"
           declare -r PATCH="$(echo "$VERSION" | cut -d. -f3)"
-          declare -r NEXT_VERSION="$MAJOR.$MINOR.$(( $PATCH + 1 ))"
+          declare -r NEXT_TAG_VERSION="$([[ "$TAG_NAME" =~ v.* ]] \
+            && (echo "$TAG_NAME" | cut -c2-) \
+            || echo "$TAG_NAME")"
+          declare -r NEXT_MANUAL_VERSION="${NEXT_INPUT_VERSION:-$NEXT_TAG_VERSION}"
+          declare -r NEXT_PATCH_VERSION="$MAJOR.$MINOR.$(( $PATCH + 1 ))"
+          declare -r NEXT_VERSION="${NEXT_MANUAL_VERSION:-$NEXT_PATCH_VERSION}"
           echo ::set-output name=version::$VERSION
           echo ::set-output name=next_version::$NEXT_VERSION
           echo -e "VERSION: $VERSION\nNEXT_VERSION: $NEXT_VERSION"
 
       - name: Update version in README
+        if: github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/heads/master')
         env:
           PREV_VERSION: ${{ steps.versions.outputs.version }}
-          NEXT_PATCH_VERSION: ${{ steps.versions.outputs.next_version }}
-          NEXT_INPUT_VERSION: ${{ inputs.version }}
+          NEXT_VERSION: ${{ steps.versions.outputs.next_version }}
         shell: bash
         run: |
           git config user.name "Coditory CI"
-          git config user.email "Coditory CI <admin@coditory.com>"  
-          declare -r NEXT_VERSION="${NEXT_INPUT_VERSION:-$NEXT_PATCH_VERSION}" 
+          git config user.email "Coditory CI <admin@coditory.com>"
           declare -r ESC_PREV_VERSION="${PREV_VERSION//./\\.}"
           echo "Changing: $PREV_VERSION -> $NEXT_VERSION"
           sed -i "s|${ESC_PREV_VERSION}|${NEXT_VERSION}|" README.md
@@ -57,12 +66,62 @@ jobs:
             echo "Nothing changed. Skipping commit."
           fi
 
+      - name: Validate gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: temurin
+
+      - name: Cache gradle
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: ${{ runner.os }}-gradle
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/heads/master')
+        env:
+          NEXT_VERSION: ${{ steps.versions.outputs.next_version }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+          NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+        run: |
+          ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository -Pversion=$NEXT_VERSION -Ppublish
+          echo "Published release: $NEXT_VERSION"
+
       - name: Create github release
+        if: github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/heads/master')
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          draft: ${{ ! inputs.publish }}
           generateReleaseNotes: true
+          draft: ${{ ! inputs.publish }}
           tag: v${{ steps.versions.outputs.next_version }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: "build/libs/*.jar,build/*.jar.asc.md5,build/*.jar.asc.sha512"
+
+      - name: Publish snapshot
+        if: github.event_name == 'workflow_dispatch' && !startsWith(github.ref, 'refs/heads/master')
+        env:
+          NEXT_VERSION: ${{ steps.versions.outputs.next_version }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+          NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+        run: |
+          declare -r VERSION="$((git describe --abbrev=0 --tags --match 'v[0-9]*.[0-9]*.[0-9]*' 2>/dev/null || echo "v0.0.0") | cut -c2-)"
+          declare -r MAJOR="$(echo "$VERSION" | cut -d. -f1)"
+          declare -r MINOR="$(echo "$VERSION" | cut -d. -f2)"
+          declare -r PATCH="$(echo "$VERSION" | cut -d. -f3)"
+          declare -r NEXT_VERSION="$MAJOR.$MINOR.$(( $PATCH + 1 ))"
+          declare -r MIDDLE="$([ "$GITHUB_REF" == "refs/heads/master" ] && echo "" || echo "-${GITHUB_REF#refs/heads/}")"
+          ./gradlew publishToSonatype -Pversion="${NEXT_VERSION}${MIDDLE}-SNAPSHOT" -Ppublish
+          echo "Published snapshot: ${NEXT_VERSION}${MIDDLE}-SNAPSHOT"
 

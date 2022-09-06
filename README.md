@@ -1,5 +1,5 @@
 # Quark Config
-[![Build Status](https://github.com/coditory/quark-config/workflows/Build/badge.svg)](https://github.com/coditory/quark-config/actions?query=workflow%3ABuild)
+[![Build Status](https://github.com/coditory/quark-config/workflows/Build/badge.svg)](https://github.com/coditory/quark-config/actions/workflows/build.yml)
 [![Coverage Status](https://coveralls.io/repos/github/coditory/quark-config/badge.svg)](https://coveralls.io/github/coditory/quark-config)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.coditory.quark/quark-config/badge.svg)](https://mvnrepository.com/artifact/com.coditory.quark/quark-config)
 
@@ -8,12 +8,12 @@
 The idea behind this was to create a configuration library,
 similar to the one created in [Spring Boot](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-external-config)
 of [typesafe](https://github.com/lightbend/config), that is:
-- lightweight, without a burden of a framework
+- lightweight, without a burden of a framework (has exactly two dependencies gson and yamlsnake)
 - supports multiple formats YAML, JSON, properties
 - provides a collection of parsers for values such as `java.util.Duration`
-- loads an application multi-source config with a one-liner
 - handles program arguments
 - provides developer-friendly API
+- loads an application multi-source config with a one-liner
 - hides secrets when formatted to string
 - provides basic expressions for references and default values
 
