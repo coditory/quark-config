@@ -7,44 +7,31 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, '[ci skip]')"
+    if: github.event_name != 'push' || startsWith(github.ref, 'refs/tags/') == false
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+        uses: actions/checkout@v3
 
-      - name: Get versions
-        id: versions
-        shell: bash
-        run: |
-          declare -r VERSION="$((git describe --abbrev=0 --tags --match 'v[0-9]*.[0-9]*.[0-9]*' 2>/dev/null || echo "v0.0.0") | cut -c2-)"
-          declare -r MAJOR="$(echo "$VERSION" | cut -d. -f1)"
-          declare -r MINOR="$(echo "$VERSION" | cut -d. -f2)"
-          declare -r PATCH="$(echo "$VERSION" | cut -d. -f3)"
-          declare -r NEXT_VERSION="$MAJOR.$MINOR.$(( $PATCH + 1 ))"
-          echo ::set-output name=version::$VERSION
-          echo ::set-output name=next_version::$NEXT_VERSION
-          echo -e "VERSION: $VERSION\nNEXT_VERSION: $NEXT_VERSION"
+      - name: Skip duplicates and docs
+        id: skip
+        uses: fkirc/skip-duplicate-actions@v4
+        with:
+          paths_ignore: '["**/README.md", "LICENSE", ".gitignore", ".editorconfig", ".idea/**"]'
 
       - name: Validate gradle wrapper
+        if: steps.skip.outputs.should_skip != 'true'
         uses: gradle/wrapper-validation-action@v1
 
-      - name: Set up JDK 11
-        uses: actions/setup-java@v1
+      - name: Setup JDK
+        if: steps.skip.outputs.should_skip != 'true'
+        uses: actions/setup-java@v3
         with:
           java-version: 11
-
-      - name: Cache gradle
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: ${{ runner.os }}-gradle
+          cache: gradle
+          distribution: temurin
 
       - name: Build with gradle
+        if: steps.skip.outputs.should_skip != 'true'
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        run: ./gradlew build jacocoTestReport coveralls --scan
+        run: ./gradlew build

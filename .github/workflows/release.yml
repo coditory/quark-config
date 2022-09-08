@@ -5,21 +5,48 @@ on:
     inputs:
       version:
         type: string
-        description: Release version. Default is a version with incremented patch number.
+        description: |
+          Release version in semantic format (like: 1.2.3).
+          Default: a version with incremented patch number.
         required: false
       publish:
-        type: boolean
-        default: true
+        type: choice
+        description: Artifact publication.
+        options:
+          - AUTO
+          - SKIP
+          - RELEASE
+          - SNAPSHOT
         required: true
-        description: Automatically publish to maven central after release. You can modify release notes after publish.
+        default: AUTO
   release:
-    types: [published]
+    types: [ published ]
+  workflow_run:
+    workflows: [ Build ]
+    types: [ completed ]
+    branches: [ master ]
 
 jobs:
   release:
     runs-on: ubuntu-latest
-    if: "github.ref == 'refs/heads/master'"
+    if: |
+      github.event_name != 'workflow_run'
+      || (github.event.workflow_run.conclusion == 'success' && contains(github.event.workflow_run.head_commit.message, '[ci release]'))
     steps:
+      - name: Validate build succeeded
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          declare -r BUILD_SUCCESS="$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/actions/runs?status=success\&head_sha=${{ github.sha }} \
+            | jq 'limit(1; .workflow_runs[] | select(.name == "Build" and .conclusion == "success"))')"
+          echo "BUILD_SUCCESS: '$BUILD_SUCCESS'"
+          if [ -z "$BUILD_SUCCESS" ]; then
+            echo "Commit did not pass Build!"
+            exit 1
+          fi
+
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -46,8 +73,11 @@ jobs:
           echo ::set-output name=next_version::$NEXT_VERSION
           echo -e "VERSION: $VERSION\nNEXT_VERSION: $NEXT_VERSION"
 
-      - name: Update version in README
-        if: github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/heads/master')
+      - name: Update version in README (master only)
+        if: |
+          github.event_name != 'release'
+          && github.ref == 'refs/heads/master'
+          && inputs.publish != 'SNAPSHOT'
         env:
           PREV_VERSION: ${{ steps.versions.outputs.version }}
           NEXT_VERSION: ${{ steps.versions.outputs.next_version }}
@@ -60,32 +90,26 @@ jobs:
           sed -i "s|${ESC_PREV_VERSION}|${NEXT_VERSION}|" README.md
           if [ -n "$(git status --porcelain)" ]; then
             git add -A
-            git commit -a -m "Update version in README.md" -m "[ci-skip]"
+            git commit -a -m "Update version in README.md"
             git push origin master
           else
             echo "Nothing changed. Skipping commit."
           fi
 
-      - name: Validate gradle wrapper
-        uses: gradle/wrapper-validation-action@v1
-
-      - name: Set up JDK 11
+      - name: Setup JDK
+        if: inputs.publish != 'SKIP'
         uses: actions/setup-java@v3
         with:
           java-version: 11
+          cache: gradle
           distribution: temurin
 
-      - name: Cache gradle
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: ${{ runner.os }}-gradle
-
       - name: Publish release
-        if: startsWith(github.ref, 'refs/heads/master')
+        if: |
+          github.event_name == 'release'
+          || github.event_name == 'workflow_run'
+          || inputs.publish == 'RELEASE'
+          || (inputs.publish == 'AUTO' && github.ref == 'refs/heads/master')
         env:
           NEXT_VERSION: ${{ steps.versions.outputs.next_version }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
@@ -96,19 +120,49 @@ jobs:
           ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository -Pversion=$NEXT_VERSION -Ppublish
           echo "Published release: $NEXT_VERSION"
 
-      - name: Create github release
-        if: github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/heads/master')
+      - name: Generate release notes
+        id: notes
+        if: |
+          github.event_name != 'release'
+          && github.ref == 'refs/heads/master'
+          && inputs.publish != 'SNAPSHOT'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PREV_VERSION: ${{ steps.versions.outputs.version }}
+          NEXT_VERSION: ${{ steps.versions.outputs.next_version }}
+        run: |
+          declare -r NOTES="$(gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            /repos/${{ github.repository }}/releases/generate-notes \
+            -f tag_name="v$NEXT_VERSION" \
+            -f target_commitish='master' \
+            -f previous_tag_name="v$PREV_VERSION" \
+            | jq -r '.body')"
+          declare -r ESCAPED="${NOTES//$'\n'/'%0A'}"
+          echo ::set-output name=notes::$ESCAPED
+
+      - name: Create github release (master only)
+        if: |
+          github.event_name != 'release'
+          && github.ref == 'refs/heads/master'
+          && inputs.publish != 'SNAPSHOT'
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          generateReleaseNotes: true
-          draft: ${{ ! inputs.publish }}
+          body: ${{ steps.notes.outputs.notes }}
+          draft: ${{ inputs.publish == 'SKIP' }}
           tag: v${{ steps.versions.outputs.next_version }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          artifacts: "build/libs/*.jar,build/*.jar.asc.md5,build/*.jar.asc.sha512"
+          artifacts: "build/libs/*.jar"
 
       - name: Publish snapshot
-        if: github.event_name == 'workflow_dispatch' && !startsWith(github.ref, 'refs/heads/master')
+        if: |
+          github.event_name == 'workflow_dispatch'
+          && (
+            inputs.publish == 'SNAPSHOT'
+            || inputs.publish == 'AUTO' && github.ref != 'refs/heads/master'
+          )
         env:
           NEXT_VERSION: ${{ steps.versions.outputs.next_version }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
@@ -116,11 +170,6 @@ jobs:
           NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
           NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
         run: |
-          declare -r VERSION="$((git describe --abbrev=0 --tags --match 'v[0-9]*.[0-9]*.[0-9]*' 2>/dev/null || echo "v0.0.0") | cut -c2-)"
-          declare -r MAJOR="$(echo "$VERSION" | cut -d. -f1)"
-          declare -r MINOR="$(echo "$VERSION" | cut -d. -f2)"
-          declare -r PATCH="$(echo "$VERSION" | cut -d. -f3)"
-          declare -r NEXT_VERSION="$MAJOR.$MINOR.$(( $PATCH + 1 ))"
           declare -r MIDDLE="$([ "$GITHUB_REF" == "refs/heads/master" ] && echo "" || echo "-${GITHUB_REF#refs/heads/}")"
           ./gradlew publishToSonatype -Pversion="${NEXT_VERSION}${MIDDLE}-SNAPSHOT" -Ppublish
           echo "Published snapshot: ${NEXT_VERSION}${MIDDLE}-SNAPSHOT"
