@@ -3,7 +3,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/coditory/quark-config/badge.svg)](https://coveralls.io/github/coditory/quark-config)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.coditory.quark/quark-config/badge.svg)](https://mvnrepository.com/artifact/com.coditory.quark/quark-config)
 
-> Quark Config is a lightweight and single purpose java library for loading and manipulating configurations
+> Lightweight and single purpose java library for loading and manipulating configurations
 
 The idea behind this was to create a configuration library,
 similar to the one created in [Spring Boot](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-external-config)
