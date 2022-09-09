@@ -41,7 +41,6 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             /repos/${{ github.repository }}/actions/runs?status=success\&head_sha=${{ github.sha }} \
             | jq 'limit(1; .workflow_runs[] | select(.name == "Build" and .conclusion == "success"))')"
-          echo "BUILD_SUCCESS: '$BUILD_SUCCESS'"
           if [ -z "$BUILD_SUCCESS" ]; then
             echo "Commit did not pass Build!"
             exit 1
@@ -57,9 +56,9 @@ jobs:
         env:
           NEXT_INPUT_VERSION: ${{ inputs.version }}
           TAG_NAME: ${{ github.event.release.tag_name }}
-        shell: bash
         run: |
-          declare -r VERSION="$((git describe --abbrev=0 --tags --match 'v[0-9]*.[0-9]*.[0-9]*' 2>/dev/null || echo "v0.0.0") | cut -c2-)"
+          declare -r GIT_VERSION="$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' | tail -n 1 | cut -c2-)"
+          declare -r VERSION=${GIT_VERSION:-0.0.0}
           declare -r MAJOR="$(echo "$VERSION" | cut -d. -f1)"
           declare -r MINOR="$(echo "$VERSION" | cut -d. -f2)"
           declare -r PATCH="$(echo "$VERSION" | cut -d. -f3)"
@@ -81,7 +80,6 @@ jobs:
         env:
           PREV_VERSION: ${{ steps.versions.outputs.version }}
           NEXT_VERSION: ${{ steps.versions.outputs.next_version }}
-        shell: bash
         run: |
           git config user.name "Coditory CI"
           git config user.email "Coditory CI <admin@coditory.com>"
@@ -117,7 +115,7 @@ jobs:
           NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
           NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
         run: |
-          ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository -Pversion=$NEXT_VERSION -Ppublish
+          ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository -Pversion=$NEXT_VERSION -Ppublish --info
           echo "Published release: $NEXT_VERSION"
 
       - name: Generate release notes
