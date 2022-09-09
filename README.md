@@ -1,5 +1,5 @@
 # Quark Config
-[![Build Status](https://github.com/coditory/quark-config/workflows/Build/badge.svg)](https://github.com/coditory/quark-config/actions/workflows/build.yml)
+[![Build](https://github.com/coditory/quark-config/actions/workflows/build.yml/badge.svg)](https://github.com/coditory/quark-config/actions/workflows/build.yml)
 [![Coverage Status](https://coveralls.io/repos/github/coditory/quark-config/badge.svg)](https://coveralls.io/github/coditory/quark-config)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.coditory.quark/quark-config/badge.svg)](https://mvnrepository.com/artifact/com.coditory.quark/quark-config)
 
