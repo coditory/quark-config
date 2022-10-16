@@ -9,27 +9,26 @@ import static com.coditory.quark.config.ConfigSource.CLASSPATH;
 import static com.coditory.quark.config.ConfigSource.FILE_SYSTEM;
 import static com.coditory.quark.config.Preconditions.expectNonBlank;
 import static com.coditory.quark.config.Preconditions.expectNonNull;
-import static java.util.stream.Collectors.toList;
 
 public class ConfigFactory {
-    public static ConfigApplicationLoader configApplicationLoader() {
-        return new ConfigApplicationLoader();
+    public static ConfigLoader configLoader() {
+        return new ConfigLoader();
     }
 
-    public static Config loadApplicationConfig() {
-        return configApplicationLoader().load();
+    public static Config loadConfig() {
+        return configLoader().load();
     }
 
-    public static Config loadApplicationConfig(String... args) {
+    public static Config loadConfig(String... args) {
         expectNonNull(args, "args");
-        return configApplicationLoader()
+        return configLoader()
                 .withArgs(args)
                 .load();
     }
 
     public static Config buildFromSystemProperties() {
         LinkedHashMap<String, Object> result = new LinkedHashMap<>();
-        for (Map.Entry<Object, Object> entry: System.getProperties().entrySet()) {
+        for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
             String rawKey = entry.getKey().toString();
             String key = rawKey.startsWith("java.version.")
                     ? rawKey.replaceFirst("java\\.version\\.", "java.")
@@ -51,7 +50,18 @@ public class ConfigFactory {
     public static Config buildFromArgs(String[] args, Map<String, String> aliases) {
         expectNonNull(args, "args");
         expectNonNull(aliases, "aliases");
-        Map<String, Object> values = new ArgumentsParser(aliases).parse(args);
+        return buildFromArgs(args, aliases, Map.of());
+    }
+
+    public static Config buildFromArgs(
+            String[] args,
+            Map<String, String> aliases,
+            Map<String[], String[]> mapping
+    ) {
+        expectNonNull(args, "args");
+        expectNonNull(aliases, "aliases");
+        expectNonNull(mapping, "mapping");
+        Map<String, Object> values = new ArgumentsParser(aliases, mapping).parse(args);
         return Config.of(values);
     }
 
@@ -110,14 +120,14 @@ public class ConfigFactory {
 
     private static Optional<Config> load(ConfigSource configSource, String path) {
         return ConfigFormat.containsConfigExtension(path)
-            ? configSource.load(path)
-            : loadInAnyFormat(configSource, path);
+                ? configSource.load(path)
+                : loadInAnyFormat(configSource, path);
     }
 
     private static Optional<Config> loadInAnyFormat(ConfigSource configSource, String path) {
         List<String> filePathsWithExtensions = ConfigFormat.getExtensions().stream()
                 .map(ext -> path + "." + ext)
-                .collect(toList());
+                .toList();
         return filePathsWithExtensions.stream()
                 .map(configSource::load)
                 .filter(Optional::isPresent)

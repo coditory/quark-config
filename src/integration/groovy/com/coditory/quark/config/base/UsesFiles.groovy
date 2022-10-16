@@ -33,6 +33,9 @@ trait UsesFiles {
 
     File writeFile(String fileName, String content) {
         Path path = Paths.get(tempDirectory.path, fileName)
+        if (!Files.exists(path.parent)) {
+            Files.createDirectory(path.parent)
+        }
         File file = Files.createFile(path).toFile()
         file.write(content.stripIndent().trim())
         return file

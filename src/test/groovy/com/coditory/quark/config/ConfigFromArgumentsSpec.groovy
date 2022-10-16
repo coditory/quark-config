@@ -41,6 +41,20 @@ class ConfigFromArgumentsSpec extends Specification {
             ]
     }
 
+    def "should map some arguments"() {
+        when:
+            Config config = configFromArgs(
+                    ["x", "--prod", "--port", "8080"], [:],
+                    [(["--prod"] as String[]): (["--profile=prod"] as String[])]
+            )
+        then:
+            config.toMap() == [
+                    "prod"   : true,
+                    "profile": "prod",
+                    "port"   : "8080"
+            ]
+    }
+
     def "should undefined aliases"() {
         when:
             Config config = configFromArgs(["-p", "--port", "8080", "-t", "100", "x"])
@@ -71,7 +85,7 @@ class ConfigFromArgumentsSpec extends Specification {
             config.getString("env") == "prod"
     }
 
-    private Config configFromArgs(List<String> args, Map<String, String> aliases = [:]) {
-        return ConfigFactory.buildFromArgs(args as String[], aliases)
+    private Config configFromArgs(List<String> args, Map<String, String> aliases = [:], Map<String[], String[]> mapping = [:]) {
+        return ConfigFactory.buildFromArgs(args as String[], aliases, mapping)
     }
 }
