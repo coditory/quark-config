@@ -5,15 +5,13 @@
 
 > Lightweight and single purpose java library for loading and manipulating configurations
 
-The idea behind this was to create a configuration library,
+A configuration library,
 similar to the one created in [Spring Boot](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-external-config)
 of [typesafe](https://github.com/lightbend/config), that is:
 - lightweight, without a burden of a framework (has exactly two dependencies gson and yamlsnake)
+- loads configuration from multiple sources: arguments, classpath, file system
 - supports multiple formats YAML, JSON, properties
 - provides a collection of parsers for values such as `java.util.Duration`
-- handles program arguments
-- provides developer-friendly API
-- loads an application multi-source config with a one-liner
 - hides secrets when formatted to string
 - provides basic expressions for references and default values
 
@@ -31,34 +29,31 @@ dependencies {
 
 ### Load application configuration
 
-In most cases application should load the config with a one-liner:
-
 ```java
-public class Application {
-    public static void main(String[] args) {
-        Config config = ConfigFactory.loadApplicationConfig(args);
-        System.out.println(config);
-        // Sample output:
-        // {application={port=8080, name=best-app}, db={password=***}}
-    }
-}
+Config config = ConfigFactory.configLoader()
+        .withDefaultProfiles("local")
+        .withConfigPath("configs")
+        .withArgs(args)
+        .load()
 ```
+
+Explore the API, there is much more to configure.
 
 #### Config merging order
 
 Application configuration sources are merged into a single config object 
 according to the following order:
+
 - base config
-  - `application.{yml,json,properties}` file from classpath
-  - this is the only file that is required
+  - base config from classpath, by default: `application.{yml,json,properties}`
 - profile config
-  - `application-${profile}.{yml,json,properties}` file from classpath 
-  - set profile with argument `--profile=$PROFILE`
-  - the default profile is `local`
+  - profile based config from classpath, by default: `application-${profile}.{yml,json,properties}`
+  - profiles are enabled in arguments: `--profile=$PROFILE` or `--profile=$PROFILE1,$PROFILE2`
 - external config
-  - config file from system passed as an argument `--config.external=$PATH_TO_CONFIG`
+  - config file from system
+  - passed as an argument `--config=$PATH_TO_CONFIG`
 - config values from arguments
-  - all arguments passed as `--config.<config_key>=$VALUE` become a config value
+  - all arguments passed as arguments `--config-value.<config_key>=$VALUE`
 
 Example:
 ```yml
@@ -77,24 +72,20 @@ application:
 ```
 
 ```java
-// load config with no arguments
-ConfigFactory.loadApplicationConfig();
-// Output: {application={port=8080, name=best-app}}
+// load base config only
+ConfigFactory.loadConfig();
+// Output: {application={port=7070, name=best-app}}
 
 // load config with prod profile
 ConfigFactory.loadApplicationConfig("--profile", "prod");
 // Output: {application={port=80, name=best-app}}
 
-// load config with non-existent profile
-ConfigFactory.loadApplicationConfig("--profile", "other");
-// Output: {application={port=7070, name=best-app}}
-
 // resolve config with expression
-ConfigFactory.loadApplicationConfig("--profile", "other", "--port", "7071");
+ConfigFactory.loadApplicationConfig("--port", "7071");
 // Output: {application={port=7071, name=best-app}}
 
-// load config with config argument
-ConfigFactory.loadApplicationConfig("--config.application.port", "8081");
+// load config with config value passed as argument
+ConfigFactory.loadApplicationConfig("--config-value.application.port", "8081");
 // Output: {application={port=8081, name=best-app}}
 ```
 For more examples see the [test cases](src/integration/groovy/com/coditory/quark/config/LoadApplicationConfigSpec.groovy).
@@ -102,6 +93,7 @@ For more examples see the [test cases](src/integration/groovy/com/coditory/quark
 #### Config resolution variables
 
 You can use the following expression variables to resolve an application config:
+- `${profiles.*}` - profiles arsed from args
 - `${env.*}` - all system variables from `System.getenv()`
 - `${system.*}` - all system variables from `System.getProperties()`
 - `${args.*}` - all arguments

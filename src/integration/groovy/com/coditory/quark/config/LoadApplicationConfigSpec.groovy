@@ -4,7 +4,7 @@ import com.coditory.quark.config.base.UsesFiles
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import static ConfigFactory.configApplicationLoader
+import static ConfigFactory.configLoader
 
 class LoadApplicationConfigSpec extends Specification implements UsesFiles {
     def "should load application config from files and arguments"() {
@@ -26,11 +26,12 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
             """)
         when:
             Config config = stubClassLoader {
-                configApplicationLoader()
+                configLoader()
                         .withArgs(
                                 "--profile", "prod",
-                                "--config.d", "ARGS",
-                                "--config.external", external.getPath())
+                                "--config-prop.d", "ARGS",
+                                "--config", external.getPath()
+                        )
                         .load()
             }
         then:
@@ -62,11 +63,11 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
             """)
         when:
             Config config = stubClassLoader {
-                configApplicationLoader()
+                configLoader()
                         .withArgs(
                                 "--profile", "prod",
-                                "--config.d", "ARGS",
-                                "--config.external", external.getPath()
+                                "--config-prop.d", "ARGS",
+                                "--config", external.getPath()
                         )
                         .load()
             }
@@ -75,25 +76,86 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
     }
 
     @Unroll
-    def "should use default profile: #profile"() {
+    def "should use default profile: #profiles"() {
         given:
             writeClasspathFile("application.yml", "a: BASE")
             writeClasspathFile("application-prod.yml", "a: PROD")
             writeClasspathFile("application-local.yml", "a: LOCAL")
         when:
             Config config = stubClassLoader {
-                configApplicationLoader()
-                        .withDefaultProfile(profile)
+                configLoader()
+                        .withDefaultProfiles(*profiles)
                         .load()
             }
         then:
             config.getString("a") == value
 
         where:
-            profile | value
-            "local" | "LOCAL"
-            "prod"  | "PROD"
-            "other" | "BASE"
+            profiles          | value
+            ["local"]         | "LOCAL"
+            ["prod"]          | "PROD"
+            ["local", "prod"] | "PROD"
+            ["prod", "local"] | "LOCAL"
+    }
+
+    @Unroll
+    def "should use throw error on missing profile config file: #profiles"() {
+        given:
+            writeClasspathFile("application.yml", "a: BASE")
+            writeClasspathFile("application-local.yml", "a: LOCAL")
+
+        when:
+            stubClassLoader {
+                configLoader()
+                        .withDefaultProfiles(*profiles)
+                        .load()
+            }
+        then:
+            thrown(ConfigLoadException)
+
+        where:
+            profiles << [
+                    ["other"],
+                    ["local", "other"],
+                    ["other", "local"]
+            ]
+    }
+
+    def "should load config from custom path and with custom name"() {
+        given:
+            writeClasspathFile("configs/app.yml", "a: BASE")
+            writeClasspathFile("configs/app-local.yml", "b: LOCAL")
+
+        when:
+            Config config = stubClassLoader {
+                configLoader()
+                        .withConfigPath("configs")
+                        .withConfigBaseName("app")
+                        .withDefaultProfiles("local")
+                        .load()
+            }
+        then:
+            config.getString("a") == "BASE"
+            config.getString("b") == "LOCAL"
+    }
+
+    def "should load config from custom path and without a base name"() {
+        given:
+            writeClasspathFile("configs/common.yml", "a: COMMON")
+            writeClasspathFile("configs/local.yml", "b: LOCAL")
+
+        when:
+            Config config = stubClassLoader {
+                configLoader()
+                        .withConfigPath("configs")
+                        .withoutConfigBaseName()
+                        .withCommonConfigName("common")
+                        .withDefaultProfiles("local")
+                        .load()
+            }
+        then:
+            config.getString("a") == "COMMON"
+            config.getString("b") == "LOCAL"
     }
 
     def "should override default profile with profile argument"() {
@@ -103,8 +165,8 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
             writeClasspathFile("application-local.yml", "a: LOCAL\nb: LOCAL")
         when:
             Config config = stubClassLoader {
-                configApplicationLoader()
-                        .withDefaultProfile("local")
+                configLoader()
+                        .withDefaultProfiles("local")
                         .withArgs("--profile", "prod")
                         .load()
             }
@@ -119,9 +181,9 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
             writeClasspathFile("application-local.yml", "a: LOCAL\nb: LOCAL")
         when:
             Config config = stubClassLoader {
-                configApplicationLoader()
-                        .withDefaultProfile("local")
-                        .withProfileArgument("appprofile")
+                configLoader()
+                        .withDefaultProfiles("local")
+                        .withProfileArgName("appprofile")
                         .withArgs("--appprofile", "prod")
                         .load()
             }
@@ -134,11 +196,57 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
             writeClasspathFile("application.yml", "a: \${x}")
         when:
             stubClassLoader {
-                configApplicationLoader()
+                configLoader()
                         .load()
             }
         then:
             UnresolvedConfigExpressionException e = thrown(UnresolvedConfigExpressionException)
             e.message == "Unresolved config expression: \${x}"
+    }
+
+    def "should fail on not allowed profile"() {
+        given:
+            writeClasspathFile("application.yml", "a: A")
+            writeClasspathFile("application-other.yml", "b: B")
+        when:
+            stubClassLoader {
+                configLoader()
+                        .withAllowedProfiles("local")
+                        .withArgs("--profile", "other")
+                        .load()
+            }
+        then:
+            IllegalArgumentException e = thrown(IllegalArgumentException)
+            e.message == "Invalid profiles: [other]"
+    }
+
+    def "should pass optional profile configs"() {
+        given:
+            writeClasspathFile("application.yml", "a: A")
+        expect:
+            stubClassLoader {
+                configLoader()
+                        .withOptionalProfileConfigs("other")
+                        .withArgs("--profile", "other")
+                        .load()
+            }
+        and:
+            stubClassLoader {
+                configLoader()
+                        .withOptionalAllProfileConfigs()
+                        .withArgs("--profile", "other")
+                        .load()
+            }
+    }
+
+    def "should make base config optional"() {
+        when:
+            Config config = stubClassLoader {
+                configLoader()
+                        .withOptionalBaseConfig()
+                        .load()
+            }
+        then:
+            config.isEmpty()
     }
 }
