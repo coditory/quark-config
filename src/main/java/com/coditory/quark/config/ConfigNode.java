@@ -15,11 +15,13 @@ interface ConfigNode {
 
     ConfigNode addOrReplace(Path parentPath, Path subPath, Object value);
 
-    ConfigNode remove(Path parentPath, Path subPath);
+    ConfigNode remove(Path parentPath, Path subPath, ConfigRemoveOptions options);
 
     ConfigNode withDefaults(ConfigNode root);
 
-    ConfigNode mapLeaves(Path parentPath, ConfigValueMapper mapper);
+    ConfigNode filterLeaves(Path parentPath, ConfigEntryPredicate predicate, ConfigRemoveOptions options);
+
+    ConfigNode mapLeaves(Path parentPath, ConfigEntryMapper mapper);
 
     default ConfigNode mapLeaves(Path parentPath, Function<Object, Object> mapper) {
         return mapLeaves(parentPath, (path, value) -> mapper.apply(value));

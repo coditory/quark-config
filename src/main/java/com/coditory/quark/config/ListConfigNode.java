@@ -111,7 +111,7 @@ class ListConfigNode implements ConfigNode {
     }
 
     @Override
-    public ListConfigNode remove(Path parentPath, Path subPath) {
+    public ListConfigNode remove(Path parentPath, Path subPath, ConfigRemoveOptions options) {
         if (subPath.isRoot() || !subPath.getFirstElement().isIndexed()) {
             return this;
         }
@@ -124,8 +124,13 @@ class ListConfigNode implements ConfigNode {
         result.remove(index);
         if (subPath.length() > 1) {
             ConfigNode mappedChild = values.get(index)
-                    .remove(parentPath.add(element), subPath.removeFirstElement());
-            result.add(index, mappedChild);
+                    .remove(parentPath.add(element), subPath.removeFirstElement(), options);
+            if (mappedChild != null) {
+                result.add(index, mappedChild);
+            }
+        }
+        if (result.isEmpty() && options.isRemoveEmptyLists()) {
+            return null;
         }
         return new ListConfigNode(result);
     }
@@ -152,7 +157,28 @@ class ListConfigNode implements ConfigNode {
     }
 
     @Override
-    public ListConfigNode mapLeaves(Path parentPath, ConfigValueMapper mapper) {
+    public ListConfigNode filterLeaves(Path parentPath, ConfigEntryPredicate predicate, ConfigRemoveOptions options) {
+        List<ConfigNode> result = new ArrayList<>(values.size());
+        boolean childMapped = false;
+        for (int i = 0; i < values.size(); ++i) {
+            Path path = parentPath.add(i);
+            ConfigNode child = values.get(i);
+            ConfigNode mapped = child.filterLeaves(path, predicate, options);
+            if (mapped != null) {
+                result.add(mapped);
+            }
+            childMapped = childMapped || !Objects.equals(mapped, child);
+        }
+        if (result.isEmpty() && options.isRemoveEmptyLists()) {
+            return null;
+        }
+        return childMapped
+                ? new ListConfigNode(result)
+                : this;
+    }
+
+    @Override
+    public ListConfigNode mapLeaves(Path parentPath, ConfigEntryMapper mapper) {
         List<ConfigNode> result = new ArrayList<>(values.size());
         boolean childMapped = false;
         for (int i = 0; i < values.size(); ++i) {

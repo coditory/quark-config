@@ -4,10 +4,8 @@ import spock.lang.Specification
 
 class ConfigWithValueSpec extends Specification {
     def "should add values to an empty config"() {
-        given:
-            Config config = Config.empty()
         when:
-            config = config
+            Config config = Config.empty()
                     .withValue("a.b.c", "ABC")
                     .withValue("a.d", "AD")
                     .withValue("e", ["E0", "E1"])
@@ -18,6 +16,20 @@ class ConfigWithValueSpec extends Specification {
                             d: "AD"
                     ],
                     e: ["E0", "E1"]
+            ]
+    }
+
+    def "should add empty values to an empty config"() {
+        when:
+            Config config = Config.empty()
+                    .withValue("a", [:])
+                    .withValue("b", [])
+                    .withValue("c", [[], [:]])
+        then:
+            config.toMap() == [
+                    a: [:],
+                    b: [],
+                    c: [[], [:]]
             ]
     }
 

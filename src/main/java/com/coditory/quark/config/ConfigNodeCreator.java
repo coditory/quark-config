@@ -39,7 +39,7 @@ class ConfigNodeCreator {
     static ConfigNode createNodeForValue(Object value) {
         if (value instanceof Config) {
             Config config = (Config) value;
-            return config.getRoot();
+            return config.getRootNode();
         }
         if (value instanceof Map) {
             Map<Object, Object> map = (Map<Object, Object>) value;
