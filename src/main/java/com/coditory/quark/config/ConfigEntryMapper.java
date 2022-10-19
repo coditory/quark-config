@@ -1,5 +1,5 @@
 package com.coditory.quark.config;
 
-public interface ConfigValueMapper {
+public interface ConfigEntryMapper {
     Object mapValue(String path, Object value);
 }

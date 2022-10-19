@@ -68,7 +68,27 @@ class MapConfigNode implements ConfigNode {
     }
 
     @Override
-    public MapConfigNode mapLeaves(Path parentPath, ConfigValueMapper mapper) {
+    public MapConfigNode filterLeaves(Path parentPath, ConfigEntryPredicate predicate, ConfigRemoveOptions options) {
+        HashMap<String, ConfigNode> result = new HashMap<>(values.size());
+        boolean childModified = false;
+        for (Entry<String, ConfigNode> entry : values.entrySet()) {
+            Path path = parentPath.add(entry.getKey());
+            ConfigNode mapped = entry.getValue().filterLeaves(path, predicate, options);
+            if (mapped != null) {
+                result.put(entry.getKey(), mapped);
+            }
+            childModified = childModified || !Objects.equals(mapped, entry.getValue());
+        }
+        if (result.isEmpty() && options.isRemoveEmptyObjects()) {
+            return null;
+        }
+        return childModified
+                ? new MapConfigNode(result)
+                : this;
+    }
+
+    @Override
+    public MapConfigNode mapLeaves(Path parentPath, ConfigEntryMapper mapper) {
         HashMap<String, ConfigNode> result = new HashMap<>(values.size());
         boolean childModified = false;
         for (Entry<String, ConfigNode> entry : values.entrySet()) {
@@ -119,7 +139,7 @@ class MapConfigNode implements ConfigNode {
     }
 
     @Override
-    public MapConfigNode remove(Path parentPath, Path subPath) {
+    public MapConfigNode remove(Path parentPath, Path subPath, ConfigRemoveOptions options) {
         if (subPath.isRoot() || !subPath.getFirstElement().isNamed()) {
             return this;
         }
@@ -132,8 +152,13 @@ class MapConfigNode implements ConfigNode {
         result.remove(name);
         if (subPath.length() > 1) {
             ConfigNode mappedChild = values.get(name)
-                    .remove(parentPath.add(element), subPath.removeFirstElement());
-            result.put(name, mappedChild);
+                    .remove(parentPath.add(element), subPath.removeFirstElement(), options);
+            if (mappedChild != null) {
+                result.put(name, mappedChild);
+            }
+        }
+        if (result.isEmpty() && options.isRemoveEmptyObjects()) {
+            return null;
         }
         return new MapConfigNode(result);
     }

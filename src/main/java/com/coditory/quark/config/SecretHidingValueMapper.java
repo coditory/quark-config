@@ -6,7 +6,7 @@ import java.util.Set;
 import static com.coditory.quark.config.Preconditions.expectNonBlank;
 import static com.coditory.quark.config.Preconditions.expectNonEmpty;
 
-public class SecretHidingValueMapper implements ConfigValueMapper {
+public class SecretHidingValueMapper implements ConfigEntryMapper {
     private static final String DEFAULT_SECRET_REPLACEMENT = "***";
     private static final Set<String> DEFAULT_SECRET_NAMES = Set.of(
             "password", "passwords",

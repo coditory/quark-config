@@ -42,7 +42,7 @@ class LeafConfigNode implements ConfigNode {
     }
 
     @Override
-    public ConfigNode remove(Path parentPath, Path subPath) {
+    public ConfigNode remove(Path parentPath, Path subPath, ConfigRemoveOptions options) {
         return this;
     }
 
@@ -52,7 +52,12 @@ class LeafConfigNode implements ConfigNode {
     }
 
     @Override
-    public ConfigNode mapLeaves(Path parentPath, ConfigValueMapper mapper) {
+    public ConfigNode filterLeaves(Path parentPath, ConfigEntryPredicate predicate, ConfigRemoveOptions options) {
+        return predicate.test(parentPath.toString(), value) ? this : null;
+    }
+
+    @Override
+    public ConfigNode mapLeaves(Path parentPath, ConfigEntryMapper mapper) {
         Object mapped = mapper.mapValue(parentPath.toString(), value);
         return Objects.equals(mapped, value)
                 ? this

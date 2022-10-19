@@ -9,7 +9,10 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
 
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
@@ -152,7 +155,7 @@ enum ConfigFormat {
 
         @Override
         public String stringify(Config config) {
-            return config.entries().stream()
+            return config.toFlatMap().entrySet().stream()
                     .map(entry -> entry.getKey() + "=" + entry.getValue())
                     .collect(joining("\n", "", "\n"));
         }

@@ -205,11 +205,13 @@ public class ConfigLoader {
                 .withValue("env", ConfigFactory.buildFromSystemEnvironment())
                 .withValue("args", allArgsConfig)
                 .build();
-        return baseConfig()
+        return Config.builder()
+                .withValues(baseConfig())
                 .withValues(profileConfig(profiles))
                 .withValues(externalConfig(allArgsConfig))
                 .withValues(filteredArgsConfig(allArgsConfig))
-                .resolveExpressions(resolveConfig);
+                .withResolvedExpressions(resolveConfig)
+                .build();
     }
 
     private Config baseConfig() {

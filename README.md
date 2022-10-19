@@ -37,6 +37,20 @@ Config config = ConfigFactory.configLoader()
         .load()
 ```
 
+Loads configuration files:
+- from classpath directory: `config`
+- with config base name: `application` (it's a default value)
+- with default profile: `local` (can be overridden with args `--profile=$PROFILE`)
+- overrides configuration values using args `--config-value.$NAME=$VALUE`
+
+```
+// Sample config files layout:
+src/main/resources/config
+  application.yml
+  application-local.yml
+  application-prod.yml
+```
+
 Explore the API, there is much more to configure.
 
 #### Config merging order
