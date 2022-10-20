@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static com.coditory.quark.config.Preconditions.expect;
@@ -33,7 +34,8 @@ public class ConfigLoader {
     private boolean optionalBaseConfig = false;
     private Set<String> allowedProfiles = null;
     private Set<String> optionalProfileConfigs = null;
-    private boolean optionalAllProfileConfigs = false;
+    private boolean profileConfigsRequired = false;
+    private Function<List<String>, List<String>> profilesProvider;
 
     ConfigLoader() {
         // deliberately empty
@@ -111,6 +113,7 @@ public class ConfigLoader {
     }
 
     public ConfigLoader withOptionalProfileConfigs(Set<String> optionalProfileConfigs) {
+        withProfileConfigsRequired();
         this.optionalProfileConfigs = new HashSet<>(optionalProfileConfigs);
         return this;
     }
@@ -124,12 +127,12 @@ public class ConfigLoader {
         return this;
     }
 
-    public ConfigLoader withOptionalAllProfileConfigs() {
-        return withOptionalAllProfileConfigs(true);
+    public ConfigLoader withProfileConfigsRequired() {
+        return withProfileConfigsRequired(true);
     }
 
-    public ConfigLoader withOptionalAllProfileConfigs(boolean optionalAllProfileConfigs) {
-        this.optionalAllProfileConfigs = optionalAllProfileConfigs;
+    public ConfigLoader withProfileConfigsRequired(boolean profileConfigsRequired) {
+        this.profileConfigsRequired = profileConfigsRequired;
         return this;
     }
 
@@ -155,13 +158,13 @@ public class ConfigLoader {
         return this;
     }
 
-    public ConfigLoader addDefaultProfile(String defaultProfile) {
-        expectNonBlank(defaultProfile, "defaultProfile");
-        List<String> newProfiles = stream(defaultProfile.split(","))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .toList();
-        this.defaultProfiles.addAll(newProfiles);
+    public ConfigLoader withProfiles(String... profiles) {
+        this.profilesProvider = (p) -> Arrays.asList(profiles);
+        return this;
+    }
+
+    public ConfigLoader withProfiles(Function<List<String>, List<String>> profilesProvider) {
+        this.profilesProvider = profilesProvider;
         return this;
     }
 
@@ -230,6 +233,12 @@ public class ConfigLoader {
         profiles = profiles.isEmpty() && !defaultProfiles.isEmpty()
                 ? defaultProfiles
                 : profiles;
+        if (profilesProvider != null) {
+            profiles = profilesProvider.apply(profiles);
+        }
+        profiles = profiles.stream()
+                .filter(p -> p != null && !p.isBlank() && !p.contains(","))
+                .collect(toList());
         if (allowedProfiles != null) {
             Set<String> invalidProfiles = profiles.stream()
                     .filter(p -> !allowedProfiles.contains(p))
@@ -269,7 +278,7 @@ public class ConfigLoader {
         if (profile == null) {
             return optionalBaseConfig;
         }
-        return optionalAllProfileConfigs ||
+        return !profileConfigsRequired ||
                 (optionalProfileConfigs != null && optionalProfileConfigs.contains(profile));
     }
 

@@ -107,6 +107,10 @@ public interface Config extends ConfigGetters {
 
     Config withHiddenSecrets();
 
+    default AuditableConfig auditable() {
+        return AuditableConfig.of(this);
+    }
+
     class ConfigBuilder {
         private MapConfigNode root = MapConfigNode.emptyRoot();
         private List<ValueParser> valueParsers = new ArrayList<>(DEFAULT_VALUE_PARSERS);
