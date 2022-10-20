@@ -91,15 +91,16 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
             config.getString("a") == value
 
         where:
-            profiles          | value
-            ["local"]         | "LOCAL"
-            ["prod"]          | "PROD"
-            ["local", "prod"] | "PROD"
-            ["prod", "local"] | "LOCAL"
+            profiles             | value
+            ["local"]            | "LOCAL"
+            ["prod"]             | "PROD"
+            ["local", "prod"]    | "PROD"
+            ["prod", "local"]    | "LOCAL"
+            ["local", "unknown"] | "LOCAL"
     }
 
     @Unroll
-    def "should use throw error on missing profile config file: #profiles"() {
+    def "should throw error on missing profile config file: #profiles"() {
         given:
             writeClasspathFile("application.yml", "a: BASE")
             writeClasspathFile("application-local.yml", "a: LOCAL")
@@ -107,6 +108,7 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
         when:
             stubClassLoader {
                 configLoader()
+                        .withProfileConfigsRequired()
                         .withDefaultProfiles(*profiles)
                         .load()
             }
@@ -226,17 +228,31 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
         expect:
             stubClassLoader {
                 configLoader()
-                        .withOptionalProfileConfigs("other")
                         .withArgs("--profile", "other")
                         .load()
             }
         and:
             stubClassLoader {
                 configLoader()
-                        .withOptionalAllProfileConfigs()
+                        .withOptionalProfileConfigs("other")
                         .withArgs("--profile", "other")
                         .load()
             }
+    }
+
+    def "should throw error on missing required profile config"() {
+        given:
+            writeClasspathFile("application.yml", "a: A")
+        when:
+            stubClassLoader {
+                configLoader()
+                        .withOptionalProfileConfigs("other")
+                        .withArgs("--profile", "prod")
+                        .load()
+            }
+        then:
+            ConfigLoadException e = thrown(ConfigLoadException)
+            e.message == "Configuration file not found on classpath: application-prod"
     }
 
     def "should make base config optional"() {

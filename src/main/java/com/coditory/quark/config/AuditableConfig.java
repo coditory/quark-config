@@ -13,7 +13,7 @@ public class AuditableConfig extends ConfigDecorator {
     private static final Object USED_MARKER = new Object();
     private Config unreadConfig;
 
-    public static AuditableConfig of(Config config) {
+    static AuditableConfig of(Config config) {
         if (config instanceof AuditableConfig) {
             return (AuditableConfig) config;
         }

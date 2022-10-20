@@ -63,6 +63,7 @@ according to the following order:
 - profile config
   - profile based config from classpath, by default: `application-${profile}.{yml,json,properties}`
   - profiles are enabled in arguments: `--profile=$PROFILE` or `--profile=$PROFILE1,$PROFILE2`
+  - by default profile configs are optional
 - external config
   - config file from system
   - passed as an argument `--config=$PATH_TO_CONFIG`
