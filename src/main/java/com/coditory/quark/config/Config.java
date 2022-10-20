@@ -101,10 +101,6 @@ public interface Config extends ConfigGetters {
 
     boolean isEmpty();
 
-    default Config copy() {
-        return Config.empty().withValues(this);
-    }
-
     Config withHiddenSecrets();
 
     default AuditableConfig auditable() {
