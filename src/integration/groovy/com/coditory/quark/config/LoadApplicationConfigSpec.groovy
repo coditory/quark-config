@@ -32,7 +32,7 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
                                 "--config-prop.d", "ARGS",
                                 "--config", external.getPath()
                         )
-                        .load()
+                        .loadConfig()
             }
         then:
             config.toMap() == [
@@ -69,14 +69,14 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
                                 "--config-prop.d", "ARGS",
                                 "--config", external.getPath()
                         )
-                        .load()
+                        .loadConfig()
             }
         then:
             config.getString("expression") == "BASE, PROFILE, EXTERNAL, ARGS"
     }
 
     @Unroll
-    def "should use default profile: #profiles"() {
+    def "should use value from default profile: #profiles"() {
         given:
             writeClasspathFile("application.yml", "a: BASE")
             writeClasspathFile("application-prod.yml", "a: PROD")
@@ -85,7 +85,7 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
             Config config = stubClassLoader {
                 configLoader()
                         .withDefaultProfiles(*profiles)
-                        .load()
+                        .loadConfig()
             }
         then:
             config.getString("a") == value
@@ -99,6 +99,37 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
             ["local", "unknown"] | "LOCAL"
     }
 
+    def "should load environment"() {
+        given:
+            writeClasspathFile("application.yml", "a: BASE")
+            writeClasspathFile("application-local.yml", "a: LOCAL")
+        when:
+            Environment env = stubClassLoader {
+                configLoader()
+                        .withDefaultProfiles("local")
+                        .loadEnvironment()
+            }
+        then:
+            env.profiles == Profiles.of("local")
+            env.config == Config.of(a: "LOCAL")
+    }
+
+    def "should use profile specified in loader"() {
+        given:
+            writeClasspathFile("application.yml", "a: BASE")
+            writeClasspathFile("application-local.yml", "a: LOCAL")
+        when:
+            Config config = stubClassLoader {
+                configLoader()
+                        .withDefaultProfiles("test")
+                        .withProfiles("local")
+                        .withArgs("--profile", "dev")
+                        .loadConfig()
+            }
+        then:
+            config.getString("a") == "LOCAL"
+    }
+
     @Unroll
     def "should throw error on missing profile config file: #profiles"() {
         given:
@@ -110,7 +141,7 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
                 configLoader()
                         .withProfileConfigsRequired()
                         .withDefaultProfiles(*profiles)
-                        .load()
+                        .loadConfig()
             }
         then:
             thrown(ConfigLoadException)
@@ -134,7 +165,7 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
                         .withConfigPath("configs")
                         .withConfigBaseName("app")
                         .withDefaultProfiles("local")
-                        .load()
+                        .loadConfig()
             }
         then:
             config.getString("a") == "BASE"
@@ -153,7 +184,7 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
                         .withoutConfigBaseName()
                         .withCommonConfigName("common")
                         .withDefaultProfiles("local")
-                        .load()
+                        .loadConfig()
             }
         then:
             config.getString("a") == "COMMON"
@@ -170,7 +201,7 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
                 configLoader()
                         .withDefaultProfiles("local")
                         .withArgs("--profile", "prod")
-                        .load()
+                        .loadConfig()
             }
         then:
             config.toMap() == [a: "PROD"]
@@ -187,7 +218,7 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
                         .withDefaultProfiles("local")
                         .withProfileArgName("appprofile")
                         .withArgs("--appprofile", "prod")
-                        .load()
+                        .loadConfig()
             }
         then:
             config.toMap() == [a: "PROD"]
@@ -199,44 +230,29 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
         when:
             stubClassLoader {
                 configLoader()
-                        .load()
+                        .loadConfig()
             }
         then:
             UnresolvedConfigExpressionException e = thrown(UnresolvedConfigExpressionException)
             e.message == "Unresolved config expression: \${x}"
     }
 
-    def "should fail on not allowed profile"() {
-        given:
-            writeClasspathFile("application.yml", "a: A")
-            writeClasspathFile("application-other.yml", "b: B")
-        when:
-            stubClassLoader {
-                configLoader()
-                        .withAllowedProfiles("local")
-                        .withArgs("--profile", "other")
-                        .load()
-            }
-        then:
-            IllegalArgumentException e = thrown(IllegalArgumentException)
-            e.message == "Invalid profiles: [other]"
-    }
-
-    def "should pass optional profile configs"() {
+    def "should skip missing optional profile configs"() {
         given:
             writeClasspathFile("application.yml", "a: A")
         expect:
             stubClassLoader {
                 configLoader()
                         .withArgs("--profile", "other")
-                        .load()
+                        .loadConfig()
             }
         and:
             stubClassLoader {
                 configLoader()
+                        .withProfileConfigsRequired()
                         .withOptionalProfileConfigs("other")
                         .withArgs("--profile", "other")
-                        .load()
+                        .loadConfig()
             }
     }
 
@@ -248,10 +264,20 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
                 configLoader()
                         .withOptionalProfileConfigs("other")
                         .withArgs("--profile", "prod")
-                        .load()
+                        .loadConfig()
             }
         then:
             ConfigLoadException e = thrown(ConfigLoadException)
+            e.message == "Configuration file not found on classpath: application-prod"
+        when:
+            stubClassLoader {
+                configLoader()
+                        .withProfileConfigsRequired()
+                        .withArgs("--profile", "prod")
+                        .loadConfig()
+            }
+        then:
+            e = thrown(ConfigLoadException)
             e.message == "Configuration file not found on classpath: application-prod"
     }
 
@@ -260,7 +286,7 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
             Config config = stubClassLoader {
                 configLoader()
                         .withOptionalBaseConfig()
-                        .load()
+                        .loadConfig()
             }
         then:
             config.isEmpty()

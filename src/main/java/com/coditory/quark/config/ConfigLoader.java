@@ -2,40 +2,32 @@ package com.coditory.quark.config;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Stream;
+import java.util.function.Predicate;
 
 import static com.coditory.quark.config.Preconditions.expect;
 import static com.coditory.quark.config.Preconditions.expectNonBlank;
 import static com.coditory.quark.config.Preconditions.expectNonNull;
-import static java.util.Arrays.stream;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 
-public class ConfigLoader {
+public final class ConfigLoader {
+    private final ArgumentsParser argumentsParser = new ArgumentsParser();
+    private final ProfilesResolver profilesResolver = new ProfilesResolver();
+    private Profiles profiles = null;
     private String[] args = null;
     private String externalConfigArgName = "config";
     private String configPropArgPrefix = "config-prop";
-    private Map<String, String> argsAliases = new LinkedHashMap<>(Map.of("p", "profile"));
-    private Map<String[], String[]> argsMapping = new LinkedHashMap<>();
-    private String profileArgName = "profile";
-    private List<String> defaultProfiles = new ArrayList<>();
     private Path configPath = null;
     private String commonConfigName = "base";
     private String configBaseName = "application";
     private boolean optionalBaseConfig = false;
-    private Set<String> allowedProfiles = null;
     private Set<String> optionalProfileConfigs = null;
     private boolean profileConfigsRequired = false;
-    private Function<List<String>, List<String>> profilesProvider;
 
     ConfigLoader() {
         // deliberately empty
@@ -47,29 +39,23 @@ public class ConfigLoader {
         return this;
     }
 
-    public ConfigLoader withArgsMapping(Map<String[], String[]> argsMapping) {
-        expectNonNull(argsMapping, "argsMapping");
-        this.argsMapping = copy(argsMapping);
+    public ConfigLoader withArgsMapping(Map<String[], String[]> mapping) {
+        argumentsParser.withMapping(mapping);
         return this;
     }
 
     public ConfigLoader addArgsMapping(String[] args, String[] mapping) {
-        expectNonNull(args, "args");
-        expectNonNull(mapping, "mapping");
-        this.argsMapping.put(copy(args), copy(mapping));
+        argumentsParser.addMapping(args, mapping);
         return this;
     }
 
-    public ConfigLoader withArgsAliases(Map<String, String> argsAliases) {
-        expectNonNull(argsAliases, "argsAliases");
-        this.argsAliases = new LinkedHashMap<>(argsAliases);
+    public ConfigLoader withArgsAliases(Map<String, String> aliases) {
+        argumentsParser.withAliases(aliases);
         return this;
     }
 
     public ConfigLoader addArgsAlias(String arg, String alias) {
-        expectNonBlank(arg, "arg");
-        expectNonBlank(alias, "alias");
-        this.argsAliases.put(arg, alias);
+        argumentsParser.addAlias(arg, alias);
         return this;
     }
 
@@ -104,7 +90,31 @@ public class ConfigLoader {
     }
 
     public ConfigLoader withAllowedProfiles(Set<String> allowedProfiles) {
-        this.allowedProfiles = new HashSet<>(allowedProfiles);
+        this.profilesResolver.withAllowedProfiles(allowedProfiles);
+        return this;
+    }
+
+    public ConfigLoader withExclusiveProfiles(String... exclusiveProfiles) {
+        return withExclusiveProfiles(Set.of(exclusiveProfiles));
+    }
+
+    public ConfigLoader withExclusiveProfiles(Set<String> exclusiveProfiles) {
+        this.profilesResolver.withExclusiveProfiles(exclusiveProfiles);
+        return this;
+    }
+
+    public ConfigLoader withExpectedProfileCount(int count) {
+        this.profilesResolver.withExpectedProfileCount(count);
+        return this;
+    }
+
+    public ConfigLoader withMinProfileCount(int count) {
+        this.profilesResolver.withMinProfileCount(count);
+        return this;
+    }
+
+    public ConfigLoader withMaxProfileCount(int count) {
+        this.profilesResolver.withMaxProfileCount(count);
         return this;
     }
 
@@ -137,7 +147,7 @@ public class ConfigLoader {
     }
 
     public ConfigLoader withProfileArgName(String profileArgName) {
-        this.profileArgName = expectNonBlank(profileArgName, "profileArgName");
+        this.profilesResolver.withProfileArgName(profileArgName);
         return this;
     }
 
@@ -148,23 +158,22 @@ public class ConfigLoader {
     }
 
     public ConfigLoader withDefaultProfiles(String... defaultProfiles) {
-        expectNonNull(defaultProfiles, "defaultProfiles");
-        List<String> newProfiles = stream(defaultProfiles)
-                .flatMap(s -> stream(s.split(",")))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .toList();
-        this.defaultProfiles = new ArrayList<>(newProfiles);
+        this.profilesResolver.withDefaultProfiles(defaultProfiles);
         return this;
     }
 
     public ConfigLoader withProfiles(String... profiles) {
-        this.profilesProvider = (p) -> Arrays.asList(profiles);
+        this.profilesResolver.withProfiles(profiles);
         return this;
     }
 
-    public ConfigLoader withProfiles(Function<List<String>, List<String>> profilesProvider) {
-        this.profilesProvider = profilesProvider;
+    public ConfigLoader withProfilesMapper(Function<List<String>, List<String>> mapper) {
+        this.profilesResolver.withProfilesMapper(mapper);
+        return this;
+    }
+
+    public ConfigLoader withProfilesValidator(Predicate<List<String>> predicate) {
+        this.profilesResolver.withProfilesValidator(predicate);
         return this;
     }
 
@@ -199,53 +208,48 @@ public class ConfigLoader {
         return withConfigPath(Paths.get(configPath));
     }
 
-    public Config load() {
+    public ConfigLoader withProfiles(List<String> profiles) {
+        this.profiles = Profiles.of(profiles);
+        return this;
+    }
+
+    public ConfigLoader withProfiles(Profiles profiles) {
+        this.profiles = profiles;
+        return this;
+    }
+
+    public Config loadConfig() {
+        Environment environment = loadEnvironment();
+        return environment.getConfig();
+    }
+
+    public Environment loadEnvironment() {
         Config allArgsConfig = allArgsConfig();
-        List<String> profiles = profiles(allArgsConfig);
+        Profiles profiles = resolveProfiles(allArgsConfig);
         Config resolveConfig = Config.builder()
-                .withValue("profiles", profiles)
-                .withValue("system", ConfigFactory.buildFromSystemProperties())
-                .withValue("env", ConfigFactory.buildFromSystemEnvironment())
-                .withValue("args", allArgsConfig)
+                .withValue("_profiles", profiles.getValues())
+                .withValue("_system", ConfigFactory.buildFromSystemProperties())
+                .withValue("_env", ConfigFactory.buildFromSystemEnvironment())
+                .withValue("_args", allArgsConfig)
                 .build();
-        return Config.builder()
+        Config config = Config.builder()
                 .withValues(baseConfig())
-                .withValues(profileConfig(profiles))
+                .withValues(profileConfig(profiles.getValues()))
                 .withValues(externalConfig(allArgsConfig))
                 .withValues(filteredArgsConfig(allArgsConfig))
                 .withResolvedExpressions(resolveConfig)
                 .build();
+        return new Environment(config, profiles);
+    }
+
+    private Profiles resolveProfiles(Config argsConfig) {
+        return profiles != null
+                ? profiles
+                : profilesResolver.resolve(argsConfig);
     }
 
     private Config baseConfig() {
         return loadFromClasspath(null);
-    }
-
-    private List<String> profiles(Config argsConfig) {
-        Stream<String> profilesFromArgument = profileArgName != null && argsConfig.contains(profileArgName)
-                ? Stream.of(argsConfig.getString(profileArgName))
-                : Stream.of();
-        List<String> profiles = profilesFromArgument
-                .flatMap(s -> stream(s.split(",")))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .collect(toList());
-        profiles = profiles.isEmpty() && !defaultProfiles.isEmpty()
-                ? defaultProfiles
-                : profiles;
-        if (profilesProvider != null) {
-            profiles = profilesProvider.apply(profiles);
-        }
-        profiles = profiles.stream()
-                .filter(p -> p != null && !p.isBlank() && !p.contains(","))
-                .collect(toList());
-        if (allowedProfiles != null) {
-            Set<String> invalidProfiles = profiles.stream()
-                    .filter(p -> !allowedProfiles.contains(p))
-                    .collect(toSet());
-            expect(invalidProfiles.isEmpty(), "Invalid profiles: " + invalidProfiles);
-        }
-        return profiles;
     }
 
     private Config profileConfig(List<String> profiles) {
@@ -283,9 +287,11 @@ public class ConfigLoader {
     }
 
     private Config allArgsConfig() {
-        return args != null
-                ? ConfigFactory.buildFromArgs(args, argsAliases, argsMapping)
-                : Config.empty();
+        if (args == null) {
+            return Config.empty();
+        }
+        Map<String, Object> values = argumentsParser.parse(args);
+        return Config.of(values);
     }
 
     private Config filteredArgsConfig(Config argsConfig) {
@@ -302,13 +308,5 @@ public class ConfigLoader {
 
     private String[] copy(String[] input) {
         return Arrays.copyOf(input, input.length);
-    }
-
-    private LinkedHashMap<String[], String[]> copy(Map<String[], String[]> input) {
-        LinkedHashMap<String[], String[]> result = new LinkedHashMap<>();
-        for (Map.Entry<String[], String[]> entry : input.entrySet()) {
-            result.put(copy(entry.getKey()), copy(entry.getValue()));
-        }
-        return result;
     }
 }

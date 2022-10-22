@@ -97,7 +97,7 @@ public interface Config extends ConfigGetters {
 
     Optional<Config> getSubConfigOptional(String path);
 
-    ConfigNode getRootNode();
+    MapConfigNode getRootNode();
 
     boolean isEmpty();
 

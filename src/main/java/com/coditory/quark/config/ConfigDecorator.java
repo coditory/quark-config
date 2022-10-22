@@ -89,7 +89,7 @@ abstract class ConfigDecorator implements Config {
     }
 
     @Override
-    public ConfigNode getRootNode() {
+    public MapConfigNode getRootNode() {
         return config.getRootNode();
     }
 

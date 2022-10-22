@@ -1,8 +1,11 @@
 package com.coditory.quark.config;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import static java.lang.String.format;
 
@@ -15,6 +18,19 @@ final class Preconditions {
         if (!valid) {
             throw new IllegalArgumentException(format(message, args));
         }
+    }
+
+    public static <T> List<T> expectUnique(List<T> value) {
+        return expectUnique(value, null);
+    }
+
+    public static <T> List<T> expectUnique(List<T> values, String name) {
+        Set<T> unique = new HashSet<>(values);
+        if (unique.size() != values.size()) {
+            String field = name != null ? (": " + name) : "";
+            throw new IllegalArgumentException("Expected unique values" + field);
+        }
+        return values;
     }
 
     public static <T> T expectNonNull(T value) {
