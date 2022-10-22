@@ -63,16 +63,20 @@ public final class AuditableConfig extends ConfigDecorator {
 
     public AuditableConfig markAsRead(String path) {
         if (unreadConfig.contains(path)) {
-            unreadConfig = unreadConfig.withValue(path, USED_MARKER);
+            unreadConfig = Config.builder(unreadConfig)
+                    .put(path, USED_MARKER)
+                    .build();
         }
         return this;
     }
 
     public Config getUnusedProperties() {
-        return unreadConfig.filterValues(
-                (path, value) -> !Objects.equals(value, USED_MARKER),
-                removeEmptyParents()
-        );
+        return Config.builder()
+                .putAll(unreadConfig)
+                .filterValues(
+                        (path, value) -> !Objects.equals(value, USED_MARKER),
+                        removeEmptyParents()
+                ).build();
     }
 
     public void throwErrorOnUnusedProperties() {

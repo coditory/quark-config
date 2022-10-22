@@ -3,6 +3,7 @@ package com.coditory.quark.config;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,18 +30,25 @@ public final class ConfigLoader {
     private Set<String> optionalProfileConfigs = null;
     private boolean profileConfigsRequired = false;
 
-    ConfigLoader() {
-        // deliberately empty
-    }
-
     public ConfigLoader withArgs(String[] args) {
         expectNonNull(args, "args");
         this.args = copy(args);
         return this;
     }
 
+    public ConfigLoader withArgs(List<String> args) {
+        expectNonNull(args, "args");
+        this.args = args.toArray(new String[0]);
+        return this;
+    }
+
     public ConfigLoader withArgsMapping(Map<String[], String[]> mapping) {
         argumentsParser.withMapping(mapping);
+        return this;
+    }
+
+    public ConfigLoader addArgsMapping(List<String> args, List<String> mapping) {
+        argumentsParser.addMapping(args.toArray(new String[0]), mapping.toArray(new String[0]));
         return this;
     }
 
@@ -89,8 +97,13 @@ public final class ConfigLoader {
         return withAllowedProfiles(Set.of(allowedProfiles));
     }
 
-    public ConfigLoader withAllowedProfiles(Set<String> allowedProfiles) {
+    public ConfigLoader withAllowedProfiles(Collection<String> allowedProfiles) {
         this.profilesResolver.withAllowedProfiles(allowedProfiles);
+        return this;
+    }
+
+    public ConfigLoader setFirstIfNoneMatch(List<String> firstIfNoneMatch) {
+        this.profilesResolver.setFirstIfNoneMatch(firstIfNoneMatch);
         return this;
     }
 
@@ -98,7 +111,7 @@ public final class ConfigLoader {
         return withExclusiveProfiles(Set.of(exclusiveProfiles));
     }
 
-    public ConfigLoader withExclusiveProfiles(Set<String> exclusiveProfiles) {
+    public ConfigLoader withExclusiveProfiles(Collection<String> exclusiveProfiles) {
         this.profilesResolver.withExclusiveProfiles(exclusiveProfiles);
         return this;
     }
@@ -227,17 +240,17 @@ public final class ConfigLoader {
         Config allArgsConfig = allArgsConfig();
         Profiles profiles = resolveProfiles(allArgsConfig);
         Config resolveConfig = Config.builder()
-                .withValue("_profiles", profiles.getValues())
-                .withValue("_system", ConfigFactory.buildFromSystemProperties())
-                .withValue("_env", ConfigFactory.buildFromSystemEnvironment())
-                .withValue("_args", allArgsConfig)
+                .put("_profiles", profiles.getValues())
+                .put("_system", ConfigFactory.buildFromSystemProperties())
+                .put("_env", ConfigFactory.buildFromSystemEnvironment())
+                .put("_args", allArgsConfig)
                 .build();
         Config config = Config.builder()
-                .withValues(baseConfig())
-                .withValues(profileConfig(profiles.getValues()))
-                .withValues(externalConfig(allArgsConfig))
-                .withValues(filteredArgsConfig(allArgsConfig))
-                .withResolvedExpressions(resolveConfig)
+                .putAll(baseConfig())
+                .putAll(profileConfig(profiles.getValues()))
+                .putAll(externalConfig(allArgsConfig))
+                .putAll(filteredArgsConfig(allArgsConfig))
+                .resolveExpressions(resolveConfig)
                 .build();
         return new Environment(config, profiles);
     }
@@ -253,14 +266,14 @@ public final class ConfigLoader {
     }
 
     private Config profileConfig(List<String> profiles) {
-        Config config = Config.empty();
+        ConfigBuilder configBuilder = Config.builder();
         for (String profile : profiles) {
             if (profile != null && !profile.isBlank()) {
                 Config profileConfig = loadFromClasspath(profile);
-                config = config.withValues(profileConfig);
+                configBuilder = configBuilder.putAll(profileConfig);
             }
         }
-        return config;
+        return configBuilder.build();
     }
 
     private Config loadFromClasspath(String profile) {

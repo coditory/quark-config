@@ -2,12 +2,12 @@ package com.coditory.quark.config
 
 import spock.lang.Specification
 
-import static com.coditory.quark.config.Profiles.profilesResolver
+import static com.coditory.quark.config.Profiles.resolver
 
 class ProfileResolutionSpec extends Specification {
     def "should fail on not allowed profile"() {
         when:
-            profilesResolver()
+            resolver()
                     .withAllowedProfiles("dev", "test")
                     .resolve("--profile", "other")
         then:
@@ -17,7 +17,7 @@ class ProfileResolutionSpec extends Specification {
 
     def "should pass on allowed profile"() {
         when:
-            List<String> profiles = profilesResolver()
+            List<String> profiles = resolver()
                     .withAllowedProfiles("dev", "test", "prod")
                     .resolve("--profile", "dev,test")
                     .getValues()
@@ -27,7 +27,7 @@ class ProfileResolutionSpec extends Specification {
 
     def "should pass on allowed profile"() {
         when:
-            List<String> profiles = profilesResolver()
+            List<String> profiles = resolver()
                     .withAllowedProfiles("dev", "test", "prod")
                     .resolve("--profile", "dev,test")
                     .getValues()
@@ -37,7 +37,7 @@ class ProfileResolutionSpec extends Specification {
 
     def "should fail on exclusive profiles"() {
         when:
-            profilesResolver()
+            resolver()
                     .withExclusiveProfiles("dev", "test", "prod")
                     .resolve("--profile", "dev,test")
         then:
@@ -47,7 +47,7 @@ class ProfileResolutionSpec extends Specification {
 
     def "should pass on non-exclusive profiles"() {
         when:
-            List<String> profiles = profilesResolver()
+            List<String> profiles = resolver()
                     .withExclusiveProfiles("dev", "test", "prod")
                     .resolve("--profile", "dev,other")
                     .getValues()
@@ -57,7 +57,7 @@ class ProfileResolutionSpec extends Specification {
 
     def "should return default profiles"() {
         when:
-            List<String> profiles = profilesResolver()
+            List<String> profiles = resolver()
                     .withDefaultProfiles("dev")
                     .resolve("--some-param", "abc")
                     .getValues()
@@ -67,7 +67,7 @@ class ProfileResolutionSpec extends Specification {
 
     def "should return profiles from args"() {
         when:
-            List<String> profiles = profilesResolver()
+            List<String> profiles = resolver()
                     .withDefaultProfiles("dev")
                     .resolve("--profile", "test")
                     .getValues()
@@ -77,7 +77,7 @@ class ProfileResolutionSpec extends Specification {
 
     def "should use custom profile arg name"() {
         when:
-            List<String> profiles = profilesResolver()
+            List<String> profiles = resolver()
                     .withProfileArgName("profiles")
                     .resolve("--profiles", "test")
                     .getValues()
@@ -87,7 +87,7 @@ class ProfileResolutionSpec extends Specification {
 
     def "should use alias for profile arg name"() {
         when:
-            List<String> profiles = profilesResolver()
+            List<String> profiles = resolver()
                     .addArgsAlias("p", "profile")
                     .resolve("-p", "test")
                     .getValues()
@@ -97,8 +97,8 @@ class ProfileResolutionSpec extends Specification {
 
     def "should use arg mapping for profile arg name"() {
         when:
-            List<String> profiles = profilesResolver()
-                    .addArgsMapping(["--prod"] as String[], ["--profile", "prod"] as String[])
+            List<String> profiles = resolver()
+                    .addArgsMapping(["--prod"], ["--profile", "prod"])
                     .resolve("--prod")
                     .getValues()
         then:
@@ -107,7 +107,7 @@ class ProfileResolutionSpec extends Specification {
 
     def "should validate profile count"() {
         when:
-            List<String> profiles = profilesResolver()
+            List<String> profiles = resolver()
                     .withExpectedProfileCount(2)
                     .resolve("--profile", "dev,test")
                     .getValues()
@@ -115,7 +115,7 @@ class ProfileResolutionSpec extends Specification {
             profiles == ["dev", "test"]
 
         when:
-            profilesResolver()
+            resolver()
                     .withExpectedProfileCount(3)
                     .resolve("--profile", "dev,test")
         then:
@@ -125,7 +125,7 @@ class ProfileResolutionSpec extends Specification {
 
     def "should map profiles"() {
         when:
-            List<String> profiles = profilesResolver()
+            List<String> profiles = resolver()
                     .withProfilesMapper({ p -> p.collect { it + "-mapped" } })
                     .resolve("--profile", "dev,test")
                     .getValues()

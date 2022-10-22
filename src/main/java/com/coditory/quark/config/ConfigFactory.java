@@ -11,21 +11,6 @@ import static com.coditory.quark.config.Preconditions.expectNonBlank;
 import static com.coditory.quark.config.Preconditions.expectNonNull;
 
 public final class ConfigFactory {
-    public static ConfigLoader configLoader() {
-        return new ConfigLoader();
-    }
-
-    public static Config loadConfig() {
-        return configLoader().loadConfig();
-    }
-
-    public static Config loadConfig(String... args) {
-        expectNonNull(args, "args");
-        return configLoader()
-                .withArgs(args)
-                .loadConfig();
-    }
-
     public static Config buildFromSystemProperties() {
         LinkedHashMap<String, Object> result = new LinkedHashMap<>();
         for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {

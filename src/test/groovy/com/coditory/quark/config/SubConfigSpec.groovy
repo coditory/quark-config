@@ -6,9 +6,9 @@ class SubConfigSpec extends Specification {
     def "should return sub config from nested values"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b.c", "ABC")
-                    .withValue("a.d", "AD")
-                    .withValue("e", "E")
+                    .put("a.b.c", "ABC")
+                    .put("a.d", "AD")
+                    .put("e", "E")
                     .build()
         expect:
             config.getSubConfig("a").toMap() == [
@@ -22,8 +22,8 @@ class SubConfigSpec extends Specification {
     def "should return sub config from nested values with a list"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b[0].c", "AB0C")
-                    .withValue("a.b[1]", "AB1")
+                    .put("a.b[0].c", "AB0C")
+                    .put("a.b[1]", "AB1")
                     .build()
         expect:
             config.getSubConfig("a").toMap() == [
@@ -36,8 +36,8 @@ class SubConfigSpec extends Specification {
     def "should return empty sub config"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b[0].c", "AB0C")
-                    .withValue("a.b[1]", "AB1")
+                    .put("a.b[0].c", "AB0C")
+                    .put("a.b[1]", "AB1")
                     .build()
         expect:
             config.getSubConfigOrEmpty("a.b[2]").isEmpty()
@@ -48,8 +48,8 @@ class SubConfigSpec extends Specification {
     def "should throw error on empty sub config"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b[0].c", "AB0C")
-                    .withValue("a.b[1]", "AB1")
+                    .put("a.b[0].c", "AB0C")
+                    .put("a.b[1]", "AB1")
                     .build()
 
         when:

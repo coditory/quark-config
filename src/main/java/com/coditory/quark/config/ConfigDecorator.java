@@ -29,46 +29,6 @@ abstract class ConfigDecorator implements Config {
     }
 
     @Override
-    public Config withDefault(String path, Object value) {
-        return config.withDefault(path, value);
-    }
-
-    @Override
-    public Config withDefaults(Config config) {
-        return config.withDefaults(config);
-    }
-
-    @Override
-    public Config withValue(String path, Object value) {
-        return config.withValue(path, value);
-    }
-
-    @Override
-    public Config withValues(Config config) {
-        return config.withValues(config);
-    }
-
-    @Override
-    public Config filterValues(ConfigEntryPredicate predicate, ConfigRemoveOptions options) {
-        return config.filterValues(predicate, options);
-    }
-
-    @Override
-    public Config mapValues(ConfigEntryMapper mapper) {
-        return config.mapValues(mapper);
-    }
-
-    @Override
-    public Config removeEmptyProperties() {
-        return config.removeEmptyProperties();
-    }
-
-    @Override
-    public Config remove(String path, ConfigRemoveOptions options) {
-        return config.remove(path, options);
-    }
-
-    @Override
     public Config getSubConfig(String path) {
         return config.getSubConfig(path);
     }

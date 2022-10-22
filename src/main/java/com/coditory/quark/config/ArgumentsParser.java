@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import static com.coditory.quark.config.Preconditions.expectNonBlank;
 import static com.coditory.quark.config.Preconditions.expectNonNull;
@@ -68,15 +69,18 @@ class ArgumentsParser {
 
     private Map<String, Object> applyMapping(Map<String, Object> result) {
         Map<String, Object> mapped = new LinkedHashMap<>(result);
-        for (Entry<String[], String[]> entry : mapping.entrySet()) {
-            Map<String, Object> keyMap = parseArgs(entry.getKey());
-            Map<String, Object> valueMap = parseArgs(entry.getValue());
+        for (Entry<String[], String[]> mappingEntry : mapping.entrySet()) {
+            Map<String, Object> keyMap = parseArgs(mappingEntry.getKey());
+            Map<String, Object> valueMap = parseArgs(mappingEntry.getValue());
+            boolean mismatch = false;
             for (Entry<String, Object> keyEntry : keyMap.entrySet()) {
-                Object value = mapped.get(keyEntry.getKey());
-                if (value != keyEntry.getValue()) {
-                    mapped = new LinkedHashMap<>(result);
+                Object value = result.get(keyEntry.getKey());
+                if (!Objects.equals(value, keyEntry.getValue())) {
+                    mismatch = true;
                     break;
                 }
+            }
+            if (!mismatch) {
                 mapped.putAll(valueMap);
             }
         }

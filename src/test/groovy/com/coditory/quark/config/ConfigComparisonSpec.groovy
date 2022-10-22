@@ -14,7 +14,7 @@ class ConfigComparisonSpec extends Specification {
         given:
             Config emptyConfig = Config.empty()
             Config otherEmptyConfig = Config.builder()
-                    .withValueParsers(List.of())
+                    .setValueParsers(List.of())
                     .build()
         expect:
             emptyConfig != otherEmptyConfig
@@ -32,8 +32,8 @@ class ConfigComparisonSpec extends Specification {
         given:
             Config config = Config.of("a", "A")
             Config other = Config.builder()
-                    .withValue("a", "A")
-                    .withValueParsers(List.of())
+                    .setValueParsers(List.of())
+                    .put("a", "A")
                     .build()
         expect:
             config != other

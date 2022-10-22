@@ -1,5 +1,7 @@
-package com.coditory.quark.config
+package com.coditory.quark.config.builder
 
+import com.coditory.quark.config.Config
+import com.coditory.quark.config.UnresolvedConfigExpressionException
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -7,9 +9,9 @@ class ExpressionResolutionSpec extends Specification {
     def "should resolve config with reference to config value"() {
         when:
             Config config = Config.builder()
-                    .withValue("a.b", "\${a.c}")
-                    .withValue("a.c", "C")
-                    .withResolvedExpressionsOrSkip()
+                    .put("a.b", "\${a.c}")
+                    .put("a.c", "C")
+                    .resolveExpressionsOrSkip()
                     .build()
         then:
             config.toMap() == [
@@ -23,10 +25,10 @@ class ExpressionResolutionSpec extends Specification {
     def "should resolve a reference to a referenced value"() {
         when:
             Config config = Config.builder()
-                    .withValue("a.b", "B")
-                    .withValue("a.c", "\${a.b}")
-                    .withValue("a.d", "\${a.c}")
-                    .withResolvedExpressionsOrSkip()
+                    .put("a.b", "B")
+                    .put("a.c", "\${a.b}")
+                    .put("a.d", "\${a.c}")
+                    .resolveExpressionsOrSkip()
                     .build()
         then:
             config.toMap() == [
@@ -41,10 +43,10 @@ class ExpressionResolutionSpec extends Specification {
     def "should resolve a two references in one value"() {
         when:
             Config config = Config.builder()
-                    .withValue("a.b", "B")
-                    .withValue("a.c", "C")
-                    .withValue("a.d", "C-\${a.c}___B-\${a.b}")
-                    .withResolvedExpressionsOrSkip()
+                    .put("a.b", "B")
+                    .put("a.c", "C")
+                    .put("a.d", "C-\${a.c}___B-\${a.b}")
+                    .resolveExpressionsOrSkip()
                     .build()
         then:
             config.toMap() == [
@@ -59,8 +61,8 @@ class ExpressionResolutionSpec extends Specification {
     def "should not resolve reference to itself"() {
         when:
             Config config = Config.builder()
-                    .withValue("a.b", "\${a.b}")
-                    .withResolvedExpressionsOrSkip()
+                    .put("a.b", "\${a.b}")
+                    .resolveExpressionsOrSkip()
                     .build()
         then:
             config.toMap() == [
@@ -71,10 +73,10 @@ class ExpressionResolutionSpec extends Specification {
     def "should not resolve transitive reference to itself"() {
         when:
             Config config = Config.builder()
-                    .withValue("a.b", "\${a.c}")
-                    .withValue("a.c", "\${a.d}")
-                    .withValue("a.d", "\${a.b}")
-                    .withResolvedExpressionsOrSkip()
+                    .put("a.b", "\${a.c}")
+                    .put("a.c", "\${a.d}")
+                    .put("a.d", "\${a.b}")
+                    .resolveExpressionsOrSkip()
                     .build()
         then:
             config.toMap() == [
@@ -89,8 +91,8 @@ class ExpressionResolutionSpec extends Specification {
     def "should resolve reference to parameter of the same name"() {
         when:
             Config config = Config.builder()
-                    .withValue("x", "\${x}")
-                    .withResolvedExpressions(x: "X")
+                    .put("x", "\${x}")
+                    .resolveExpressions(x: "X")
                     .build()
         then:
             config.toMap() == [x: "X"]
@@ -99,9 +101,9 @@ class ExpressionResolutionSpec extends Specification {
     def "should resolve reference to an object"() {
         when:
             Config config = Config.builder()
-                    .withValue("a.b.c", "ABC")
-                    .withValue("a.d", "\${a.b}")
-                    .withResolvedExpressionsOrSkip()
+                    .put("a.b.c", "ABC")
+                    .put("a.d", "\${a.b}")
+                    .resolveExpressionsOrSkip()
                     .build()
         then:
             config.toMap() == [
@@ -115,9 +117,9 @@ class ExpressionResolutionSpec extends Specification {
     def "should resolve reference to a number"() {
         when:
             Config config = Config.builder()
-                    .withValue("a", "123")
-                    .withValue("b", "\${a}")
-                    .withResolvedExpressionsOrSkip()
+                    .put("a", "123")
+                    .put("b", "\${a}")
+                    .resolveExpressionsOrSkip()
                     .build()
         then:
             config.getInteger("a") == 123
@@ -126,8 +128,8 @@ class ExpressionResolutionSpec extends Specification {
     def "should resolve reference with a default"() {
         when:
             Config config = Config.builder()
-                    .withValue("a", "\${b ? 'A'}")
-                    .withResolvedExpressionsOrSkip()
+                    .put("a", "\${b ? 'A'}")
+                    .resolveExpressionsOrSkip()
                     .build()
         then:
             config.toMap() == [a: "A"]
@@ -137,8 +139,8 @@ class ExpressionResolutionSpec extends Specification {
     def "should resolve reference with two fallbacks: #variables"() {
         when:
             Config config = Config.builder()
-                    .withValue("a", "\${b ? c ? 'A'}")
-                    .withResolvedExpressionsOrSkip(Config.of(variables))
+                    .put("a", "\${b ? c ? 'A'}")
+                    .resolveExpressionsOrSkip(Config.of(variables))
                     .build()
         then:
             config.toMap() == expected
@@ -159,8 +161,8 @@ class ExpressionResolutionSpec extends Specification {
     def "should not modify incorrect expression #expression"() {
         when:
             Config config = Config.builder()
-                    .withValue("a", expression)
-                    .withResolvedExpressionsOrSkip()
+                    .put("a", expression)
+                    .resolveExpressionsOrSkip()
                     .build()
         then:
             config.toMap() == [a: expression]
@@ -179,8 +181,8 @@ class ExpressionResolutionSpec extends Specification {
     def "should throw error on a reference to itself"() {
         when:
             Config.builder()
-                    .withValue("a.b", "\${a.b}")
-                    .withResolvedExpressions()
+                    .put("a.b", "\${a.b}")
+                    .resolveExpressions()
                     .build()
         then:
             UnresolvedConfigExpressionException exception = thrown(UnresolvedConfigExpressionException)
@@ -190,8 +192,8 @@ class ExpressionResolutionSpec extends Specification {
     def "should throw error on an unresolved reference"() {
         when:
             Config.builder()
-                    .withValue("a.b", "\${a.d}")
-                    .withResolvedExpressions()
+                    .put("a.b", "\${a.d}")
+                    .resolveExpressions()
                     .build()
         then:
             UnresolvedConfigExpressionException exception = thrown(UnresolvedConfigExpressionException)

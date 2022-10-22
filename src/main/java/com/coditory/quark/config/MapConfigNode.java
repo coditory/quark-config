@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static com.coditory.quark.config.ConfigNodeCreator.configNode;
@@ -85,6 +86,16 @@ class MapConfigNode implements ConfigNode {
         return childModified
                 ? new MapConfigNode(result)
                 : this;
+    }
+
+    @Override
+    public MapConfigNode mapLeaves(Function<Object, Object> mapper) {
+        return mapLeaves((path, value) -> mapper.apply(value));
+    }
+
+    @Override
+    public MapConfigNode mapLeaves(ConfigEntryMapper mapper) {
+        return mapLeaves(Path.root(), mapper);
     }
 
     @Override

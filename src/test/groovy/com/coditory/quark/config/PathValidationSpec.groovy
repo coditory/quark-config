@@ -8,7 +8,7 @@ class PathValidationSpec extends Specification {
     def "should accept valid config path: #path"() {
         when:
             Config.builder()
-                    .withValue(path, "value")
+                    .put(path, "value")
                     .build()
         then:
             noExceptionThrown()
@@ -25,7 +25,7 @@ class PathValidationSpec extends Specification {
     def "should throw error for invalid config path: #path"() {
         when:
             Config.builder()
-                    .withValue(path, "value")
+                    .put(path, "value")
                     .build()
         then:
             thrown(InvalidConfigPathException)

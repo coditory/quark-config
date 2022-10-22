@@ -6,9 +6,9 @@ class ValueRetrievalSpec extends Specification {
     def "should return nested values by path"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b.c", "ABC")
-                    .withValue("a.d", "AD")
-                    .withValue("e", "E")
+                    .put("a.b.c", "ABC")
+                    .put("a.d", "AD")
+                    .put("e", "E")
                     .build()
         expect:
             config.getString("a.b.c") == "ABC"
@@ -21,7 +21,7 @@ class ValueRetrievalSpec extends Specification {
     def "should return nested value from inserted map"() {
         given:
             Config config = Config.builder()
-                    .withValue("a", [b: [c: "ABC"], d: "AD"])
+                    .put("a", [b: [c: "ABC"], d: "AD"])
                     .build()
         expect:
             config.getString("a.b.c") == "ABC"
@@ -32,9 +32,9 @@ class ValueRetrievalSpec extends Specification {
     def "should not return missing value"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b.c", "ABC")
-                    .withValue("a.d", "AD")
-                    .withValue("e", "E")
+                    .put("a.b.c", "ABC")
+                    .put("a.d", "AD")
+                    .put("e", "E")
                     .build()
         when:
             config.getString("a.e")
@@ -50,8 +50,8 @@ class ValueRetrievalSpec extends Specification {
     def "should return nested value in a list"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b[0].c", "AB0C")
-                    .withValue("a.b[1]", "AB1")
+                    .put("a.b[0].c", "AB0C")
+                    .put("a.b[1]", "AB1")
                     .build()
         expect:
             config.getString("a.b[0].c") == "AB0C"
@@ -68,7 +68,7 @@ class ValueRetrievalSpec extends Specification {
     def "should return nested value from inserted list"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b", [[c: "AB0C"], "AB1"])
+                    .put("a.b", [[c: "AB0C"], "AB1"])
                     .build()
         expect:
             config.getString("a.b[0].c") == "AB0C"
@@ -79,7 +79,7 @@ class ValueRetrievalSpec extends Specification {
     def "should return nested value from inserted map with path in key"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b", ["c.d": "D"])
+                    .put("a.b", ["c.d": "D"])
                     .build()
         expect:
             config.getString("a.b.c.d") == "D"
@@ -88,8 +88,8 @@ class ValueRetrievalSpec extends Specification {
     def "should contain value"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b[0].c", "AB0C")
-                    .withValue("a.b[1]", "AB1")
+                    .put("a.b[0].c", "AB0C")
+                    .put("a.b[1]", "AB1")
                     .build()
         expect:
             config.contains("a.b[0].c")

@@ -14,7 +14,7 @@ import static com.coditory.quark.config.Preconditions.expectUnique;
 public final class Profiles {
     private static final Profiles EMPTY = new Profiles(List.of());
 
-    public static ProfilesResolver profilesResolver() {
+    public static ProfilesResolver resolver() {
         return new ProfilesResolver();
     }
 

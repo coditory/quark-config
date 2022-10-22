@@ -1,14 +1,18 @@
-package com.coditory.quark.config
+package com.coditory.quark.config.builder
 
+import com.coditory.quark.config.Config
+import com.coditory.quark.config.InvalidConfigPathException
+import com.coditory.quark.config.MissingConfigValueException
 import spock.lang.Specification
 
-class ConfigWithValueSpec extends Specification {
+class PutValueSpec extends Specification {
     def "should add values to an empty config"() {
         when:
-            Config config = Config.empty()
-                    .withValue("a.b.c", "ABC")
-                    .withValue("a.d", "AD")
-                    .withValue("e", ["E0", "E1"])
+            Config config = Config.builder()
+                    .put("a.b.c", "ABC")
+                    .put("a.d", "AD")
+                    .put("e", ["E0", "E1"])
+                    .build()
         then:
             config.toMap() == [
                     a: [
@@ -21,10 +25,11 @@ class ConfigWithValueSpec extends Specification {
 
     def "should add empty values to an empty config"() {
         when:
-            Config config = Config.empty()
-                    .withValue("a", [:])
-                    .withValue("b", [])
-                    .withValue("c", [[], [:]])
+            Config config = Config.builder()
+                    .put("a", [:])
+                    .put("b", [])
+                    .put("c", [[], [:]])
+                    .build()
         then:
             config.toMap() == [
                     a: [:],
@@ -36,15 +41,16 @@ class ConfigWithValueSpec extends Specification {
     def "should overwrite previously added values"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b.c", "ABC")
-                    .withValue("a.d.e", "ADE")
-                    .withValue("e", ["E0", "E1"])
+                    .put("a.b.c", "ABC")
+                    .put("a.d.e", "ADE")
+                    .put("e", ["E0", "E1"])
                     .build()
         when:
-            config = config
-                    .withValue("a.b.c", "X")
-                    .withValue("a.d", "Y")
-                    .withValue("e[1]", "Z")
+            config = Config.builder(config)
+                    .put("a.b.c", "X")
+                    .put("a.d", "Y")
+                    .put("e[1]", "Z")
+                    .build()
         then:
             config.toMap() == [
                     a: [
@@ -58,15 +64,16 @@ class ConfigWithValueSpec extends Specification {
     def "should add new values to a list values"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b", [[c: "ABC"], "d", "e"])
+                    .put("a.b", [[c: "ABC"], "d", "e"])
                     .build()
         when:
-            config = config
-                    .withValue("a.b[0].c", "C")
-                    .withValue("a.b[0].d", "D")
-                    .withValue("a.b[0].e[0][0]", "E00")
-                    .withValue("a.b[1]", [z: "Z"])
-                    .withValue("a.b[3]", "3")
+            config = Config.builder(config)
+                    .put("a.b[0].c", "C")
+                    .put("a.b[0].d", "D")
+                    .put("a.b[0].e[0][0]", "E00")
+                    .put("a.b[1]", [z: "Z"])
+                    .put("a.b[3]", "3")
+                    .build()
         then:
             config.toMap() == [
                     a: [
@@ -83,11 +90,12 @@ class ConfigWithValueSpec extends Specification {
     def "should replace list value with nested value"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b", ["c", "d"])
+                    .put("a.b", ["c", "d"])
                     .build()
         when:
-            config = config
-                    .withValue("a.b.c.d", "D")
+            config = Config.builder(config)
+                    .put("a.b.c.d", "D")
+                    .build()
         then:
             config.toMap() == [
                     a: [b: [c: [d: "D"]]]
@@ -97,11 +105,12 @@ class ConfigWithValueSpec extends Specification {
     def "should replace nested value with list value"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b.c.d", "d")
+                    .put("a.b.c.d", "d")
                     .build()
         when:
-            config = config
-                    .withValue("a.b", ["c", "d"])
+            config = Config.builder(config)
+                    .put("a.b", ["c", "d"])
+                    .build()
         then:
             config.toMap() == [
                     a: [b: ["c", "d"]]
@@ -111,15 +120,16 @@ class ConfigWithValueSpec extends Specification {
     def "should replace value with other value"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b", "B")
-                    .withValue("a.c", "C")
-                    .withValue("a.d", "D")
+                    .put("a.b", "B")
+                    .put("a.c", "C")
+                    .put("a.d", "D")
                     .build()
         when:
-            config = config
-                    .withValue("a.b.c", "X")
-                    .withValue("a.c", "Y")
-                    .withValue("a.d", ["Z"])
+            config = Config.builder(config)
+                    .put("a.b.c", "X")
+                    .put("a.c", "Y")
+                    .put("a.d", ["Z"])
+                    .build()
         then:
             config.toMap() == [
                     a: [
@@ -133,15 +143,19 @@ class ConfigWithValueSpec extends Specification {
     def "should fail adding list item with invalid index"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b", ["c", "d"])
+                    .put("a.b", ["c", "d"])
                     .build()
         when:
-            config.withValue("a.b[3]", "e")
+            Config.builder(config)
+                    .put("a.b[3]", "e")
+                    .build()
         then:
             thrown(MissingConfigValueException)
 
         when:
-            config.withValue("a.b[-1]", "e")
+            Config.builder(config)
+                    .put("a.b[-1]", "e")
+                    .build()
         then:
             thrown(InvalidConfigPathException)
     }

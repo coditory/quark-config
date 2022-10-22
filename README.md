@@ -30,7 +30,7 @@ dependencies {
 ### Load application configuration
 
 ```java
-Config config = ConfigFactory.configLoader()
+Config config = new ConfigLoader()
         .withDefaultProfiles("local")
         .withConfigPath("configs")
         .withArgs(args)
@@ -87,22 +87,29 @@ application:
 ```
 
 ```java
-// load base config only
-ConfigFactory.loadConfig();
+Config config = new ConfigLoader().loadConfig();
+// loads base config only
 // Output: {application={port=7070, name=best-app}}
 
-// load config with prod profile
-ConfigFactory.loadApplicationConfig("--profile", "prod");
+Config config = new ConfigLoader()
+    .withArgs("--profile", "prod")
+    .loadConfig();
+// loads config with prod profile
 // Output: {application={port=80, name=best-app}}
-
-// resolve config with expression
-ConfigFactory.loadApplicationConfig("--port", "7071");
+        
+Config config = new ConfigLoader()
+    .withArgs("--port", "7071")
+    .loadConfig();
+// resolves config with expression
 // Output: {application={port=7071, name=best-app}}
 
-// load config with config value passed as argument
-ConfigFactory.loadApplicationConfig("--config-value.application.port", "8081");
+Config config = new ConfigLoader()
+    .withArgs("--config-value.application.port", "8081")
+    .loadConfig();
+// loads config with config value passed as an argument
 // Output: {application={port=8081, name=best-app}}
 ```
+
 For more examples see the [test cases](src/integration/groovy/com/coditory/quark/config/LoadApplicationConfigSpec.groovy).
 
 #### Config resolution variables
@@ -128,25 +135,41 @@ Config.of(
 Config.of(Map.of("application.port", 8080));
 
 // Create empty config and add value
-Config.empty()
-    .withValue("application.port", 8080);
+Config.builder()
+    .put("application.port", 8080)
+    .build();
 
 // Build own config with customizations
 Config.builder()
-    .withValue("application.name", "best-app")
-    .withValue("application.port", 8080)
-    .withSecretHidingValueMapper(customSecretHider)
-    .withValueParser(customParser)
+    .put("application.name", "best-app")
+    .put("application.port", 8080)
+    .setSecretHidingValueMapper(customSecretHider)
+    .setValueParser(customParser)
     .build();
-```
 
-The config object is immutable. Every time you add a value to a config, a new config instance is returned:
-```java
-Config c1 = Config.of("application.port", 8080);
-Config c2 = c1.withValue("application.name", "best-app");
+// Create config from strings, files or system properties
+ConfigFactory.buildFromSystemProperties();
+ConfigFactory.buildFromSystemEnvironment();
+ConfigFactory.buildFromArgs(args);
+ConfigFactory.loadFromClasspath(path);
+ConfigFactory.loadFromFileSystem(path);
+ConfigFactory.parseJson(json);
+ConfigFactory.parseYaml(yaml);
+ConfigFactory.parseProperties(properties);
 
-assert c1 != c2
-assert !c1.equals(c2)
+// Load config from classpath files with some validation and profiles passed in args
+// (typical setup for web application, that is deployable to dev, test and prod environemnts)
+new ConfigLoader()
+    .addArgsMapping(["--prod"], ["--profile", "prod"])
+    .addArgsMapping(["--test"], ["--profile", "test"])
+    .addArgsMapping(["--dev"], ["--profile", "dev"])
+    .addArgsAlias("p", "profile")
+    .withMinProfileCount(1)
+    .withExclusiveProfiles(mainProfiles)
+    .setFirstIfNoneMatch(mainProfiles)
+    .withConfigPath("config")
+    .withArgs(args)
+    .loadConfig()
 ```
 
 ### Resolving a config value
@@ -213,29 +236,31 @@ Config values can use some basic expressions:
 ```java
 // Config with references to other value
 Config.builder()
-    .withValue("a", "${b}")
-    .withValue("b", "B")
-    .build()
-    .resolveExpressions();
+    .put("a", "${b}")
+    .put("b", "B")
+    .resolveExpressions()
+    .build();
 // {a=B, b=B}
 
 // Config with a fallback value
 Config.builder()
     .withValue("a", "${b ? X}")
-    .build()
-    .resolveExpressions();
+    .resolveExpressions()
+    .build();
 // {a=X}
 
 // Config with a double fallback value
-Config
-    .of("a", "${b ? c ? X}")
-    .resolveExpressions();
+Config.builder()
+    .put("a", "${b ? c ? X}")
+    .resolveExpressions()
+    .build();
 // {a=X}
 
 // Config with expression values
-Config
-    .of("a", "${b ? c ? X}")
-    .resolveExpressions(Config.of(c, "C"));
+Config.builder()
+    .put("a", "${b ? c ? X}")
+    .resolveExpressions(Config.of(c, "C"))
+    .build();
 // {a=C}
 ```
 
