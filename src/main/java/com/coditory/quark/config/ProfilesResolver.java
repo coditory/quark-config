@@ -1,6 +1,8 @@
 package com.coditory.quark.config;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +13,7 @@ import java.util.stream.Stream;
 
 import static com.coditory.quark.config.Preconditions.expect;
 import static com.coditory.quark.config.Preconditions.expectNonBlank;
+import static com.coditory.quark.config.Preconditions.expectNonEmpty;
 import static com.coditory.quark.config.Preconditions.expectNonNull;
 import static com.coditory.quark.config.Preconditions.expectUnique;
 import static java.util.Arrays.stream;
@@ -21,6 +24,7 @@ public final class ProfilesResolver {
     private final ArgumentsParser argumentsParser = new ArgumentsParser();
     private String profileArgName = "profile";
     private List<String> defaultProfiles;
+    private List<String> firstIfNoneMatchProfiles;
     private Set<String> allowedProfiles;
     private Set<String> exclusiveProfiles;
     private Predicate<List<String>> profilesValidator;
@@ -57,11 +61,17 @@ public final class ProfilesResolver {
         return this;
     }
 
+    public ProfilesResolver setFirstIfNoneMatch(List<String> firstIfNoneMatch) {
+        expectNonEmpty(firstIfNoneMatch, "firstIfNoneMatch");
+        this.firstIfNoneMatchProfiles = List.copyOf(firstIfNoneMatch);
+        return this;
+    }
+
     public ProfilesResolver withAllowedProfiles(String... allowedProfiles) {
         return withAllowedProfiles(Set.of(allowedProfiles));
     }
 
-    public ProfilesResolver withAllowedProfiles(Set<String> allowedProfiles) {
+    public ProfilesResolver withAllowedProfiles(Collection<String> allowedProfiles) {
         this.allowedProfiles = new HashSet<>(allowedProfiles);
         return this;
     }
@@ -70,7 +80,7 @@ public final class ProfilesResolver {
         return withExclusiveProfiles(Set.of(exclusiveProfiles));
     }
 
-    public ProfilesResolver withExclusiveProfiles(Set<String> exclusiveProfiles) {
+    public ProfilesResolver withExclusiveProfiles(Collection<String> exclusiveProfiles) {
         this.exclusiveProfiles = new HashSet<>(exclusiveProfiles);
         return this;
     }
@@ -107,6 +117,11 @@ public final class ProfilesResolver {
 
     public ProfilesResolver withArgsMapping(Map<String[], String[]> mapping) {
         argumentsParser.withMapping(mapping);
+        return this;
+    }
+
+    public ProfilesResolver addArgsMapping(List<String> args, List<String> mapping) {
+        argumentsParser.addMapping(args.toArray(new String[0]), mapping.toArray(new String[0]));
         return this;
     }
 
@@ -148,6 +163,17 @@ public final class ProfilesResolver {
         profiles = profiles.isEmpty() && defaultProfiles != null && !defaultProfiles.isEmpty()
                 ? defaultProfiles
                 : profiles;
+        if (firstIfNoneMatchProfiles != null) {
+            Set<String> common = profiles.stream()
+                    .filter(p -> firstIfNoneMatchProfiles.contains(p))
+                    .collect(toSet());
+            if (common.isEmpty()) {
+                List<String> copy = new ArrayList<>();
+                copy.add(firstIfNoneMatchProfiles.get(0));
+                copy.addAll(profiles);
+                profiles = copy;
+            }
+        }
         if (profilesMapper != null) {
             profiles = profilesMapper.apply(profiles);
         }

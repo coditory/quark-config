@@ -6,9 +6,9 @@ class AuditableConfigSpec extends Specification {
     def "should detected all unused config properties"() {
         given:
             AuditableConfig config = Config.builder()
-                    .withValue("a", "A")
-                    .withValue("b", "B")
-                    .buildAuditableConfig()
+                    .putAll(a: "A", b: "B")
+                    .build()
+                    .auditable()
         when:
             config.throwErrorOnUnusedProperties()
         then:
@@ -21,9 +21,9 @@ class AuditableConfigSpec extends Specification {
     def "should detected single unused config property"() {
         given:
             AuditableConfig config = Config.builder()
-                    .withValue("a", "A")
-                    .withValue("b", "B")
-                    .buildAuditableConfig()
+                    .putAll(a: "A", b: "B")
+                    .build()
+                    .auditable()
         when:
             config.getString("a")
             config.throwErrorOnUnusedProperties()
@@ -37,9 +37,9 @@ class AuditableConfigSpec extends Specification {
     def "should not detected unused config properties when all were used"() {
         given:
             AuditableConfig config = Config.builder()
-                    .withValue("a", "A")
-                    .withValue("b", "B")
-                    .buildAuditableConfig()
+                    .putAll(a: "A", b: "B")
+                    .build()
+                    .auditable()
         when:
             config.getString("a")
             config.getString("b")
@@ -52,11 +52,12 @@ class AuditableConfigSpec extends Specification {
     def "should detect unused nested config properties"() {
         given:
             AuditableConfig config = Config.builder()
-                    .withValue("a.b", "AB")
-                    .withValue("a.c", "AA")
-                    .withValue("d.e", "DE")
-                    .withValue("d.f", "DF")
-                    .buildAuditableConfig()
+                    .put("a.b", "AB")
+                    .put("a.c", "AA")
+                    .put("d.e", "DE")
+                    .put("d.f", "DF")
+                    .build()
+                    .auditable()
         when:
             config.getSubConfig("a")
             config.throwErrorOnUnusedProperties()
@@ -77,8 +78,9 @@ class AuditableConfigSpec extends Specification {
     def "should detect unused list config properties"() {
         given:
             AuditableConfig config = Config.builder()
-                    .withValue("a", ["A", "B"])
-                    .buildAuditableConfig()
+                    .put("a", ["A", "B"])
+                    .build()
+                    .auditable()
         when:
             config.getString("a[0]")
             config.throwErrorOnUnusedProperties()

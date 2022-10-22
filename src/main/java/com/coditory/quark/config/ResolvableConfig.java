@@ -5,9 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 
-import static com.coditory.quark.config.ConfigRemoveOptions.removeEmptyParents;
 import static com.coditory.quark.config.ConfigValueParser.defaultConfigValueParser;
 import static com.coditory.quark.config.MissingConfigValueException.missingConfigValueForPath;
 import static com.coditory.quark.config.Preconditions.expectNonBlank;
@@ -55,119 +53,20 @@ final class ResolvableConfig implements Config {
     }
 
     @Override
-    public ResolvableConfig withDefault(String path, Object value) {
-        expectNonBlank(path, "path");
-        expectNonNull(value, "value");
-        Path parsed = Path.parse(path);
-        MapConfigNode newRoot = root.addIfMissing(Path.root(), parsed, value);
-        return withRoot(newRoot);
-    }
-
-    @Override
-    public ResolvableConfig withDefaults(Config config) {
-        expectNonNull(config, "config");
-        MapConfigNode mergedRoot = root.withDefaults(config.getRootNode());
-        return withRoot(mergedRoot);
-    }
-
-    @Override
-    public ResolvableConfig withValue(String path, Object value) {
-        expectNonBlank(path, "path");
-        expectNonNull(value, "value");
-        Path parsed = Path.parse(path);
-        ConfigNode newRoot = root.addOrReplace(Path.root(), parsed, value);
-        if (!(newRoot instanceof MapConfigNode)) {
-            throw new InvalidConfigPathException("Expected root node to be a map. Got: " + newRoot.getClass().getSimpleName());
-        }
-        return withRoot((MapConfigNode) newRoot);
-    }
-
-    @Override
-    public ResolvableConfig withValues(Config config) {
-        expectNonNull(config, "config");
-        MapConfigNode mergedRoot = config.getRootNode().withDefaults(this.root);
-        return withRoot(mergedRoot);
-    }
-
-    @Override
     public MapConfigNode getRootNode() {
         return root;
     }
 
-    public ResolvableConfig resolveExpressions(Config values) {
-        expectNonNull(values, "values");
-        return resolveExpressions(values, Expression::failOnUnresolved);
-    }
-
-    public ResolvableConfig resolveExpressionsOrSkip(Config values) {
-        expectNonNull(values, "values");
-        return resolveExpressions(values, Expression::unwrap);
-    }
-
-    private ResolvableConfig resolveExpressions(Config variables, Function<Object, Object> leafMapper) {
-        ResolvableConfig configWithExpressions = this.mapValues(ExpressionParser::parse);
-        ResolvableConfig configWithExpressionsAndVariables = configWithExpressions
-                .withValues(variables)
-                .mapValues(ExpressionParser::parse);
-        ExpressionResolver resolver = new ExpressionResolver(configWithExpressionsAndVariables);
-        return this.mapValues(ExpressionParser::parse)
-                .mapValues(resolver::resolve)
-                .mapValues(leafMapper);
-    }
-
     @Override
-    public ResolvableConfig withHiddenSecrets() {
-        return mapValues(secretHidingValueMapper);
+    public Config withHiddenSecrets() {
+        MapConfigNode mapped = root.mapLeaves(Path.root(), secretHidingValueMapper);
+        return new ResolvableConfig(mapped, valueParser, secretHidingValueMapper);
     }
 
     private ResolvableConfig withRoot(MapConfigNode root) {
         return Objects.equals(this.root, root)
                 ? this
                 : new ResolvableConfig(root, valueParser, secretHidingValueMapper);
-    }
-
-    @Override
-    public ResolvableConfig removeEmptyProperties() {
-        ConfigEntryPredicate predicate = (path, value) -> {
-            if (value instanceof List<?> && ((List<?>) value).isEmpty()) {
-                return false;
-            } else if (value instanceof Map<?, ?> && ((Map<?, ?>) value).isEmpty()) {
-                return false;
-            }
-            return true;
-        };
-        MapConfigNode mapped = root.filterLeaves(Path.root(), predicate, removeEmptyParents());
-        return mapped == null ? empty() : withRoot(mapped);
-    }
-
-    @Override
-    public ResolvableConfig filterValues(ConfigEntryPredicate predicate, ConfigRemoveOptions options) {
-        MapConfigNode mapped = root.filterLeaves(Path.root(), predicate, options);
-        return mapped == null ? empty() : withRoot(mapped);
-    }
-
-    @Override
-    public ResolvableConfig mapValues(Function<Object, Object> mapper) {
-        return mapValues((path, value) -> mapper.apply(value));
-    }
-
-    @Override
-    public ResolvableConfig mapValues(ConfigEntryMapper mapper) {
-        MapConfigNode mapped = root.mapLeaves(Path.root(), mapper);
-        return withRoot(mapped);
-    }
-
-    @Override
-    public ResolvableConfig remove(String path, ConfigRemoveOptions options) {
-        expectNonBlank(path, "path");
-        Path parsed = Path.parse(path);
-        return remove(parsed, options);
-    }
-
-    ResolvableConfig remove(Path path, ConfigRemoveOptions options) {
-        expectNonNull(path, "path");
-        MapConfigNode newRoot = root.remove(Path.root(), path, options);
-        return withRoot(newRoot);
     }
 
     @Override

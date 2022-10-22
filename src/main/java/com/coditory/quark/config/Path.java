@@ -12,6 +12,16 @@ import static java.util.stream.Collectors.toList;
 class Path {
     private static final Path ROOT = new Path(List.of());
 
+    public static Path parseAbsolute(String input) {
+        Path path = Path.parse(input);
+        if (path.isRoot() || !path.getFirstElement().isNamed()) {
+            throw new InvalidConfigPathException(
+                    "Expected non empty absolute path to a named element. " +
+                            "Example: a.b. Got: " + path);
+        }
+        return path;
+    }
+
     public static Path root() {
         return ROOT;
     }

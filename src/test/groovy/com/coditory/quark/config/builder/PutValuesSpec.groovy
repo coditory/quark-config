@@ -1,21 +1,24 @@
-package com.coditory.quark.config
+package com.coditory.quark.config.builder
 
+import com.coditory.quark.config.Config
 import spock.lang.Specification
 
-class ConfigWithValuesSpec extends Specification {
+class PutValuesSpec extends Specification {
     def "should return sub config overridden with other config"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b.c", "ABC")
-                    .withValue("a.d", "AD")
-                    .withValue("e", "E")
+                    .put("a.b.c", "ABC")
+                    .put("a.d", "AD")
+                    .put("e", "E")
                     .build()
             Config other = Config.builder()
-                    .withValue("a.b", "AB")
-                    .withValue("a.x", "AX")
+                    .put("a.b", "AB")
+                    .put("a.x", "AX")
                     .build()
         when:
-            Config result = config.withValues(other)
+            Config result = Config.builder(config)
+                    .putAll(other)
+                    .build()
         then:
             result.toMap() == [
                     a: [

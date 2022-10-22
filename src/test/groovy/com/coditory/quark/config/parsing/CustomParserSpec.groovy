@@ -9,8 +9,8 @@ class CustomParserSpec extends Specification {
     def "should parse value using custom parser"() {
         given:
             Config config = Config.builder()
-                    .withValueParser(ValueParser.forType(WrapperX, { new WrapperX(it) }))
-                    .withValue("value", "someValue")
+                    .addValueParser(ValueParser.forType(WrapperX, { new WrapperX(it) }))
+                    .put("value", "someValue")
                     .build()
         when:
             WrapperX result = config.get(WrapperX, "value")
@@ -21,8 +21,8 @@ class CustomParserSpec extends Specification {
     def "should parse a list using custom parser"() {
         given:
             Config config = Config.builder()
-                    .withValueParser(ValueParser.forType(WrapperX, { new WrapperX(it) }))
-                    .withValue("value", ["someValue", "someOtherValue"])
+                    .addValueParser(ValueParser.forType(WrapperX, { new WrapperX(it) }))
+                    .put("value", ["someValue", "someOtherValue"])
                     .build()
         when:
             List<WrapperX> result = config.getList(WrapperX, "value")
@@ -33,8 +33,8 @@ class CustomParserSpec extends Specification {
     def "should parse subtype value using custom parser"() {
         given:
             Config config = Config.builder()
-                    .withValueParser(WrapperY, { new WrapperY(it) })
-                    .withValue("value", "someValue")
+                    .addValueParser(WrapperY, { new WrapperY(it) })
+                    .put("value", "someValue")
                     .build()
         when:
             WrapperX result = config.get(WrapperX, "value")
@@ -45,9 +45,9 @@ class CustomParserSpec extends Specification {
     def "should obey parsers registration order"() {
         given:
             Config config = Config.builder()
-                    .withValueParser(WrapperX, { new WrapperX(it + "1") })
-                    .withValueParser(WrapperX, { new WrapperX(it + "2") })
-                    .withValue("value", "someValue")
+                    .addValueParser(WrapperX, { new WrapperX(it + "1") })
+                    .addValueParser(WrapperX, { new WrapperX(it + "2") })
+                    .put("value", "someValue")
                     .build()
         when:
             WrapperX result = config.get(WrapperX, "value")
@@ -58,8 +58,8 @@ class CustomParserSpec extends Specification {
     def "should not parse a subtype type with a supertype parser"() {
         given:
             Config config = Config.builder()
-                    .withValueParser(WrapperX, { new WrapperX(it) })
-                    .withValue("value", "someValue")
+                    .addValueParser(WrapperX, { new WrapperX(it) })
+                    .put("value", "someValue")
                     .build()
         when:
             config.get(WrapperY, "value")

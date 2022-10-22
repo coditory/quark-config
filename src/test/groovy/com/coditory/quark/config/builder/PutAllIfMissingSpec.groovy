@@ -1,21 +1,24 @@
-package com.coditory.quark.config
+package com.coditory.quark.config.builder
 
+import com.coditory.quark.config.Config
 import spock.lang.Specification
 
-class ConfigWithDefaultsSpec extends Specification {
+class PutAllIfMissingSpec extends Specification {
     def "should return sub config merged with other config"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b.c", "ABC")
-                    .withValue("a.d", "AD")
-                    .withValue("e", "E")
+                    .put("a.b.c", "ABC")
+                    .put("a.d", "AD")
+                    .put("e", "E")
                     .build()
             Config other = Config.builder()
-                    .withValue("a.b.d", "ABD")
-                    .withValue("a.x", "AX")
+                    .put("a.b.d", "ABD")
+                    .put("a.x", "AX")
                     .build()
         when:
-            Config result = config.withDefaults(other)
+            Config result = Config.builder(config)
+                    .putAllIfMissing(other)
+                    .build()
         then:
             result.toMap() == [
                     a: [
@@ -33,17 +36,19 @@ class ConfigWithDefaultsSpec extends Specification {
     def "should not overwrite leaf values"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b.c", "ABC")
-                    .withValue("a.d", "AD")
-                    .withValue("e", "E")
+                    .put("a.b.c", "ABC")
+                    .put("a.d", "AD")
+                    .put("e", "E")
                     .build()
             Config other = Config.builder()
-                    .withValue("a.b.c", "X")
-                    .withValue("a.b", "Y")
-                    .withValue("e", "Z")
+                    .put("a.b.c", "X")
+                    .put("a.b", "Y")
+                    .put("e", "Z")
                     .build()
         when:
-            Config result = config.withDefaults(other)
+            Config result = Config.builder(config)
+                    .putAllIfMissing(other)
+                    .build()
         then:
             result.toMap() == [
                     a: [
@@ -57,17 +62,19 @@ class ConfigWithDefaultsSpec extends Specification {
     def "should not merge list values as leaves"() {
         given:
             Config config = Config.builder()
-                    .withValue("a.b[0].c", "AB0C")
-                    .withValue("a.b[1]", "AB1")
+                    .put("a.b[0].c", "AB0C")
+                    .put("a.b[1]", "AB1")
                     .build()
             Config other = Config.builder()
-                    .withValue("a.b[0].c", "AB0C")
-                    .withValue("a.b[0].d", "AB0D")
-                    .withValue("a.b[1]", "AB1")
-                    .withValue("a.b[2]", "AB2")
+                    .put("a.b[0].c", "AB0C")
+                    .put("a.b[0].d", "AB0D")
+                    .put("a.b[1]", "AB1")
+                    .put("a.b[2]", "AB2")
                     .build()
         when:
-            Config result = config.withDefaults(other)
+            Config result = Config.builder(config)
+                    .putAllIfMissing(other)
+                    .build()
         then:
             result.toMap() == [
                     a: [

@@ -23,6 +23,14 @@ interface ConfigNode {
 
     ConfigNode mapLeaves(Path parentPath, ConfigEntryMapper mapper);
 
+    default ConfigNode mapLeaves(Function<Object, Object> mapper) {
+        return mapLeaves((path, value) -> mapper.apply(value));
+    }
+
+    default ConfigNode mapLeaves(ConfigEntryMapper mapper) {
+        return mapLeaves(Path.root(), mapper);
+    }
+
     default ConfigNode mapLeaves(Path parentPath, Function<Object, Object> mapper) {
         return mapLeaves(parentPath, (path, value) -> mapper.apply(value));
     }
