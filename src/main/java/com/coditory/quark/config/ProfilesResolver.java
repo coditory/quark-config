@@ -23,6 +23,7 @@ import static java.util.stream.Collectors.toSet;
 public final class ProfilesResolver {
     private final ArgumentsParser argumentsParser = new ArgumentsParser();
     private String profileArgName = "profile";
+    private List<String> enforcedProfiles;
     private List<String> defaultProfiles;
     private List<String> firstIfNoneMatchProfiles;
     private Set<String> allowedProfiles;
@@ -36,7 +37,7 @@ public final class ProfilesResolver {
         // deliberately empty
     }
 
-    public ProfilesResolver withMinProfileCount(int min) {
+    public ProfilesResolver minProfileCount(int min) {
         expect(min >= 0, "Expected min >= 0");
         if (maxProfiles != null) {
             expect(min <= maxProfiles, "Expected min <= maxProfiles");
@@ -45,7 +46,7 @@ public final class ProfilesResolver {
         return this;
     }
 
-    public ProfilesResolver withMaxProfileCount(int max) {
+    public ProfilesResolver maxProfileCount(int max) {
         expect(max >= 0, "Expected max >= 0");
         if (minProfiles != null) {
             expect(max <= minProfiles, "Expected max >= minProfiles");
@@ -54,68 +55,78 @@ public final class ProfilesResolver {
         return this;
     }
 
-    public ProfilesResolver withExpectedProfileCount(int count) {
+    public ProfilesResolver expectedProfileCount(int count) {
         expect(count >= 0, "Expected count >= 0");
-        withMinProfileCount(count);
-        withMaxProfileCount(count);
+        minProfileCount(count);
+        maxProfileCount(count);
         return this;
     }
 
-    public ProfilesResolver setFirstIfNoneMatch(List<String> firstIfNoneMatch) {
+    public ProfilesResolver firstIfNoneMatch(List<String> firstIfNoneMatch) {
         expectNonEmpty(firstIfNoneMatch, "firstIfNoneMatch");
         this.firstIfNoneMatchProfiles = List.copyOf(firstIfNoneMatch);
         return this;
     }
 
-    public ProfilesResolver withAllowedProfiles(String... allowedProfiles) {
-        return withAllowedProfiles(Set.of(allowedProfiles));
+    public ProfilesResolver allowedProfiles(String... allowedProfiles) {
+        return allowedProfiles(Set.of(allowedProfiles));
     }
 
-    public ProfilesResolver withAllowedProfiles(Collection<String> allowedProfiles) {
+    public ProfilesResolver allowedProfiles(Collection<String> allowedProfiles) {
         this.allowedProfiles = new HashSet<>(allowedProfiles);
         return this;
     }
 
-    public ProfilesResolver withExclusiveProfiles(String... exclusiveProfiles) {
-        return withExclusiveProfiles(Set.of(exclusiveProfiles));
+    public ProfilesResolver exclusiveProfiles(String... exclusiveProfiles) {
+        return exclusiveProfiles(Set.of(exclusiveProfiles));
     }
 
-    public ProfilesResolver withExclusiveProfiles(Collection<String> exclusiveProfiles) {
+    public ProfilesResolver exclusiveProfiles(Collection<String> exclusiveProfiles) {
         this.exclusiveProfiles = new HashSet<>(exclusiveProfiles);
         return this;
     }
 
-    public ProfilesResolver withProfileArgName(String profileArgName) {
+    public ProfilesResolver profileArgName(String profileArgName) {
         this.profileArgName = expectNonBlank(profileArgName, "profileArgName");
         return this;
     }
 
-    public ProfilesResolver withDefaultProfiles(String... defaultProfiles) {
-        return withDefaultProfiles(Arrays.asList(defaultProfiles));
+    public ProfilesResolver defaultProfiles(String... defaultProfiles) {
+        return defaultProfiles(Arrays.asList(defaultProfiles));
     }
 
-    public ProfilesResolver withDefaultProfiles(List<String> defaultProfiles) {
+    public ProfilesResolver defaultProfiles(List<String> defaultProfiles) {
         expectNonNull(defaultProfiles, "defaultProfiles");
         this.defaultProfiles = List.copyOf(defaultProfiles);
         return this;
     }
 
-    public ProfilesResolver withProfiles(String... profiles) {
-        this.profilesMapper = (p) -> Arrays.asList(profiles);
+    public ProfilesResolver profiles(String... profiles) {
+        this.enforcedProfiles = Arrays.asList(profiles);
         return this;
     }
 
-    public ProfilesResolver withProfilesMapper(Function<List<String>, List<String>> mapper) {
+    public ProfilesResolver profiles(List<String> profiles) {
+        this.enforcedProfiles = List.copyOf(profiles);
+        return this;
+    }
+
+    public ProfilesResolver profiles(Profiles profiles) {
+        this.enforcedProfiles = profiles.getValues();
+        return this;
+    }
+
+    public ProfilesResolver profilesMapper(Function<List<String>, List<String>> mapper) {
         this.profilesMapper = mapper;
         return this;
     }
 
-    public ProfilesResolver withProfilesValidator(Predicate<List<String>> validator) {
+    public ProfilesResolver profilesValidator(Predicate<List<String>> validator) {
         this.profilesValidator = validator;
         return this;
     }
 
-    public ProfilesResolver withArgsMapping(Map<String[], String[]> mapping) {
+    public ProfilesResolver argsMapping(Map<String[], String[]> mapping) {
         argumentsParser.withMapping(mapping);
         return this;
     }
@@ -130,7 +141,7 @@ public final class ProfilesResolver {
         return this;
     }
 
-    public ProfilesResolver withArgsAliases(Map<String, String> aliases) {
+    public ProfilesResolver argsAliases(Map<String, String> aliases) {
         argumentsParser.withAliases(aliases);
         return this;
     }
@@ -138,6 +149,10 @@ public final class ProfilesResolver {
     public ProfilesResolver addArgsAlias(String arg, String alias) {
         argumentsParser.addAlias(arg, alias);
         return this;
+    }
+
+    public Profiles resolve() {
+        return resolve(Config.empty());
     }
 
     public Profiles resolve(String... args) {
@@ -152,10 +167,13 @@ public final class ProfilesResolver {
     }
 
     private List<String> profiles(Config argsConfig) {
-        Stream<String> profilesFromArgument = profileArgName != null && argsConfig.contains(profileArgName)
-                ? Stream.of(argsConfig.getString(profileArgName))
-                : Stream.of();
-        List<String> profiles = profilesFromArgument
+        Stream<String> profilesRaw = Stream.of();
+        if (enforcedProfiles != null) {
+            profilesRaw = enforcedProfiles.stream();
+        } else if (profileArgName != null && argsConfig.contains(profileArgName)) {
+            profilesRaw = Stream.of(argsConfig.getString(profileArgName));
+        }
+        List<String> profiles = profilesRaw
                 .flatMap(s -> stream(s.split(",")))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
@@ -200,9 +218,5 @@ public final class ProfilesResolver {
             throw new IllegalArgumentException("Invalid profiles: " + profiles);
         }
         return profiles;
-    }
-
-    private String[] copy(String[] input) {
-        return Arrays.copyOf(input, input.length);
     }
 }

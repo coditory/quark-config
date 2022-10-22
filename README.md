@@ -31,9 +31,9 @@ dependencies {
 
 ```java
 Config config = new ConfigLoader()
-        .withDefaultProfiles("local")
-        .withConfigPath("configs")
-        .withArgs(args)
+        .defaultProfiles("local")
+        .configPath("configs")
+        .args(args)
         .loadConfig()
 ```
 
@@ -92,19 +92,19 @@ Config config = new ConfigLoader().loadConfig();
 // Output: {application={port=7070, name=best-app}}
 
 Config config = new ConfigLoader()
-    .withArgs("--profile", "prod")
+    .args("--profile", "prod")
     .loadConfig();
 // loads config with prod profile
 // Output: {application={port=80, name=best-app}}
         
 Config config = new ConfigLoader()
-    .withArgs("--port", "7071")
+    .aArgs("--port", "7071")
     .loadConfig();
 // resolves config with expression
 // Output: {application={port=7071, name=best-app}}
 
 Config config = new ConfigLoader()
-    .withArgs("--config-value.application.port", "8081")
+    .args("--config-value.application.port", "8081")
     .loadConfig();
 // loads config with config value passed as an argument
 // Output: {application={port=8081, name=best-app}}
@@ -164,11 +164,11 @@ new ConfigLoader()
     .addArgsMapping(["--test"], ["--profile", "test"])
     .addArgsMapping(["--dev"], ["--profile", "dev"])
     .addArgsAlias("p", "profile")
-    .withMinProfileCount(1)
-    .withExclusiveProfiles(mainProfiles)
-    .setFirstIfNoneMatch(mainProfiles)
-    .withConfigPath("config")
-    .withArgs(args)
+    .minProfileCount(1)
+    .exclusiveProfiles(mainProfiles)
+    .firstIfNoneMatch(mainProfiles)
+    .configPath("config")
+    .args(args)
     .loadConfig()
 ```
 

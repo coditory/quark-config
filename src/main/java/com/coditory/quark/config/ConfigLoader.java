@@ -30,19 +30,19 @@ public final class ConfigLoader {
     private Set<String> optionalProfileConfigs = null;
     private boolean profileConfigsRequired = false;
 
-    public ConfigLoader withArgs(String[] args) {
+    public ConfigLoader args(String[] args) {
         expectNonNull(args, "args");
         this.args = copy(args);
         return this;
     }
 
-    public ConfigLoader withArgs(List<String> args) {
+    public ConfigLoader args(List<String> args) {
         expectNonNull(args, "args");
         this.args = args.toArray(new String[0]);
         return this;
     }
 
-    public ConfigLoader withArgsMapping(Map<String[], String[]> mapping) {
+    public ConfigLoader argsMapping(Map<String[], String[]> mapping) {
         argumentsParser.withMapping(mapping);
         return this;
     }
@@ -57,7 +57,7 @@ public final class ConfigLoader {
         return this;
     }
 
-    public ConfigLoader withArgsAliases(Map<String, String> aliases) {
+    public ConfigLoader argsAliases(Map<String, String> aliases) {
         argumentsParser.withAliases(aliases);
         return this;
     }
@@ -67,12 +67,12 @@ public final class ConfigLoader {
         return this;
     }
 
-    public ConfigLoader withoutConfigPropArgPrefix() {
+    public ConfigLoader noConfigPropArgPrefix() {
         this.configPropArgPrefix = null;
         return this;
     }
 
-    public ConfigLoader withConfigPropArgPrefix(String configPropArgPrefix) {
+    public ConfigLoader configPropArgPrefix(String configPropArgPrefix) {
         expectNonBlank(configPropArgPrefix, "configPropArgPrefix");
         expect(!Objects.equals(configPropArgPrefix, externalConfigArgName), "Expected configPropArgPrefix != externalConfigArgName");
         expect(!configPropArgPrefix.contains("."), "Expected configPropArgPrefix to contain no dots");
@@ -80,12 +80,12 @@ public final class ConfigLoader {
         return this;
     }
 
-    public ConfigLoader withoutExternalConfigArgName() {
+    public ConfigLoader noExternalConfigArgName() {
         this.externalConfigArgName = null;
         return this;
     }
 
-    public ConfigLoader withExternalConfigArgName(String externalConfigArgName) {
+    public ConfigLoader externalConfigArgName(String externalConfigArgName) {
         expectNonBlank(externalConfigArgName, "externalConfigArgName");
         expect(!Objects.equals(configPropArgPrefix, externalConfigArgName), "Expected configPropArgPrefix != externalConfigArgName");
         expect(!externalConfigArgName.contains("."), "Expected externalConfigArgName to contain no dots");
@@ -93,109 +93,104 @@ public final class ConfigLoader {
         return this;
     }
 
-    public ConfigLoader withAllowedProfiles(String... allowedProfiles) {
-        return withAllowedProfiles(Set.of(allowedProfiles));
+    public ConfigLoader allowedProfiles(String... allowedProfiles) {
+        return allowedProfiles(Set.of(allowedProfiles));
     }
 
-    public ConfigLoader withAllowedProfiles(Collection<String> allowedProfiles) {
-        this.profilesResolver.withAllowedProfiles(allowedProfiles);
+    public ConfigLoader allowedProfiles(Collection<String> allowedProfiles) {
+        this.profilesResolver.allowedProfiles(allowedProfiles);
         return this;
     }
 
-    public ConfigLoader setFirstIfNoneMatch(List<String> firstIfNoneMatch) {
-        this.profilesResolver.setFirstIfNoneMatch(firstIfNoneMatch);
+    public ConfigLoader firstIfNoneMatch(List<String> firstIfNoneMatch) {
+        this.profilesResolver.firstIfNoneMatch(firstIfNoneMatch);
         return this;
     }
 
-    public ConfigLoader withExclusiveProfiles(String... exclusiveProfiles) {
-        return withExclusiveProfiles(Set.of(exclusiveProfiles));
+    public ConfigLoader exclusiveProfiles(String... exclusiveProfiles) {
+        return exclusiveProfiles(Set.of(exclusiveProfiles));
     }
 
-    public ConfigLoader withExclusiveProfiles(Collection<String> exclusiveProfiles) {
-        this.profilesResolver.withExclusiveProfiles(exclusiveProfiles);
+    public ConfigLoader exclusiveProfiles(Collection<String> exclusiveProfiles) {
+        this.profilesResolver.exclusiveProfiles(exclusiveProfiles);
         return this;
     }
 
-    public ConfigLoader withExpectedProfileCount(int count) {
-        this.profilesResolver.withExpectedProfileCount(count);
+    public ConfigLoader expectedProfileCount(int count) {
+        this.profilesResolver.expectedProfileCount(count);
         return this;
     }
 
-    public ConfigLoader withMinProfileCount(int count) {
-        this.profilesResolver.withMinProfileCount(count);
+    public ConfigLoader minProfileCount(int count) {
+        this.profilesResolver.minProfileCount(count);
         return this;
     }
 
-    public ConfigLoader withMaxProfileCount(int count) {
-        this.profilesResolver.withMaxProfileCount(count);
+    public ConfigLoader maxProfileCount(int count) {
+        this.profilesResolver.maxProfileCount(count);
         return this;
     }
 
-    public ConfigLoader withOptionalProfileConfigs(String... optionalProfileConfigs) {
-        return withOptionalProfileConfigs(Set.of(optionalProfileConfigs));
+    public ConfigLoader optionalProfileConfigs(String... optionalProfileConfigs) {
+        return optionalProfileConfigs(Set.of(optionalProfileConfigs));
     }
 
-    public ConfigLoader withOptionalProfileConfigs(Set<String> optionalProfileConfigs) {
-        withProfileConfigsRequired();
+    public ConfigLoader optionalProfileConfigs(Set<String> optionalProfileConfigs) {
+        profileConfigsRequired();
         this.optionalProfileConfigs = new HashSet<>(optionalProfileConfigs);
         return this;
     }
 
-    public ConfigLoader withOptionalBaseConfig() {
-        return withOptionalBaseConfig(true);
+    public ConfigLoader optionalBaseConfig() {
+        return optionalBaseConfig(true);
     }
 
-    public ConfigLoader withOptionalBaseConfig(boolean optionalBaseConfig) {
+    public ConfigLoader optionalBaseConfig(boolean optionalBaseConfig) {
         this.optionalBaseConfig = optionalBaseConfig;
         return this;
     }
 
-    public ConfigLoader withProfileConfigsRequired() {
-        return withProfileConfigsRequired(true);
+    public ConfigLoader profileConfigsRequired() {
+        return profileConfigsRequired(true);
     }
 
-    public ConfigLoader withProfileConfigsRequired(boolean profileConfigsRequired) {
+    public ConfigLoader profileConfigsRequired(boolean profileConfigsRequired) {
         this.profileConfigsRequired = profileConfigsRequired;
         return this;
     }
 
-    public ConfigLoader withProfileArgName(String profileArgName) {
-        this.profilesResolver.withProfileArgName(profileArgName);
+    public ConfigLoader profileArgName(String profileArgName) {
+        this.profilesResolver.profileArgName(profileArgName);
         return this;
     }
 
-    public ConfigLoader withCommonConfigName(String commonConfigName) {
+    public ConfigLoader commonConfigName(String commonConfigName) {
         expectNonBlank(commonConfigName, "commonConfigName");
         this.commonConfigName = commonConfigName;
         return this;
     }
 
-    public ConfigLoader withDefaultProfiles(String... defaultProfiles) {
-        this.profilesResolver.withDefaultProfiles(defaultProfiles);
+    public ConfigLoader defaultProfiles(String... defaultProfiles) {
+        this.profilesResolver.defaultProfiles(defaultProfiles);
         return this;
     }
 
-    public ConfigLoader withProfiles(String... profiles) {
-        this.profilesResolver.withProfiles(profiles);
+    public ConfigLoader profilesMapper(Function<List<String>, List<String>> mapper) {
+        this.profilesResolver.profilesMapper(mapper);
         return this;
     }
 
-    public ConfigLoader withProfilesMapper(Function<List<String>, List<String>> mapper) {
-        this.profilesResolver.withProfilesMapper(mapper);
+    public ConfigLoader profilesValidator(Predicate<List<String>> predicate) {
+        this.profilesResolver.profilesValidator(predicate);
         return this;
     }
 
-    public ConfigLoader withProfilesValidator(Predicate<List<String>> predicate) {
-        this.profilesResolver.withProfilesValidator(predicate);
-        return this;
-    }
-
-    public ConfigLoader withoutConfigBaseName() {
+    public ConfigLoader noConfigBaseName() {
         this.configBaseName = null;
         return this;
     }
 
-    public ConfigLoader withConfigBaseName(String configBaseName) {
+    public ConfigLoader configBaseName(String configBaseName) {
         expectNonBlank(configBaseName, "configBaseName");
         expect(
                 !configBaseName.contains("/") && !configBaseName.contains("\\"),
@@ -205,29 +200,34 @@ public final class ConfigLoader {
         return this;
     }
 
-    public ConfigLoader withoutConfigPath() {
+    public ConfigLoader noConfigPath() {
         this.configPath = null;
         return this;
     }
 
-    public ConfigLoader withConfigPath(Path configPath) {
+    public ConfigLoader configPath(Path configPath) {
         expectNonNull(configPath, "configPath");
         expect(!configPath.isAbsolute(), "Expected relative configPath");
         this.configPath = configPath;
         return this;
     }
 
-    public ConfigLoader withConfigPath(String configPath) {
-        return withConfigPath(Paths.get(configPath));
+    public ConfigLoader configPath(String configPath) {
+        return configPath(Paths.get(configPath));
     }
 
-    public ConfigLoader withProfiles(List<String> profiles) {
-        this.profiles = Profiles.of(profiles);
+    public ConfigLoader profiles(String... profiles) {
+        this.profilesResolver.profiles(profiles);
         return this;
     }
 
-    public ConfigLoader withProfiles(Profiles profiles) {
-        this.profiles = profiles;
+    public ConfigLoader profiles(List<String> profiles) {
+        this.profilesResolver.profiles(profiles);
+        return this;
+    }
+
+    public ConfigLoader profiles(Profiles profiles) {
+        this.profilesResolver.profiles(profiles);
         return this;
     }
 
