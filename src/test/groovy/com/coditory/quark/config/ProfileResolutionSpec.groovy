@@ -8,7 +8,7 @@ class ProfileResolutionSpec extends Specification {
     def "should fail on not allowed profile"() {
         when:
             resolver()
-                    .withAllowedProfiles("dev", "test")
+                    .allowedProfiles("dev", "test")
                     .resolve("--profile", "other")
         then:
             IllegalArgumentException e = thrown(IllegalArgumentException)
@@ -18,7 +18,7 @@ class ProfileResolutionSpec extends Specification {
     def "should pass on allowed profile"() {
         when:
             List<String> profiles = resolver()
-                    .withAllowedProfiles("dev", "test", "prod")
+                    .allowedProfiles("dev", "test", "prod")
                     .resolve("--profile", "dev,test")
                     .getValues()
         then:
@@ -28,7 +28,7 @@ class ProfileResolutionSpec extends Specification {
     def "should pass on allowed profile"() {
         when:
             List<String> profiles = resolver()
-                    .withAllowedProfiles("dev", "test", "prod")
+                    .allowedProfiles("dev", "test", "prod")
                     .resolve("--profile", "dev,test")
                     .getValues()
         then:
@@ -38,7 +38,7 @@ class ProfileResolutionSpec extends Specification {
     def "should fail on exclusive profiles"() {
         when:
             resolver()
-                    .withExclusiveProfiles("dev", "test", "prod")
+                    .exclusiveProfiles("dev", "test", "prod")
                     .resolve("--profile", "dev,test")
         then:
             IllegalArgumentException e = thrown(IllegalArgumentException)
@@ -48,7 +48,7 @@ class ProfileResolutionSpec extends Specification {
     def "should pass on non-exclusive profiles"() {
         when:
             List<String> profiles = resolver()
-                    .withExclusiveProfiles("dev", "test", "prod")
+                    .exclusiveProfiles("dev", "test", "prod")
                     .resolve("--profile", "dev,other")
                     .getValues()
         then:
@@ -58,7 +58,7 @@ class ProfileResolutionSpec extends Specification {
     def "should return default profiles"() {
         when:
             List<String> profiles = resolver()
-                    .withDefaultProfiles("dev")
+                    .defaultProfiles("dev")
                     .resolve("--some-param", "abc")
                     .getValues()
         then:
@@ -68,7 +68,7 @@ class ProfileResolutionSpec extends Specification {
     def "should return profiles from args"() {
         when:
             List<String> profiles = resolver()
-                    .withDefaultProfiles("dev")
+                    .defaultProfiles("dev")
                     .resolve("--profile", "test")
                     .getValues()
         then:
@@ -78,7 +78,7 @@ class ProfileResolutionSpec extends Specification {
     def "should use custom profile arg name"() {
         when:
             List<String> profiles = resolver()
-                    .withProfileArgName("profiles")
+                    .profileArgName("profiles")
                     .resolve("--profiles", "test")
                     .getValues()
         then:
@@ -108,7 +108,7 @@ class ProfileResolutionSpec extends Specification {
     def "should validate profile count"() {
         when:
             List<String> profiles = resolver()
-                    .withExpectedProfileCount(2)
+                    .expectedProfileCount(2)
                     .resolve("--profile", "dev,test")
                     .getValues()
         then:
@@ -116,7 +116,7 @@ class ProfileResolutionSpec extends Specification {
 
         when:
             resolver()
-                    .withExpectedProfileCount(3)
+                    .expectedProfileCount(3)
                     .resolve("--profile", "dev,test")
         then:
             IllegalArgumentException e = thrown(IllegalArgumentException)
@@ -126,7 +126,7 @@ class ProfileResolutionSpec extends Specification {
     def "should map profiles"() {
         when:
             List<String> profiles = resolver()
-                    .withProfilesMapper({ p -> p.collect { it + "-mapped" } })
+                    .profilesMapper({ p -> p.collect { it + "-mapped" } })
                     .resolve("--profile", "dev,test")
                     .getValues()
         then:

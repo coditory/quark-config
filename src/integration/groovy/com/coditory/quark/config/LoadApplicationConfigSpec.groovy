@@ -25,7 +25,7 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
         when:
             Config config = stubClassLoader {
                 new ConfigLoader()
-                        .withArgs(
+                        .args(
                                 "--profile", "prod",
                                 "--config-prop.d", "ARGS",
                                 "--config", external.getPath()
@@ -62,7 +62,7 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
         when:
             Config config = stubClassLoader {
                 new ConfigLoader()
-                        .withArgs(
+                        .args(
                                 "--profile", "prod",
                                 "--config-prop.d", "ARGS",
                                 "--config", external.getPath()
@@ -82,7 +82,7 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
         when:
             Config config = stubClassLoader {
                 new ConfigLoader()
-                        .withDefaultProfiles(*profiles)
+                        .defaultProfiles(*profiles)
                         .loadConfig()
             }
         then:
@@ -104,7 +104,7 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
         when:
             Environment env = stubClassLoader {
                 new ConfigLoader()
-                        .withDefaultProfiles("local")
+                        .defaultProfiles("local")
                         .loadEnvironment()
             }
         then:
@@ -119,9 +119,9 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
         when:
             Config config = stubClassLoader {
                 new ConfigLoader()
-                        .withDefaultProfiles("test")
-                        .withProfiles("local")
-                        .withArgs("--profile", "dev")
+                        .defaultProfiles("test")
+                        .profiles("local")
+                        .args("--profile", "dev")
                         .loadConfig()
             }
         then:
@@ -137,8 +137,8 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
         when:
             stubClassLoader {
                 new ConfigLoader()
-                        .withProfileConfigsRequired()
-                        .withDefaultProfiles(*profiles)
+                        .profileConfigsRequired()
+                        .defaultProfiles(*profiles)
                         .loadConfig()
             }
         then:
@@ -160,9 +160,9 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
         when:
             Config config = stubClassLoader {
                 new ConfigLoader()
-                        .withConfigPath("configs")
-                        .withConfigBaseName("app")
-                        .withDefaultProfiles("local")
+                        .configPath("configs")
+                        .configBaseName("app")
+                        .defaultProfiles("local")
                         .loadConfig()
             }
         then:
@@ -178,10 +178,10 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
         when:
             Config config = stubClassLoader {
                 new ConfigLoader()
-                        .withConfigPath("configs")
-                        .withoutConfigBaseName()
-                        .withCommonConfigName("common")
-                        .withDefaultProfiles("local")
+                        .configPath("configs")
+                        .noConfigBaseName()
+                        .commonConfigName("common")
+                        .defaultProfiles("local")
                         .loadConfig()
             }
         then:
@@ -197,8 +197,8 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
         when:
             Config config = stubClassLoader {
                 new ConfigLoader()
-                        .withDefaultProfiles("local")
-                        .withArgs("--profile", "prod")
+                        .defaultProfiles("local")
+                        .args("--profile", "prod")
                         .loadConfig()
             }
         then:
@@ -213,9 +213,9 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
         when:
             Config config = stubClassLoader {
                 new ConfigLoader()
-                        .withDefaultProfiles("local")
-                        .withProfileArgName("appprofile")
-                        .withArgs("--appprofile", "prod")
+                        .defaultProfiles("local")
+                        .profileArgName("appprofile")
+                        .args("--appprofile", "prod")
                         .loadConfig()
             }
         then:
@@ -241,15 +241,15 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
         expect:
             stubClassLoader {
                 new ConfigLoader()
-                        .withArgs("--profile", "other")
+                        .args("--profile", "other")
                         .loadConfig()
             }
         and:
             stubClassLoader {
                 new ConfigLoader()
-                        .withProfileConfigsRequired()
-                        .withOptionalProfileConfigs("other")
-                        .withArgs("--profile", "other")
+                        .profileConfigsRequired()
+                        .optionalProfileConfigs("other")
+                        .args("--profile", "other")
                         .loadConfig()
             }
     }
@@ -260,8 +260,8 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
         when:
             stubClassLoader {
                 new ConfigLoader()
-                        .withOptionalProfileConfigs("other")
-                        .withArgs("--profile", "prod")
+                        .optionalProfileConfigs("other")
+                        .args("--profile", "prod")
                         .loadConfig()
             }
         then:
@@ -270,8 +270,8 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
         when:
             stubClassLoader {
                 new ConfigLoader()
-                        .withProfileConfigsRequired()
-                        .withArgs("--profile", "prod")
+                        .profileConfigsRequired()
+                        .args("--profile", "prod")
                         .loadConfig()
             }
         then:
@@ -283,7 +283,7 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
         when:
             Config config = stubClassLoader {
                 new ConfigLoader()
-                        .withOptionalBaseConfig()
+                        .optionalBaseConfig()
                         .loadConfig()
             }
         then:

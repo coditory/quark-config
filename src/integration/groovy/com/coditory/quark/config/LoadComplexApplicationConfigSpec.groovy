@@ -38,11 +38,11 @@ class LoadComplexApplicationConfigSpec extends Specification implements UsesFile
                 .addArgsMapping(["--test"], ["--profile", "test"])
                 .addArgsMapping(["--dev"], ["--profile", "dev"])
                 .addArgsAlias("p", "profile")
-                .withMinProfileCount(1)
-                .withExclusiveProfiles(mainProfiles)
-                .setFirstIfNoneMatch(mainProfiles)
-                .withConfigPath("config")
-                .withArgs(args)
+                .minProfileCount(1)
+                .exclusiveProfiles(mainProfiles)
+                .firstIfNoneMatch(mainProfiles)
+                .configPath("config")
+                .args(args)
                 .loadConfig()
     }
 }
