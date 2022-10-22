@@ -83,13 +83,14 @@ final class ResolvableConfig implements Config {
     }
 
     @Override
-    public Config withValues(Config config) {
+    public ResolvableConfig withValues(Config config) {
         expectNonNull(config, "config");
-        return config.withDefaults(this);
+        MapConfigNode mergedRoot = config.getRootNode().withDefaults(this.root);
+        return withRoot(mergedRoot);
     }
 
     @Override
-    public ConfigNode getRootNode() {
+    public MapConfigNode getRootNode() {
         return root;
     }
 
@@ -106,7 +107,7 @@ final class ResolvableConfig implements Config {
     private ResolvableConfig resolveExpressions(Config variables, Function<Object, Object> leafMapper) {
         ResolvableConfig configWithExpressions = this.mapValues(ExpressionParser::parse);
         ResolvableConfig configWithExpressionsAndVariables = configWithExpressions
-                .withDefaults(variables)
+                .withValues(variables)
                 .mapValues(ExpressionParser::parse);
         ExpressionResolver resolver = new ExpressionResolver(configWithExpressionsAndVariables);
         return this.mapValues(ExpressionParser::parse)

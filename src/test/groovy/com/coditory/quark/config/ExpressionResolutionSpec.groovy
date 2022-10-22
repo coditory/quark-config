@@ -86,6 +86,16 @@ class ExpressionResolutionSpec extends Specification {
             ]
     }
 
+    def "should resolve reference to parameter of the same name"() {
+        when:
+            Config config = Config.builder()
+                    .withValue("x", "\${x}")
+                    .withResolvedExpressions(x: "X")
+                    .build()
+        then:
+            config.toMap() == [x: "X"]
+    }
+
     def "should resolve reference to an object"() {
         when:
             Config config = Config.builder()

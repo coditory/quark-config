@@ -1,22 +1,45 @@
 package com.coditory.quark.config;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import static com.coditory.quark.config.Preconditions.expectNonBlank;
 import static com.coditory.quark.config.Preconditions.expectNonNull;
 
 class ArgumentsParser {
-    private final Map<String, String> aliases;
-    private final Map<String[], String[]> mapping;
+    private Map<String, String> aliases = new LinkedHashMap<>();
+    private Map<String[], String[]> mapping = new LinkedHashMap<>();
 
-    ArgumentsParser(Map<String, String> aliases, Map<String[], String[]> mapping) {
-        this.aliases = Map.copyOf(aliases);
-        this.mapping = Map.copyOf(mapping);
+    ArgumentsParser withMapping(Map<String[], String[]> argsMapping) {
+        expectNonNull(argsMapping, "argsMapping");
+        this.mapping = copy(argsMapping);
+        return this;
     }
 
-    public final Map<String, Object> parse(String... args) {
+    ArgumentsParser addMapping(String[] args, String[] mapping) {
+        expectNonNull(args, "args");
+        expectNonNull(mapping, "mapping");
+        this.mapping.put(copy(args), copy(mapping));
+        return this;
+    }
+
+    ArgumentsParser withAliases(Map<String, String> argsAliases) {
+        expectNonNull(argsAliases, "argsAliases");
+        this.aliases = new LinkedHashMap<>(argsAliases);
+        return this;
+    }
+
+    ArgumentsParser addAlias(String arg, String alias) {
+        expectNonBlank(arg, "arg");
+        expectNonBlank(alias, "alias");
+        this.aliases.put(arg, alias);
+        return this;
+    }
+
+    Map<String, Object> parse(String... args) {
         expectNonNull(args, "args");
         Map<String, Object> result = parseArgs(args);
         result = applyMapping(result);
@@ -76,5 +99,17 @@ class ArgumentsParser {
         if (aliases.containsKey(name)) {
             result.put(aliases.get(name), value);
         }
+    }
+
+    private String[] copy(String[] input) {
+        return Arrays.copyOf(input, input.length);
+    }
+
+    private LinkedHashMap<String[], String[]> copy(Map<String[], String[]> input) {
+        LinkedHashMap<String[], String[]> result = new LinkedHashMap<>();
+        for (Map.Entry<String[], String[]> entry : input.entrySet()) {
+            result.put(copy(entry.getKey()), copy(entry.getValue()));
+        }
+        return result;
     }
 }

@@ -10,20 +10,20 @@ import static com.coditory.quark.config.ConfigSource.FILE_SYSTEM;
 import static com.coditory.quark.config.Preconditions.expectNonBlank;
 import static com.coditory.quark.config.Preconditions.expectNonNull;
 
-public class ConfigFactory {
+public final class ConfigFactory {
     public static ConfigLoader configLoader() {
         return new ConfigLoader();
     }
 
     public static Config loadConfig() {
-        return configLoader().load();
+        return configLoader().loadConfig();
     }
 
     public static Config loadConfig(String... args) {
         expectNonNull(args, "args");
         return configLoader()
                 .withArgs(args)
-                .load();
+                .loadConfig();
     }
 
     public static Config buildFromSystemProperties() {
@@ -61,7 +61,10 @@ public class ConfigFactory {
         expectNonNull(args, "args");
         expectNonNull(aliases, "aliases");
         expectNonNull(mapping, "mapping");
-        Map<String, Object> values = new ArgumentsParser(aliases, mapping).parse(args);
+        Map<String, Object> values = new ArgumentsParser()
+                .withAliases(aliases)
+                .withMapping(mapping)
+                .parse(args);
         return Config.of(values);
     }
 

@@ -34,7 +34,7 @@ Config config = ConfigFactory.configLoader()
         .withDefaultProfiles("local")
         .withConfigPath("configs")
         .withArgs(args)
-        .load()
+        .loadConfig()
 ```
 
 Loads configuration files:
@@ -75,7 +75,7 @@ Example:
 # file: application.yml
 application:
   name: "best-app"
-  port: ${env.PORT ? args.port ? 7070}
+  port: ${_env.PORT ? _args.port ? 7070}
 
 # file: application-local.yml
 application:
@@ -108,10 +108,10 @@ For more examples see the [test cases](src/integration/groovy/com/coditory/quark
 #### Config resolution variables
 
 You can use the following expression variables to resolve an application config:
-- `${profiles.*}` - profiles arsed from args
-- `${env.*}` - all system variables from `System.getenv()`
-- `${system.*}` - all system variables from `System.getProperties()`
-- `${args.*}` - all arguments
+- `${_profiles.*}` - profiles arsed from args
+- `${_env.*}` - all system variables from `System.getenv()`
+- `${_system.*}` - all system variables from `System.getProperties()`
+- `${_args.*}` - all arguments
 
 ### Creating a config
 

@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 import static com.coditory.quark.config.ConfigRemoveOptions.removeEmptyParents;
 
-public class AuditableConfig extends ConfigDecorator {
+public final class AuditableConfig extends ConfigDecorator {
     private static final Object USED_MARKER = new Object();
     private Config unreadConfig;
 
@@ -22,7 +22,7 @@ public class AuditableConfig extends ConfigDecorator {
 
     AuditableConfig(Config config) {
         super(config);
-        this.unreadConfig = config.copy();
+        this.unreadConfig = config;
     }
 
     @Override
