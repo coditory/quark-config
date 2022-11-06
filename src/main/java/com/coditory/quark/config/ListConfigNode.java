@@ -129,7 +129,7 @@ class ListConfigNode implements ConfigNode {
                 result.add(index, mappedChild);
             }
         }
-        if (result.isEmpty() && options.isRemoveEmptyLists()) {
+        if (result.isEmpty() && options.removeEmptyLists()) {
             return null;
         }
         return new ListConfigNode(result);
@@ -169,7 +169,7 @@ class ListConfigNode implements ConfigNode {
             }
             childMapped = childMapped || !Objects.equals(mapped, child);
         }
-        if (result.isEmpty() && options.isRemoveEmptyLists()) {
+        if (result.isEmpty() && options.removeEmptyLists()) {
             return null;
         }
         return childMapped

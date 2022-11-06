@@ -18,7 +18,7 @@ class ConfigNodeCreator {
         while (!currentPath.isRoot()) {
             Path.PathElement element = currentPath.getLastElement();
             if (element.isNamed()) {
-                result = new MapConfigNode(Map.of(element.getName(), result));
+                result = new MapConfigNode(Map.of(element.name(), result));
             } else if (element.isIndexed()) {
                 int index = element.getIndex();
                 if (index != 0) {
@@ -53,7 +53,7 @@ class ConfigNodeCreator {
                     .map(entry -> {
                         Path path = Path.parse(entry.getKey());
                         ConfigNode child = configNode(path.removeFirstElement(), entry.getValue());
-                        return Map.entry(path.getFirstElement().getName(), child);
+                        return Map.entry(path.getFirstElement().name(), child);
                     })
                     .collect(toMap(Entry::getKey, Entry::getValue));
             return new MapConfigNode(result);

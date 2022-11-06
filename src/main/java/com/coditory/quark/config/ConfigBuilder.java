@@ -1,5 +1,7 @@
 package com.coditory.quark.config;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -32,24 +34,28 @@ public class ConfigBuilder {
         return this;
     }
 
-    public ConfigBuilder addValueParser(ValueParser parser) {
+    @NotNull
+    public ConfigBuilder addValueParser(@NotNull ValueParser parser) {
         expectNonNull(parser, "parser");
         this.valueParser = this.valueParser.addParser(parser);
         return this;
     }
 
-    public <T> ConfigBuilder addValueParser(Class<T> type, Function<String, T> parser) {
+    @NotNull
+    public <T> ConfigBuilder addValueParser(@NotNull Class<T> type, @NotNull Function<String, T> parser) {
         expectNonNull(type, "type");
         expectNonNull(parser, "parser");
         return addValueParser(ValueParser.forType(type, parser));
     }
 
-    public ConfigBuilder setValueParser(ValueParser parser) {
+    @NotNull
+    public ConfigBuilder setValueParser(@NotNull ValueParser parser) {
         expectNonNull(parser, "parser");
         return setValueParsers(List.of(parser));
     }
 
-    public ConfigBuilder setValueParsers(List<ValueParser> parsers) {
+    @NotNull
+    public ConfigBuilder setValueParsers(@NotNull List<ValueParser> parsers) {
         expectNonNull(parsers, "parsers");
         this.valueParser = new ConfigValueParser(parsers);
         return this;
@@ -61,23 +67,27 @@ public class ConfigBuilder {
         return this;
     }
 
-    public ConfigBuilder setSecretHidingValueMapper(ConfigEntryMapper secretHidingValueMapper) {
+    @NotNull
+    public ConfigBuilder setSecretHidingValueMapper(@NotNull ConfigEntryMapper secretHidingValueMapper) {
         this.secretHidingValueMapper = expectNonNull(secretHidingValueMapper, "secretHidingValueMapper");
         return this;
     }
 
-    public ConfigBuilder putAll(Map<String, ?> values) {
+    @NotNull
+    public ConfigBuilder putAll(@NotNull Map<String, ?> values) {
         expectNonNull(values, "values");
         return putAll(Config.of(values));
     }
 
-    public ConfigBuilder putAll(Config config) {
+    @NotNull
+    public ConfigBuilder putAll(@NotNull Config config) {
         expectNonNull(config, "config");
         this.root = config.getRootNode().withDefaults(root);
         return this;
     }
 
-    public ConfigBuilder put(String name, Object value) {
+    @NotNull
+    public ConfigBuilder put(@NotNull String name, @NotNull Object value) {
         expectNonBlank(name, "name");
         if (value != null) {
             Path path = Path.parseAbsolute(name);
@@ -86,18 +96,21 @@ public class ConfigBuilder {
         return this;
     }
 
-    public ConfigBuilder putAllIfMissing(Map<String, Object> values) {
+    @NotNull
+    public ConfigBuilder putAllIfMissing(@NotNull Map<String, Object> values) {
         expectNonNull(values, "values");
         return putAllIfMissing(Config.of(values));
     }
 
-    public ConfigBuilder putAllIfMissing(Config config) {
+    @NotNull
+    public ConfigBuilder putAllIfMissing(@NotNull Config config) {
         expectNonNull(config, "config");
         this.root = root.withDefaults(config.getRootNode());
         return this;
     }
 
-    public ConfigBuilder putIfMissing(String name, Object value) {
+    @NotNull
+    public ConfigBuilder putIfMissing(@NotNull String name, @NotNull Object value) {
         expectNonBlank(name, "name");
         if (value != null) {
             Path path = Path.parseAbsolute(name);
@@ -106,30 +119,36 @@ public class ConfigBuilder {
         return this;
     }
 
+    @NotNull
     public ConfigBuilder resolveExpressions() {
         return resolveExpressions(Config.empty());
     }
 
-    public ConfigBuilder resolveExpressions(Map<String, Object> values) {
+    @NotNull
+    public ConfigBuilder resolveExpressions(@NotNull Map<String, Object> values) {
         expectNonNull(values, "values");
         return resolveExpressions(Config.of(values));
     }
 
-    public ConfigBuilder resolveExpressions(Config config) {
+    @NotNull
+    public ConfigBuilder resolveExpressions(@NotNull Config config) {
         expectNonNull(config, "config");
         return resolveExpressions(config, Expression::failOnUnresolved);
     }
 
+    @NotNull
     public ConfigBuilder resolveExpressionsOrSkip() {
         return resolveExpressionsOrSkip(Config.empty());
     }
 
-    public ConfigBuilder resolveExpressionsOrSkip(Map<String, Object> values) {
+    @NotNull
+    public ConfigBuilder resolveExpressionsOrSkip(@NotNull Map<String, Object> values) {
         expectNonNull(values, "values");
         return resolveExpressionsOrSkip(Config.of(values));
     }
 
-    public ConfigBuilder resolveExpressionsOrSkip(Config config) {
+    @NotNull
+    public ConfigBuilder resolveExpressionsOrSkip(@NotNull Config config) {
         expectNonNull(config, "config");
         return resolveExpressions(config, Expression::unwrap);
     }
@@ -147,6 +166,7 @@ public class ConfigBuilder {
         return this;
     }
 
+    @NotNull
     public ConfigBuilder removeEmptyProperties() {
         ConfigEntryPredicate predicate = (path, value) -> {
             if (value instanceof List<?> && ((List<?>) value).isEmpty()) {
@@ -159,26 +179,31 @@ public class ConfigBuilder {
         return filterValues(predicate, removeEmptyParents());
     }
 
-    public ConfigBuilder filterValues(ConfigEntryPredicate predicate, ConfigRemoveOptions options) {
+    @NotNull
+    public ConfigBuilder filterValues(@NotNull ConfigEntryPredicate predicate, @NotNull ConfigRemoveOptions options) {
         MapConfigNode mapped = root.filterLeaves(Path.root(), predicate, options);
         root = mapped == null ? MapConfigNode.emptyRoot() : mapped;
         return this;
     }
 
-    public ConfigBuilder mapValues(Function<Object, Object> mapper) {
+    @NotNull
+    public ConfigBuilder mapValues(@NotNull Function<Object, Object> mapper) {
         return mapValues((path, value) -> mapper.apply(value));
     }
 
-    public ConfigBuilder mapValues(ConfigEntryMapper mapper) {
+    @NotNull
+    public ConfigBuilder mapValues(@NotNull ConfigEntryMapper mapper) {
         root = root.mapLeaves(Path.root(), mapper);
         return this;
     }
 
-    public ConfigBuilder remove(String path) {
+    @NotNull
+    public ConfigBuilder remove(@NotNull String path) {
         return remove(path, leaveEmptyParents());
     }
 
-    public ConfigBuilder remove(String path, ConfigRemoveOptions options) {
+    @NotNull
+    public ConfigBuilder remove(@NotNull String path, @NotNull ConfigRemoveOptions options) {
         expectNonBlank(path, "path");
         Path parsed = Path.parse(path);
         return remove(parsed, options);
@@ -191,6 +216,7 @@ public class ConfigBuilder {
         return this;
     }
 
+    @NotNull
     public Config build() {
         return new ResolvableConfig(root, valueParser, secretHidingValueMapper);
     }

@@ -1,9 +1,6 @@
 package com.coditory.quark.config;
 
-public final class ConfigRemoveOptions {
-    private final boolean removeEmptyObjects;
-    private final boolean removeEmptyLists;
-
+public record ConfigRemoveOptions(boolean removeEmptyObjects, boolean removeEmptyLists) {
     public static ConfigRemoveOptions removeEmptyParents() {
         return new ConfigRemoveOptions(true, true);
     }
@@ -18,19 +15,6 @@ public final class ConfigRemoveOptions {
 
     public static ConfigRemoveOptions leaveEmptyParents() {
         return new ConfigRemoveOptions(false, false);
-    }
-
-    public ConfigRemoveOptions(boolean removeEmptyObjects, boolean removeEmptyLists) {
-        this.removeEmptyObjects = removeEmptyObjects;
-        this.removeEmptyLists = removeEmptyLists;
-    }
-
-    public boolean isRemoveEmptyObjects() {
-        return removeEmptyObjects;
-    }
-
-    public boolean isRemoveEmptyLists() {
-        return removeEmptyLists;
     }
 
     @Override

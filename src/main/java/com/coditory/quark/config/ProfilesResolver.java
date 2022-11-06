@@ -1,5 +1,7 @@
 package com.coditory.quark.config;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,6 +39,7 @@ public final class ProfilesResolver {
         // deliberately empty
     }
 
+    @NotNull
     public ProfilesResolver minProfileCount(int min) {
         expect(min >= 0, "Expected min >= 0");
         if (maxProfiles != null) {
@@ -46,6 +49,7 @@ public final class ProfilesResolver {
         return this;
     }
 
+    @NotNull
     public ProfilesResolver maxProfileCount(int max) {
         expect(max >= 0, "Expected max >= 0");
         if (minProfiles != null) {
@@ -55,6 +59,7 @@ public final class ProfilesResolver {
         return this;
     }
 
+    @NotNull
     public ProfilesResolver expectedProfileCount(int count) {
         expect(count >= 0, "Expected count >= 0");
         minProfileCount(count);
@@ -62,106 +67,145 @@ public final class ProfilesResolver {
         return this;
     }
 
-    public ProfilesResolver firstIfNoneMatch(List<String> firstIfNoneMatch) {
+    @NotNull
+    public ProfilesResolver firstIfNoneMatch(@NotNull List<String> firstIfNoneMatch) {
         expectNonEmpty(firstIfNoneMatch, "firstIfNoneMatch");
         this.firstIfNoneMatchProfiles = List.copyOf(firstIfNoneMatch);
         return this;
     }
 
-    public ProfilesResolver allowedProfiles(String... allowedProfiles) {
+    @NotNull
+    public ProfilesResolver allowedProfiles(@NotNull String... allowedProfiles) {
+        expectNonNull(allowedProfiles, "allowedProfiles");
         return allowedProfiles(Set.of(allowedProfiles));
     }
 
-    public ProfilesResolver allowedProfiles(Collection<String> allowedProfiles) {
+    @NotNull
+    public ProfilesResolver allowedProfiles(@NotNull Collection<String> allowedProfiles) {
+        expectNonNull(allowedProfiles, "allowedProfiles");
         this.allowedProfiles = new HashSet<>(allowedProfiles);
         return this;
     }
 
-    public ProfilesResolver exclusiveProfiles(String... exclusiveProfiles) {
+    @NotNull
+    public ProfilesResolver exclusiveProfiles(@NotNull String... exclusiveProfiles) {
+        expectNonNull(exclusiveProfiles, "exclusiveProfiles");
         return exclusiveProfiles(Set.of(exclusiveProfiles));
     }
 
-    public ProfilesResolver exclusiveProfiles(Collection<String> exclusiveProfiles) {
+    @NotNull
+    public ProfilesResolver exclusiveProfiles(@NotNull Collection<String> exclusiveProfiles) {
+        expectNonNull(exclusiveProfiles, "exclusiveProfiles");
         this.exclusiveProfiles = new HashSet<>(exclusiveProfiles);
         return this;
     }
 
-    public ProfilesResolver profileArgName(String profileArgName) {
+    @NotNull
+    public ProfilesResolver profileArgName(@NotNull String profileArgName) {
         this.profileArgName = expectNonBlank(profileArgName, "profileArgName");
         return this;
     }
 
-    public ProfilesResolver defaultProfiles(String... defaultProfiles) {
+    @NotNull
+    public ProfilesResolver defaultProfiles(@NotNull String... defaultProfiles) {
+        expectNonNull(defaultProfiles, "defaultProfiles");
         return defaultProfiles(Arrays.asList(defaultProfiles));
     }
 
-    public ProfilesResolver defaultProfiles(List<String> defaultProfiles) {
+    @NotNull
+    public ProfilesResolver defaultProfiles(@NotNull List<String> defaultProfiles) {
         expectNonNull(defaultProfiles, "defaultProfiles");
         this.defaultProfiles = List.copyOf(defaultProfiles);
         return this;
     }
 
-    public ProfilesResolver profiles(String... profiles) {
+    @NotNull
+    public ProfilesResolver profiles(@NotNull String... profiles) {
+        expectNonNull(profiles, "profiles");
         this.enforcedProfiles = Arrays.asList(profiles);
         return this;
     }
 
-    public ProfilesResolver profiles(List<String> profiles) {
+    @NotNull
+    public ProfilesResolver profiles(@NotNull List<String> profiles) {
+        expectNonNull(profiles, "profiles");
         this.enforcedProfiles = List.copyOf(profiles);
         return this;
     }
 
-    public ProfilesResolver profiles(Profiles profiles) {
+    @NotNull
+    public ProfilesResolver profiles(@NotNull Profiles profiles) {
+        expectNonNull(profiles, "profiles");
         this.enforcedProfiles = profiles.getValues();
         return this;
     }
 
-    public ProfilesResolver profilesMapper(Function<List<String>, List<String>> mapper) {
-        this.profilesMapper = mapper;
+    @NotNull
+    public ProfilesResolver profilesMapper(@NotNull Function<List<String>, List<String>> mapper) {
+        this.profilesMapper = expectNonNull(mapper, "mapper");
         return this;
     }
 
-    public ProfilesResolver profilesValidator(Predicate<List<String>> validator) {
-        this.profilesValidator = validator;
+    @NotNull
+    public ProfilesResolver profilesValidator(@NotNull Predicate<List<String>> validator) {
+        this.profilesValidator = expectNonNull(validator, "validator");
         return this;
     }
 
-    public ProfilesResolver argsMapping(Map<String[], String[]> mapping) {
+    @NotNull
+    public ProfilesResolver argsMapping(@NotNull Map<String[], String[]> mapping) {
+        expectNonNull(mapping, "mapping");
         argumentsParser.withMapping(mapping);
         return this;
     }
 
-    public ProfilesResolver addArgsMapping(List<String> args, List<String> mapping) {
+    @NotNull
+    public ProfilesResolver addArgsMapping(@NotNull List<String> args, @NotNull List<String> mapping) {
+        expectNonNull(args, "args");
+        expectNonNull(mapping, "mapping");
         argumentsParser.addMapping(args.toArray(new String[0]), mapping.toArray(new String[0]));
         return this;
     }
 
-    public ProfilesResolver addArgsMapping(String[] args, String[] mapping) {
+    @NotNull
+    public ProfilesResolver addArgsMapping(@NotNull String[] args, @NotNull String[] mapping) {
+        expectNonNull(args, "args");
+        expectNonNull(mapping, "mapping");
         argumentsParser.addMapping(args, mapping);
         return this;
     }
 
-    public ProfilesResolver argsAliases(Map<String, String> aliases) {
+    @NotNull
+    public ProfilesResolver argsAliases(@NotNull Map<String, String> aliases) {
+        expectNonNull(aliases, "aliases");
         argumentsParser.withAliases(aliases);
         return this;
     }
 
-    public ProfilesResolver addArgsAlias(String arg, String alias) {
+    @NotNull
+    public ProfilesResolver addArgsAlias(@NotNull String arg, @NotNull String alias) {
+        expectNonNull(arg, "arg");
+        expectNonNull(alias, "alias");
         argumentsParser.addAlias(arg, alias);
         return this;
     }
 
+    @NotNull
     public Profiles resolve() {
         return resolve(Config.empty());
     }
 
-    public Profiles resolve(String... args) {
+    @NotNull
+    public Profiles resolve(@NotNull String... args) {
+        expectNonNull(args, "args");
         Map<String, Object> values = argumentsParser.parse(args);
         Config argsConfig = Config.of(values);
         return resolve(argsConfig);
     }
 
-    public Profiles resolve(Config argsConfig) {
+    @NotNull
+    public Profiles resolve(@NotNull Config argsConfig) {
+        expectNonNull(argsConfig, "argsConfig");
         List<String> profiles = profiles(argsConfig);
         return new Profiles(profiles);
     }

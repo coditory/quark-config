@@ -1,5 +1,8 @@
 package com.coditory.quark.config;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,23 +43,26 @@ final class ResolvableConfig implements Config {
         this.secretHidingValueMapper = expectNonNull(secretHidingValueMapper);
     }
 
+    @NotNull
     @Override
     public Map<String, Object> toMap() {
         return root.unwrap();
     }
 
     @Override
-    public boolean contains(String path) {
+    public boolean contains(@NotNull String path) {
         expectNonBlank(path, "path");
         return root.getOptionalNode(Path.parse(path))
                 .isPresent();
     }
 
+    @NotNull
     @Override
     public MapConfigNode getRootNode() {
         return root;
     }
 
+    @NotNull
     @Override
     public Config withHiddenSecrets() {
         MapConfigNode mapped = root.mapLeaves(Path.root(), secretHidingValueMapper);
@@ -69,42 +75,56 @@ final class ResolvableConfig implements Config {
                 : new ResolvableConfig(root, valueParser, secretHidingValueMapper);
     }
 
+    @NotNull
     @Override
-    public Config getSubConfig(String path) {
+    public Config getSubConfig(@NotNull String path) {
         expectNonBlank(path, "path");
-        return getSubConfigOptional(path)
+        return getSubConfigAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
+    @NotNull
     @Override
-    public Config getSubConfigOrEmpty(String path) {
+    public Config getSubConfigOrEmpty(@NotNull String path) {
         expectNonBlank(path, "path");
         return getSubConfig(path, withRoot(MapConfigNode.emptyRoot()));
     }
 
+    @Nullable
     @Override
-    public Config getSubConfig(String path, Config defaultValue) {
+    public Config getSubConfigOrNull(@NotNull String path) {
         expectNonBlank(path, "path");
-        return getSubConfigOptional(path)
+        return getSubConfigAsOptional(path)
+                .orElse(null);
+    }
+
+    @NotNull
+    @Override
+    public Config getSubConfig(@NotNull String path, @NotNull Config defaultValue) {
+        expectNonBlank(path, "path");
+        return getSubConfigAsOptional(path)
                 .orElse(defaultValue);
     }
 
+    @NotNull
     @Override
-    public Optional<Config> getSubConfigOptional(String path) {
+    public Optional<Config> getSubConfigAsOptional(@NotNull String path) {
         expectNonBlank(path, "path");
         return root.getOptionalNode(Path.parse(path))
                 .filter(node -> node instanceof MapConfigNode)
                 .map(node -> withRoot((MapConfigNode) node));
     }
 
+    @NotNull
     @Override
-    public <T> Optional<List<T>> getListAsOptional(Class<T> type, String path) {
+    public <T> Optional<List<T>> getListAsOptional(@NotNull Class<T> type, @NotNull String path) {
         return getOptional(path)
                 .map(value -> value.getAsList(valueParser, type));
     }
 
+    @NotNull
     @Override
-    public <T> Optional<T> getAsOptional(Class<T> type, String path) {
+    public <T> Optional<T> getAsOptional(@NotNull Class<T> type, @NotNull String path) {
         return getOptional(path)
                 .map(value -> value.getAs(valueParser, type));
     }
@@ -146,6 +166,7 @@ final class ResolvableConfig implements Config {
                 .toString();
     }
 
+    @NotNull
     public Map<String, Object> toFlatMap() {
         LinkedHashMap<String, Object> result = new LinkedHashMap<>();
         root.entries().stream()

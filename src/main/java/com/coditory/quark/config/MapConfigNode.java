@@ -80,7 +80,7 @@ class MapConfigNode implements ConfigNode {
             }
             childModified = childModified || !Objects.equals(mapped, entry.getValue());
         }
-        if (result.isEmpty() && options.isRemoveEmptyObjects()) {
+        if (result.isEmpty() && options.removeEmptyObjects()) {
             return null;
         }
         return childModified
@@ -155,7 +155,7 @@ class MapConfigNode implements ConfigNode {
             return this;
         }
         Path.PathElement element = subPath.getFirstElement();
-        String name = element.getName();
+        String name = element.name();
         if (!values.containsKey(name)) {
             return this;
         }
@@ -168,7 +168,7 @@ class MapConfigNode implements ConfigNode {
                 result.put(name, mappedChild);
             }
         }
-        if (result.isEmpty() && options.isRemoveEmptyObjects()) {
+        if (result.isEmpty() && options.removeEmptyObjects()) {
             return null;
         }
         return new MapConfigNode(result);
@@ -195,12 +195,12 @@ class MapConfigNode implements ConfigNode {
     }
 
     private MapConfigNode addOrReplaceChild(Path.PathElement element, ConfigNode node) {
-        ConfigNode current = this.values.get(element.getName());
+        ConfigNode current = this.values.get(element.name());
         if (Objects.equals(current, node)) {
             return this;
         }
         HashMap<String, ConfigNode> children = new HashMap<>(this.values);
-        children.put(element.getName(), node);
+        children.put(element.name(), node);
         return new MapConfigNode(children);
     }
 
@@ -208,7 +208,7 @@ class MapConfigNode implements ConfigNode {
         if (!element.isNamed()) {
             return Optional.empty();
         }
-        ConfigNode child = values.get(element.getName());
+        ConfigNode child = values.get(element.name());
         return Optional.ofNullable(child);
     }
 

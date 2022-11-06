@@ -1,5 +1,7 @@
 package com.coditory.quark.config;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -25,43 +27,50 @@ public final class AuditableConfig extends ConfigDecorator {
         this.unreadConfig = config;
     }
 
+    @NotNull
     @Override
-    public Config getSubConfig(String path) {
+    public Config getSubConfig(@NotNull String path) {
         markAsRead(path);
         return super.getSubConfig(path);
     }
 
+    @NotNull
     @Override
-    public Config getSubConfigOrEmpty(String path) {
+    public Config getSubConfigOrEmpty(@NotNull String path) {
         markAsRead(path);
         return super.getSubConfigOrEmpty(path);
     }
 
+    @NotNull
     @Override
-    public Config getSubConfig(String path, Config defaultValue) {
+    public Config getSubConfig(@NotNull String path, @NotNull Config defaultValue) {
         markAsRead(path);
         return super.getSubConfig(path, defaultValue);
     }
 
+    @NotNull
     @Override
-    public Optional<Config> getSubConfigOptional(String path) {
+    public Optional<Config> getSubConfigAsOptional(@NotNull String path) {
         markAsRead(path);
-        return super.getSubConfigOptional(path);
+        return super.getSubConfigAsOptional(path);
     }
 
+    @NotNull
     @Override
-    public <T> Optional<List<T>> getListAsOptional(Class<T> type, String path) {
+    public <T> Optional<List<T>> getListAsOptional(@NotNull Class<T> type, @NotNull String path) {
         markAsRead(path);
         return super.getListAsOptional(type, path);
     }
 
+    @NotNull
     @Override
-    public <T> Optional<T> getAsOptional(Class<T> type, String path) {
+    public <T> Optional<T> getAsOptional(@NotNull Class<T> type, @NotNull String path) {
         markAsRead(path);
         return super.getAsOptional(type, path);
     }
 
-    public AuditableConfig markAsRead(String path) {
+    @NotNull
+    public AuditableConfig markAsRead(@NotNull String path) {
         if (unreadConfig.contains(path)) {
             unreadConfig = Config.builder(unreadConfig)
                     .put(path, USED_MARKER)
@@ -70,6 +79,7 @@ public final class AuditableConfig extends ConfigDecorator {
         return this;
     }
 
+    @NotNull
     public Config getUnusedProperties() {
         return Config.builder()
                 .putAll(unreadConfig)

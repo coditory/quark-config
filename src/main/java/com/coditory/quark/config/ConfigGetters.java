@@ -1,5 +1,8 @@
 package com.coditory.quark.config;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
@@ -10,35 +13,58 @@ import java.util.Locale;
 import java.util.Optional;
 
 import static com.coditory.quark.config.MissingConfigValueException.missingConfigValueForPath;
+import static com.coditory.quark.config.Preconditions.expectNonNull;
 
 interface ConfigGetters {
-    <T> Optional<T> getAsOptional(Class<T> type, String path);
+    @NotNull
+    <T> Optional<T> getAsOptional(@NotNull Class<T> type, @NotNull String path);
 
-    <T> Optional<List<T>> getListAsOptional(Class<T> type, String path);
+    @NotNull
+    <T> Optional<List<T>> getListAsOptional(@NotNull Class<T> type, @NotNull String path);
 
-    default <T> T get(Class<T> type, String path) {
+    @NotNull
+    default <T> T get(@NotNull Class<T> type, @NotNull String path) {
+        expectNonNull(type, "type");
+        expectNonNull(path, "path");
         return getAsOptional(type, path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default <T> T getOrNull(Class<T> type, String path) {
-        return get(type, path, null);
+    @Nullable
+    default <T> T getOrNull(@NotNull Class<T> type, @NotNull String path) {
+        expectNonNull(type, "type");
+        expectNonNull(path, "path");
+        return getAsOptional(type, path).orElse(null);
     }
 
-    default <T> T get(Class<T> type, String path, T defaultValue) {
+    @NotNull
+    default <T> T get(@NotNull Class<T> type, @NotNull String path, @NotNull T defaultValue) {
+        expectNonNull(type, "type");
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getAsOptional(type, path).orElse(defaultValue);
     }
 
+    @NotNull
     default <T> List<T> getList(Class<T> type, String path) {
+        expectNonNull(type, "type");
+        expectNonNull(path, "path");
         return getListAsOptional(type, path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default <T> List<T> getListOrNull(Class<T> type, String path) {
-        return getList(type, path, null);
+    @Nullable
+    default <T> List<T> getListOrNull(@NotNull Class<T> type, @NotNull String path) {
+        expectNonNull(type, "type");
+        expectNonNull(path, "path");
+        return getListAsOptional(type, path).orElse(null);
     }
 
-    default <T> List<T> getList(Class<T> type, String path, List<T> defaultValue) {
+    @NotNull
+    default <T> List<T> getList(@NotNull Class<T> type, @NotNull String path, @NotNull List<T> defaultValue) {
+        expectNonNull(type, "type");
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getListAsOptional(type, path).orElse(defaultValue);
     }
 
@@ -46,286 +72,393 @@ interface ConfigGetters {
 
     // String API
 
-    default Optional<String> getStringAsOptional(String path) {
+    @NotNull
+    default Optional<String> getStringAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getAsOptional(String.class, path);
     }
 
-    default String getString(String path) {
+    @NotNull
+    default String getString(@NotNull String path) {
+        expectNonNull(path, "path");
         return getStringAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default String getStringOrNull(String path) {
-        return getString(path, null);
+    @Nullable
+    default String getStringOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getStringAsOptional(path).orElse(null);
     }
 
-    default String getString(String path, String defaultValue) {
+    @NotNull
+    default String getString(@NotNull String path, @NotNull String defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getStringAsOptional(path).orElse(defaultValue);
     }
 
     // Object API
 
-    default Optional<Object> getObjectAsOptional(String path) {
+    @NotNull
+    default Optional<Object> getObjectAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getAsOptional(Object.class, path);
     }
 
-    default Object getObject(String path) {
+    @NotNull
+    default Object getObject(@NotNull String path) {
+        expectNonNull(path, "path");
         return getObjectAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default Object getObjectOrNull(String path) {
-        return getObject(path, null);
+    @Nullable
+    default Object getObjectOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getObjectAsOptional(path).orElse(null);
     }
 
-    default Object getObject(String path, Object defaultValue) {
+    @NotNull
+    default Object getObject(@NotNull String path, @NotNull Object defaultValue) {
         return getObjectAsOptional(path).orElse(defaultValue);
     }
 
     // Boolean API
 
-    default Optional<Boolean> getBooleanAsOptional(String path) {
+    @NotNull
+    default Optional<Boolean> getBooleanAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getAsOptional(Boolean.class, path);
     }
 
-    default Boolean getBoolean(String path) {
+    @NotNull
+    default Boolean getBoolean(@NotNull String path) {
+        expectNonNull(path, "path");
         return getBooleanAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default Boolean getBooleanOrNull(String path) {
-        return getBoolean(path, null);
+    @Nullable
+    default Boolean getBooleanOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getBooleanAsOptional(path).orElse(null);
     }
 
-    default Boolean getBoolean(String path, Boolean defaultValue) {
+    @NotNull
+    default Boolean getBoolean(@NotNull String path, @NotNull Boolean defaultValue) {
         return getBooleanAsOptional(path).orElse(defaultValue);
     }
 
     // Short API
 
-    default Optional<Short> getShortAsOptional(String path) {
+    @NotNull
+    default Optional<Short> getShortAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getAsOptional(Short.class, path);
     }
 
-    default Short getShort(String path) {
+    @NotNull
+    default Short getShort(@NotNull String path) {
+        expectNonNull(path, "path");
         return getShortAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default Short getShortOrNull(String path) {
-        return getShort(path, null);
+    @Nullable
+    default Short getShortOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getShortAsOptional(path).orElse(null);
     }
 
-    default Short getShort(String path, Short defaultValue) {
+    @NotNull
+    default Short getShort(@NotNull String path, @NotNull Short defaultValue) {
         return getShortAsOptional(path).orElse(defaultValue);
     }
 
     // Byte API
 
-    default Optional<Byte> getByteAsOptional(String path) {
+    @NotNull
+    default Optional<Byte> getByteAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getAsOptional(Byte.class, path);
     }
 
-    default Byte getByte(String path) {
+    @NotNull
+    default Byte getByte(@NotNull String path) {
+        expectNonNull(path, "path");
         return getByteAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default Byte getByteOrNull(String path) {
-        return getByte(path, null);
+    @Nullable
+    default Byte getByteOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getByteAsOptional(path).orElse(null);
     }
 
-    default Byte getByte(String path, Byte defaultValue) {
+    @NotNull
+    default Byte getByte(@NotNull String path, @NotNull Byte defaultValue) {
         return getByteAsOptional(path).orElse(defaultValue);
     }
 
     // Integer API
 
-    default Optional<Integer> getIntegerAsOptional(String path) {
+    @NotNull
+    default Optional<Integer> getIntegerAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getAsOptional(Integer.class, path);
     }
 
-    default Integer getInteger(String path) {
+    @NotNull
+    default Integer getInteger(@NotNull String path) {
+        expectNonNull(path, "path");
         return getIntegerAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default Integer getIntegerOrNull(String path) {
-        return getInteger(path, null);
+    @Nullable
+    default Integer getIntegerOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getIntegerAsOptional(path).orElse(null);
     }
 
-    default Integer getInteger(String path, Integer defaultValue) {
+    @NotNull
+    default Integer getInteger(@NotNull String path, @NotNull Integer defaultValue) {
         return getIntegerAsOptional(path).orElse(defaultValue);
     }
 
     // Long API
 
-    default Optional<Long> getLongAsOptional(String path) {
+    @NotNull
+    default Optional<Long> getLongAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getAsOptional(Long.class, path);
     }
 
-    default Long getLong(String path) {
+    @NotNull
+    default Long getLong(@NotNull String path) {
+        expectNonNull(path, "path");
         return getLongAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default Long getLongOrNull(String path) {
-        return getLong(path, null);
+    @Nullable
+    default Long getLongOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getLongAsOptional(path).orElse(null);
     }
 
-    default Long getLong(String path, Long defaultValue) {
+    @NotNull
+    default Long getLong(@NotNull String path, @NotNull Long defaultValue) {
         return getLongAsOptional(path).orElse(defaultValue);
     }
 
     // Float API
 
-    default Optional<Float> getFloatAsOptional(String path) {
+    @NotNull
+    default Optional<Float> getFloatAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getAsOptional(Float.class, path);
     }
 
-    default Float getFloat(String path) {
+    @NotNull
+    default Float getFloat(@NotNull String path) {
+        expectNonNull(path, "path");
         return getFloatAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default Float getFloatOrNull(String path) {
-        return getFloat(path, null);
+    @Nullable
+    default Float getFloatOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getFloatAsOptional(path).orElse(null);
     }
 
-    default Float getFloat(String path, Float defaultValue) {
+    @NotNull
+    default Float getFloat(@NotNull String path, @NotNull Float defaultValue) {
         return getFloatAsOptional(path).orElse(defaultValue);
     }
 
     // Double API
 
-    default Optional<Double> getDoubleAsOptional(String path) {
+    @NotNull
+    default Optional<Double> getDoubleAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getAsOptional(Double.class, path);
     }
 
-    default Double getDouble(String path) {
+    @NotNull
+    default Double getDouble(@NotNull String path) {
+        expectNonNull(path, "path");
         return getDoubleAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default Double getDoubleOrNull(String path) {
-        return getDouble(path, null);
+    @Nullable
+    default Double getDoubleOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getDoubleAsOptional(path).orElse(null);
     }
 
-    default Double getDouble(String path, Double defaultValue) {
+    @NotNull
+    default Double getDouble(@NotNull String path, @NotNull Double defaultValue) {
         return getDoubleAsOptional(path).orElse(defaultValue);
     }
 
     // BigDecimal API
 
-    default Optional<BigDecimal> getBigDecimalAsOptional(String path) {
+    @NotNull
+    default Optional<BigDecimal> getBigDecimalAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getAsOptional(BigDecimal.class, path);
     }
 
-    default BigDecimal getBigDecimal(String path) {
+    @NotNull
+    default BigDecimal getBigDecimal(@NotNull String path) {
+        expectNonNull(path, "path");
         return getBigDecimalAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default BigDecimal getBigDecimalOrNull(String path) {
-        return getBigDecimal(path, null);
+    @Nullable
+    default BigDecimal getBigDecimalOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getBigDecimalAsOptional(path).orElse(null);
     }
 
-    default BigDecimal getBigDecimal(String path, BigDecimal defaultValue) {
+    @NotNull
+    default BigDecimal getBigDecimal(@NotNull String path, @NotNull BigDecimal defaultValue) {
         return getBigDecimalAsOptional(path).orElse(defaultValue);
     }
 
     // Instant API
 
-    default Optional<Instant> getInstantAsOptional(String path) {
+    @NotNull
+    default Optional<Instant> getInstantAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getAsOptional(Instant.class, path);
     }
 
-    default Instant getInstant(String path) {
+    @NotNull
+    default Instant getInstant(@NotNull String path) {
+        expectNonNull(path, "path");
         return getInstantAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default Instant getInstantOrNull(String path) {
-        return getInstant(path, null);
+    @Nullable
+    default Instant getInstantOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getInstantAsOptional(path).orElse(null);
     }
 
-    default Instant getInstant(String path, Instant defaultValue) {
+    @NotNull
+    default Instant getInstant(@NotNull String path, @NotNull Instant defaultValue) {
         return getInstantAsOptional(path).orElse(defaultValue);
     }
 
     // ZonedDateTime API
 
-    default Optional<ZonedDateTime> getZonedDateTimeAsOptional(String path) {
+    @NotNull
+    default Optional<ZonedDateTime> getZonedDateTimeAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getAsOptional(ZonedDateTime.class, path);
     }
 
-    default ZonedDateTime getZonedDateTime(String path) {
+    @NotNull
+    default ZonedDateTime getZonedDateTime(@NotNull String path) {
+        expectNonNull(path, "path");
         return getZonedDateTimeAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default ZonedDateTime getZonedDateTimeOrNull(String path) {
-        return getZonedDateTime(path, null);
+    @Nullable
+    default ZonedDateTime getZonedDateTimeOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getZonedDateTimeAsOptional(path).orElse(null);
     }
 
-    default ZonedDateTime getZonedDateTime(String path, ZonedDateTime defaultValue) {
+    @NotNull
+    default ZonedDateTime getZonedDateTime(@NotNull String path, @NotNull ZonedDateTime defaultValue) {
         return getZonedDateTimeAsOptional(path).orElse(defaultValue);
     }
 
     // Duration API
 
-    default Optional<Duration> getDurationAsOptional(String path) {
+    @NotNull
+    default Optional<Duration> getDurationAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getAsOptional(Duration.class, path);
     }
 
-    default Duration getDuration(String path) {
+    @NotNull
+    default Duration getDuration(@NotNull String path) {
+        expectNonNull(path, "path");
         return getDurationAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default Duration getDurationOrNull(String path) {
-        return getDuration(path, null);
+    @Nullable
+    default Duration getDurationOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getDurationAsOptional(path).orElse(null);
     }
 
-    default Duration getDuration(String path, Duration defaultValue) {
+    @NotNull
+    default Duration getDuration(@NotNull String path, @NotNull Duration defaultValue) {
         return getDurationAsOptional(path).orElse(defaultValue);
     }
 
     // Locale API
 
-    default Optional<Locale> getLocaleAsOptional(String path) {
+    @NotNull
+    default Optional<Locale> getLocaleAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getAsOptional(Locale.class, path);
     }
 
-    default Locale getLocale(String path) {
+    @NotNull
+    default Locale getLocale(@NotNull String path) {
+        expectNonNull(path, "path");
         return getLocaleAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default Locale getLocaleOrNull(String path) {
-        return getLocale(path, null);
+    @Nullable
+    default Locale getLocaleOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getLocaleAsOptional(path).orElse(null);
     }
 
-    default Locale getLocale(String path, Locale defaultValue) {
+    @NotNull
+    default Locale getLocale(@NotNull String path, @NotNull Locale defaultValue) {
         return getLocaleAsOptional(path).orElse(defaultValue);
     }
 
     // Currency API
 
-    default Optional<Currency> getCurrencyAsOptional(String path) {
+    @NotNull
+    default Optional<Currency> getCurrencyAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getAsOptional(Currency.class, path);
     }
 
-    default Currency getCurrency(String path) {
+    @NotNull
+    default Currency getCurrency(@NotNull String path) {
+        expectNonNull(path, "path");
         return getCurrencyAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default Currency getCurrencyOrNull(String path) {
-        return getCurrency(path, null);
+    @Nullable
+    default Currency getCurrencyOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getCurrencyAsOptional(path).orElse(null);
     }
 
-    default Currency getCurrency(String path, Currency defaultValue) {
+    @NotNull
+    default Currency getCurrency(@NotNull String path, @NotNull Currency defaultValue) {
         return getCurrencyAsOptional(path).orElse(defaultValue);
     }
 
@@ -333,291 +466,397 @@ interface ConfigGetters {
 
     // String List API
 
-    default Optional<List<String>> getStringListAsOptional(String path) {
+    @NotNull
+    default Optional<List<String>> getStringListAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getListAsOptional(String.class, path);
     }
 
-    default List<String> getStringList(String path) {
+    @NotNull
+    default List<String> getStringList(@NotNull String path) {
+        expectNonNull(path, "path");
         return getStringListAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default List<String> getStringListOrNull(String path) {
-        return getStringList(path, null);
+    @Nullable
+    default List<String> getStringListOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getStringListAsOptional(path).orElse(null);
     }
 
-    default List<String> getStringListOrEmpty(String path) {
+    @NotNull
+    default List<String> getStringListOrEmpty(@NotNull String path) {
+        expectNonNull(path, "path");
         return getStringList(path, List.of());
     }
 
-    default List<String> getStringList(String path, List<String> defaultValue) {
+    @NotNull
+    default List<String> getStringList(@NotNull String path, @NotNull List<String> defaultValue) {
         return getStringListAsOptional(path).orElse(defaultValue);
     }
 
     // Object List API
 
-    default Optional<List<Object>> getObjectListAsOptional(String path) {
+    @NotNull
+    default Optional<List<Object>> getObjectListAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getListAsOptional(Object.class, path);
     }
 
-    default List<Object> getObjectList(String path) {
+    @NotNull
+    default List<Object> getObjectList(@NotNull String path) {
+        expectNonNull(path, "path");
         return getObjectListAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default List<Object> getObjectListOrNull(String path) {
-        return getObjectList(path, null);
+    @Nullable
+    default List<Object> getObjectListOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getObjectListAsOptional(path).orElse(null);
     }
 
-    default List<Object> getObjectList(String path, List<Object> defaultValue) {
+    @NotNull
+    default List<Object> getObjectList(@NotNull String path, @NotNull List<Object> defaultValue) {
         return getObjectListAsOptional(path).orElse(defaultValue);
     }
 
     // Boolean List API
 
-    default Optional<List<Boolean>> getBooleanListAsOptional(String path) {
+    @NotNull
+    default Optional<List<Boolean>> getBooleanListAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getListAsOptional(Boolean.class, path);
     }
 
-    default List<Boolean> getBooleanList(String path) {
+    @NotNull
+    default List<Boolean> getBooleanList(@NotNull String path) {
+        expectNonNull(path, "path");
         return getBooleanListAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default List<Boolean> getBooleanListOrNull(String path) {
-        return getBooleanList(path, null);
+    @Nullable
+    default List<Boolean> getBooleanListOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getBooleanListAsOptional(path).orElse(null);
     }
 
-    default List<Boolean> getBooleanList(String path, List<Boolean> defaultValue) {
+    @NotNull
+    default List<Boolean> getBooleanList(@NotNull String path, @NotNull List<Boolean> defaultValue) {
         return getBooleanListAsOptional(path).orElse(defaultValue);
     }
 
     // Short List API
 
-    default Optional<List<Short>> getShortListAsOptional(String path) {
+    @NotNull
+    default Optional<List<Short>> getShortListAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getListAsOptional(Short.class, path);
     }
 
-    default List<Short> getShortList(String path) {
+    @NotNull
+    default List<Short> getShortList(@NotNull String path) {
+        expectNonNull(path, "path");
         return getShortListAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default List<Short> getShortListOrNull(String path) {
-        return getShortList(path, null);
+    @Nullable
+    default List<Short> getShortListOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getShortListAsOptional(path).orElse(null);
     }
 
-    default List<Short> getShortList(String path, List<Short> defaultValue) {
+    @NotNull
+    default List<Short> getShortList(@NotNull String path, @NotNull List<Short> defaultValue) {
         return getShortListAsOptional(path).orElse(defaultValue);
     }
 
     // Byte List API
 
-    default Optional<List<Byte>> getByteListAsOptional(String path) {
+    @NotNull
+    default Optional<List<Byte>> getByteListAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getListAsOptional(Byte.class, path);
     }
 
-    default List<Byte> getByteList(String path) {
+    @NotNull
+    default List<Byte> getByteList(@NotNull String path) {
+        expectNonNull(path, "path");
         return getByteListAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default List<Byte> getByteListOrNull(String path) {
-        return getByteList(path, null);
+    @Nullable
+    default List<Byte> getByteListOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getByteListAsOptional(path).orElse(null);
     }
 
-    default List<Byte> getByteList(String path, List<Byte> defaultValue) {
+    @NotNull
+    default List<Byte> getByteList(@NotNull String path, @NotNull List<Byte> defaultValue) {
         return getByteListAsOptional(path).orElse(defaultValue);
     }
 
     // Integer List API
 
-    default Optional<List<Integer>> getIntegerListAsOptional(String path) {
+    @NotNull
+    default Optional<List<Integer>> getIntegerListAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getListAsOptional(Integer.class, path);
     }
 
-    default List<Integer> getIntegerList(String path) {
+    @NotNull
+    default List<Integer> getIntegerList(@NotNull String path) {
+        expectNonNull(path, "path");
         return getIntegerListAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default List<Integer> getIntegerListOrNull(String path) {
-        return getIntegerList(path, null);
+    @Nullable
+    default List<Integer> getIntegerListOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getIntegerListAsOptional(path).orElse(null);
     }
 
-    default List<Integer> getIntegerList(String path, List<Integer> defaultValue) {
+    @NotNull
+    default List<Integer> getIntegerList(@NotNull String path, @NotNull List<Integer> defaultValue) {
         return getIntegerListAsOptional(path).orElse(defaultValue);
     }
 
     // Long List API
 
-    default Optional<List<Long>> getLongListAsOptional(String path) {
+    @NotNull
+    default Optional<List<Long>> getLongListAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getListAsOptional(Long.class, path);
     }
 
-    default List<Long> getLongList(String path) {
+    @NotNull
+    default List<Long> getLongList(@NotNull String path) {
+        expectNonNull(path, "path");
         return getLongListAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default List<Long> getLongListOrNull(String path) {
-        return getLongList(path, null);
+    @Nullable
+    default List<Long> getLongListOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getLongListAsOptional(path).orElse(null);
     }
 
-    default List<Long> getLongList(String path, List<Long> defaultValue) {
+    @NotNull
+    default List<Long> getLongList(@NotNull String path, @NotNull List<Long> defaultValue) {
         return getLongListAsOptional(path).orElse(defaultValue);
     }
 
     // Float List API
 
-    default Optional<List<Float>> getFloatListAsOptional(String path) {
+    @NotNull
+    default Optional<List<Float>> getFloatListAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getListAsOptional(Float.class, path);
     }
 
-    default List<Float> getFloatList(String path) {
+    @NotNull
+    default List<Float> getFloatList(@NotNull String path) {
+        expectNonNull(path, "path");
         return getFloatListAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default List<Float> getFloatListOrNull(String path) {
-        return getFloatList(path, null);
+    @Nullable
+    default List<Float> getFloatListOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getFloatListAsOptional(path).orElse(null);
     }
 
-    default List<Float> getFloatList(String path, List<Float> defaultValue) {
+    @NotNull
+    default List<Float> getFloatList(@NotNull String path, @NotNull List<Float> defaultValue) {
         return getFloatListAsOptional(path).orElse(defaultValue);
     }
 
     // Double List API
 
-    default Optional<List<Double>> getDoubleListAsOptional(String path) {
+    @NotNull
+    default Optional<List<Double>> getDoubleListAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getListAsOptional(Double.class, path);
     }
 
-    default List<Double> getDoubleList(String path) {
+    @NotNull
+    default List<Double> getDoubleList(@NotNull String path) {
+        expectNonNull(path, "path");
         return getDoubleListAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default List<Double> getDoubleListOrNull(String path) {
-        return getDoubleList(path, null);
+    @Nullable
+    default List<Double> getDoubleListOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getDoubleListAsOptional(path).orElse(null);
     }
 
-    default List<Double> getDoubleList(String path, List<Double> defaultValue) {
+    @NotNull
+    default List<Double> getDoubleList(@NotNull String path, @NotNull List<Double> defaultValue) {
         return getDoubleListAsOptional(path).orElse(defaultValue);
     }
 
     // BigDecimal List API
 
-    default Optional<List<BigDecimal>> getBigDecimalListAsOptional(String path) {
+    @NotNull
+    default Optional<List<BigDecimal>> getBigDecimalListAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getListAsOptional(BigDecimal.class, path);
     }
 
-    default List<BigDecimal> getBigDecimalList(String path) {
+    @NotNull
+    default List<BigDecimal> getBigDecimalList(@NotNull String path) {
+        expectNonNull(path, "path");
         return getBigDecimalListAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default List<BigDecimal> getBigDecimalListOrNull(String path) {
-        return getBigDecimalList(path, null);
+    @Nullable
+    default List<BigDecimal> getBigDecimalListOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getBigDecimalListAsOptional(path).orElse(null);
     }
 
-    default List<BigDecimal> getBigDecimalList(String path, List<BigDecimal> defaultValue) {
+    @NotNull
+    default List<BigDecimal> getBigDecimalList(@NotNull String path, @NotNull List<BigDecimal> defaultValue) {
         return getBigDecimalListAsOptional(path).orElse(defaultValue);
     }
 
     // Instant List API
 
-    default Optional<List<Instant>> getInstantListAsOptional(String path) {
+    @NotNull
+    default Optional<List<Instant>> getInstantListAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getListAsOptional(Instant.class, path);
     }
 
-    default List<Instant> getInstantList(String path) {
+    @NotNull
+    default List<Instant> getInstantList(@NotNull String path) {
+        expectNonNull(path, "path");
         return getInstantListAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default List<Instant> getInstantListOrNull(String path) {
-        return getInstantList(path, null);
+    @Nullable
+    default List<Instant> getInstantListOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getInstantListAsOptional(path).orElse(null);
     }
 
-    default List<Instant> getInstantList(String path, List<Instant> defaultValue) {
+    @NotNull
+    default List<Instant> getInstantList(@NotNull String path, @NotNull List<Instant> defaultValue) {
         return getInstantListAsOptional(path).orElse(defaultValue);
     }
 
     // ZonedDateTime List API
 
-    default Optional<List<ZonedDateTime>> getZonedDateTimeListAsOptional(String path) {
+    @NotNull
+    default Optional<List<ZonedDateTime>> getZonedDateTimeListAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getListAsOptional(ZonedDateTime.class, path);
     }
 
-    default List<ZonedDateTime> getZonedDateTimeList(String path) {
+    @NotNull
+    default List<ZonedDateTime> getZonedDateTimeList(@NotNull String path) {
+        expectNonNull(path, "path");
         return getZonedDateTimeListAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default List<ZonedDateTime> getZonedDateTimeListOrNull(String path) {
-        return getZonedDateTimeList(path, null);
+    @Nullable
+    default List<ZonedDateTime> getZonedDateTimeListOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getZonedDateTimeListAsOptional(path).orElse(null);
     }
 
-    default List<ZonedDateTime> getZonedDateTimeList(String path, List<ZonedDateTime> defaultValue) {
+    @NotNull
+    default List<ZonedDateTime> getZonedDateTimeList(@NotNull String path, @NotNull List<ZonedDateTime> defaultValue) {
         return getZonedDateTimeListAsOptional(path).orElse(defaultValue);
     }
 
     // Duration List API
 
-    default Optional<List<Duration>> getDurationListAsOptional(String path) {
+    @NotNull
+    default Optional<List<Duration>> getDurationListAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getListAsOptional(Duration.class, path);
     }
 
-    default List<Duration> getDurationList(String path) {
+    @NotNull
+    default List<Duration> getDurationList(@NotNull String path) {
+        expectNonNull(path, "path");
         return getDurationListAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default List<Duration> getDurationListOrNull(String path) {
-        return getDurationList(path, null);
+    @Nullable
+    default List<Duration> getDurationListOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getDurationListAsOptional(path).orElse(null);
     }
 
-    default List<Duration> getDurationList(String path, List<Duration> defaultValue) {
+    @NotNull
+    default List<Duration> getDurationList(@NotNull String path, @NotNull List<Duration> defaultValue) {
         return getDurationListAsOptional(path).orElse(defaultValue);
     }
 
     // Locale List API
 
-    default Optional<List<Locale>> getLocaleListAsOptional(String path) {
+    @NotNull
+    default Optional<List<Locale>> getLocaleListAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getListAsOptional(Locale.class, path);
     }
 
-    default List<Locale> getLocaleList(String path) {
+    @NotNull
+    default List<Locale> getLocaleList(@NotNull String path) {
+        expectNonNull(path, "path");
         return getLocaleListAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default List<Locale> getLocaleListOrNull(String path) {
-        return getLocaleList(path, null);
+    @Nullable
+    default List<Locale> getLocaleListOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getLocaleListAsOptional(path).orElse(null);
     }
 
-    default List<Locale> getLocaleList(String path, List<Locale> defaultValue) {
+    @NotNull
+    default List<Locale> getLocaleList(@NotNull String path, @NotNull List<Locale> defaultValue) {
         return getLocaleListAsOptional(path).orElse(defaultValue);
     }
 
     // Currency List API
 
-    default Optional<List<Currency>> getCurrencyListAsOptional(String path) {
+    @NotNull
+    default Optional<List<Currency>> getCurrencyListAsOptional(@NotNull String path) {
+        expectNonNull(path, "path");
         return getListAsOptional(Currency.class, path);
     }
 
-    default List<Currency> getCurrencyList(String path) {
+    @NotNull
+    default List<Currency> getCurrencyList(@NotNull String path) {
+        expectNonNull(path, "path");
         return getCurrencyListAsOptional(path)
                 .orElseThrow(() -> missingConfigValueForPath(path));
     }
 
-    default List<Currency> getCurrencyListOrNull(String path) {
-        return getCurrencyList(path, null);
+    @Nullable
+    default List<Currency> getCurrencyListOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getCurrencyListAsOptional(path).orElse(null);
     }
 
-    default List<Currency> getCurrencyList(String path, List<Currency> defaultValue) {
+    @NotNull
+    default List<Currency> getCurrencyList(@NotNull String path, @NotNull List<Currency> defaultValue) {
         return getCurrencyListAsOptional(path).orElse(defaultValue);
     }
 }
-

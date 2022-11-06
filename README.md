@@ -14,6 +14,7 @@ of [typesafe](https://github.com/lightbend/config), that is:
 - provides a collection of parsers for values such as `java.util.Duration`
 - hides secrets when formatted to string
 - provides basic expressions for references and default values
+- public API annotated with `@NotNull` and `@Nullable` for better [kotlin integration](https://kotlinlang.org/docs/java-to-kotlin-nullability-guide.html#platform-types)
 
 ## Installation
 

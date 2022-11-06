@@ -22,7 +22,7 @@ class Path {
         return path;
     }
 
-    public static Path root() {
+    static Path root() {
         return ROOT;
     }
 
@@ -96,27 +96,27 @@ class Path {
         this.path = builder.toString();
     }
 
-    public boolean isRoot() {
+    boolean isRoot() {
         return elements.isEmpty();
     }
 
-    public PathElement getElement(int index) {
+    PathElement getElement(int index) {
         return elements.get(index);
     }
 
-    public Path withChild(String name) {
+    Path withChild(String name) {
         List<PathElement> chunks = new ArrayList<>(this.elements);
         chunks.add(new NamedPathElement(name));
         return Path.of(chunks);
     }
 
-    public Path withIndexedChild(int index) {
+    Path withIndexedChild(int index) {
         List<PathElement> chunks = new ArrayList<>(this.elements);
         chunks.add(new IndexedPathElement(index));
         return Path.of(chunks);
     }
 
-    public int length() {
+    int length() {
         return elements.size();
     }
 
@@ -138,26 +138,26 @@ class Path {
         return Objects.hash(path);
     }
 
-    public Path subPath(int index) {
+    Path subPath(int index) {
         return Path.of(elements.subList(0, index + 1));
     }
 
-    public PathElement getFirstElement() {
+    PathElement getFirstElement() {
         return elements.get(0);
     }
 
-    public List<String> getPropertyNames() {
+    List<String> getPropertyNames() {
         return elements.stream()
-                .map(PathElement::getName)
+                .map(PathElement::name)
                 .filter(Objects::nonNull)
                 .collect(toList());
     }
 
-    public Path removeFirstElement() {
+    Path removeFirstElement() {
         return Path.of(elements.subList(1, length()));
     }
 
-    public Path removePrefix(Path other) {
+    Path removePrefix(Path other) {
         if (!this.startsWith(other)) {
             throw new ConfigException("Could not remove path prefix. Paths do not match. " +
                     "Original: " + this + ". Prefix: " + other);
@@ -168,11 +168,11 @@ class Path {
         return Path.of(elements.subList(other.length(), length()));
     }
 
-    public Path removeLastElement() {
+    Path removeLastElement() {
         return Path.of(elements.subList(0, length() - 1));
     }
 
-    public boolean startsWith(Path other) {
+    boolean startsWith(Path other) {
         requireNonNull(other);
         if (this.length() < other.length()) {
             return false;
@@ -188,28 +188,28 @@ class Path {
         return true;
     }
 
-    public Path add(String element) {
+    Path add(String element) {
         return add(new NamedPathElement(element));
     }
 
-    public Path add(int index) {
+    Path add(int index) {
         return add(new IndexedPathElement(index));
     }
 
-    public Path add(Path subPath) {
+    Path add(Path subPath) {
         List<PathElement> elements = new ArrayList<>();
         elements.addAll(this.elements);
         elements.addAll(subPath.elements);
         return Path.of(elements);
     }
 
-    public Path add(PathElement element) {
+    Path add(PathElement element) {
         List<PathElement> elements = new ArrayList<>(this.elements);
         elements.add(element);
         return Path.of(elements);
     }
 
-    public PathElement getLastElement() {
+    PathElement getLastElement() {
         return elements.get(length() - 1);
     }
 
@@ -218,7 +218,7 @@ class Path {
 
         default <T> T map(PathElementMapper<T> mapper) {
             if (isNamed()) {
-                return mapper.mapName(getName());
+                return mapper.mapName(name());
             }
             if (isIndexed()) {
                 return mapper.mapIndex(getIndex());
@@ -228,10 +228,10 @@ class Path {
 
         Integer getIndex();
 
-        String getName();
+        String name();
 
         default boolean isNamed() {
-            return getName() != null;
+            return name() != null;
         }
 
         default boolean isIndexed() {
@@ -245,19 +245,12 @@ class Path {
         T mapIndex(int index);
     }
 
-    static class NamedPathElement implements PathElement {
-        private final String name;
-
-        public NamedPathElement(String name) {
+    record NamedPathElement(String name) implements PathElement {
+        NamedPathElement(String name) {
             if (name == null || name.isBlank()) {
                 throw new InvalidConfigPathException("Got blank path element");
             }
             this.name = expectNonBlank(name, "name");
-        }
-
-        @Override
-        public String getName() {
-            return name;
         }
 
         @Override
@@ -272,33 +265,17 @@ class Path {
             }
             builder.append(name);
         }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            NamedPathElement that = (NamedPathElement) o;
-            return Objects.equals(name, that.name);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(name);
-        }
     }
 
-    private static class IndexedPathElement implements PathElement {
-        private final int index;
-
-        public IndexedPathElement(int index) {
+    private record IndexedPathElement(int index) implements PathElement {
+        private IndexedPathElement {
             if (index < 0) {
                 throw new InvalidConfigPathException("Expected non negative index in path. Got: " + index);
             }
-            this.index = index;
         }
 
         @Override
-        public String getName() {
+        public String name() {
             return null;
         }
 
@@ -313,19 +290,6 @@ class Path {
                     .append("[")
                     .append(index)
                     .append("]");
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            IndexedPathElement that = (IndexedPathElement) o;
-            return index == that.index;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(index);
         }
     }
 }

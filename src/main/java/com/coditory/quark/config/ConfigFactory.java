@@ -1,5 +1,7 @@
 package com.coditory.quark.config;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +13,7 @@ import static com.coditory.quark.config.Preconditions.expectNonBlank;
 import static com.coditory.quark.config.Preconditions.expectNonNull;
 
 public final class ConfigFactory {
+    @NotNull
     public static Config buildFromSystemProperties() {
         LinkedHashMap<String, Object> result = new LinkedHashMap<>();
         for (Map.Entry<Object, Object> entry : System.getProperties().entrySet()) {
@@ -23,25 +26,29 @@ public final class ConfigFactory {
         return Config.of(result);
     }
 
+    @NotNull
     public static Config buildFromSystemEnvironment() {
         return Config.of(System.getenv());
     }
 
-    public static Config buildFromArgs(String[] args) {
+    @NotNull
+    public static Config buildFromArgs(@NotNull String[] args) {
         expectNonNull(args, "args");
         return buildFromArgs(args, Map.of());
     }
 
-    public static Config buildFromArgs(String[] args, Map<String, String> aliases) {
+    @NotNull
+    public static Config buildFromArgs(@NotNull String[] args, @NotNull Map<String, String> aliases) {
         expectNonNull(args, "args");
         expectNonNull(aliases, "aliases");
         return buildFromArgs(args, aliases, Map.of());
     }
 
+    @NotNull
     public static Config buildFromArgs(
-            String[] args,
-            Map<String, String> aliases,
-            Map<String[], String[]> mapping
+            @NotNull String[] args,
+            @NotNull Map<String, String> aliases,
+            @NotNull Map<String[], String[]> mapping
     ) {
         expectNonNull(args, "args");
         expectNonNull(aliases, "aliases");
@@ -53,55 +60,64 @@ public final class ConfigFactory {
         return Config.of(values);
     }
 
-    public static Config loadFromClasspathOrEmpty(String path) {
+    @NotNull
+    public static Config loadFromClasspathOrEmpty(@NotNull String path) {
         expectNonBlank(path, "path");
         return loadFromClasspathOrDefault(path, Config.empty());
     }
 
-    public static Config loadFromClasspathOrDefault(String path, Config defaultConfig) {
+    @NotNull
+    public static Config loadFromClasspathOrDefault(@NotNull String path,@NotNull  Config defaultConfig) {
         expectNonBlank(path, "path");
         expectNonNull(defaultConfig, "defaultConfig");
         return load(CLASSPATH, path)
                 .orElse(defaultConfig);
     }
 
-    public static Config loadFromClasspath(String path) {
+    @NotNull
+    public static Config loadFromClasspath(@NotNull String path) {
         expectNonBlank(path, "path");
         return load(CLASSPATH, path)
                 .orElseThrow(() -> new ConfigLoadException(
                         "Configuration file not found on classpath: " + path));
     }
 
-    public static Config loadFromFileSystemOrEmpty(String path) {
+    @NotNull
+    public static Config loadFromFileSystemOrEmpty(@NotNull String path) {
         expectNonBlank(path, "path");
         return loadFromFileSystemOrDefault(path, Config.empty());
     }
 
-    public static Config loadFromFileSystemOrDefault(String path, Config defaultConfig) {
+    @NotNull
+    public static Config loadFromFileSystemOrDefault(@NotNull String path, @NotNull Config defaultConfig) {
         expectNonBlank(path, "path");
         expectNonNull(defaultConfig, "defaultConfig");
         return load(FILE_SYSTEM, path)
                 .orElse(defaultConfig);
     }
 
-    public static Config loadFromFileSystem(String path) {
+    @NotNull
+    public static Config loadFromFileSystem(@NotNull String path) {
         expectNonBlank(path, "path");
         return load(FILE_SYSTEM, path)
                 .orElseThrow(() -> new ConfigLoadException(
                         "Configuration file not found on file system: " + path));
     }
 
-    public static Config parseJson(String json) {
+    @NotNull
+    public static Config parseJson(@NotNull String json) {
         expectNonNull(json, "json");
         return ConfigFormat.JSON.parse(json);
     }
 
-    public static Config parseYaml(String yaml) {
+    @NotNull
+    public static Config parseYaml(@NotNull String yaml) {
         expectNonNull(yaml, "yaml");
         return ConfigFormat.YAML.parse(yaml);
     }
 
-    public static Config parseProperties(String properties) {
+    @NotNull
+    public static Config parseProperties(@NotNull String properties) {
         expectNonNull(properties, "properties");
         return ConfigFormat.PROPERTIES.parse(properties);
     }

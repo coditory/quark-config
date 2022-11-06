@@ -1,34 +1,42 @@
 package com.coditory.quark.config;
 
+import org.jetbrains.annotations.NotNull;
+
 import static com.coditory.quark.config.Preconditions.expectNonNull;
 
 public class ConfigFormatter {
-    public static String toJson(Config config) {
+    @NotNull
+    public static String toJson(@NotNull Config config) {
         expectNonNull(config, "config");
         return format(ConfigFormat.JSON, config.withHiddenSecrets());
     }
 
-    public static String toJsonWithExposedSecrets(Config config) {
+    @NotNull
+    public static String toJsonWithExposedSecrets(@NotNull Config config) {
         expectNonNull(config, "config");
         return formatWithExposedSecrets(ConfigFormat.JSON, config);
     }
 
-    public static String toYaml(Config config) {
+    @NotNull
+    public static String toYaml(@NotNull Config config) {
         expectNonNull(config, "config");
         return format(ConfigFormat.YAML, config.withHiddenSecrets());
     }
 
-    public static String toYamlWithExposedSecrets(Config config) {
+    @NotNull
+    public static String toYamlWithExposedSecrets(@NotNull Config config) {
         expectNonNull(config, "config");
         return formatWithExposedSecrets(ConfigFormat.YAML, config);
     }
 
-    public static String toProperties(Config config) {
+    @NotNull
+    public static String toProperties(@NotNull Config config) {
         expectNonNull(config, "config");
         return format(ConfigFormat.PROPERTIES, config.withHiddenSecrets());
     }
 
-    public static String toPropertiesWithExposedSecrets(Config config) {
+    @NotNull
+    public static String toPropertiesWithExposedSecrets(@NotNull Config config) {
         expectNonNull(config, "config");
         return formatWithExposedSecrets(ConfigFormat.PROPERTIES, config);
     }

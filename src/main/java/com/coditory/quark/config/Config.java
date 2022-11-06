@@ -1,5 +1,8 @@
 package com.coditory.quark.config;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -10,19 +13,24 @@ import static com.coditory.quark.config.Preconditions.expectNonBlank;
 import static com.coditory.quark.config.Preconditions.expectNonNull;
 
 public interface Config extends ConfigGetters {
+    @NotNull
     static ConfigBuilder builder() {
         return new ConfigBuilder();
     }
 
-    static ConfigBuilder builder(Config config) {
+    @NotNull
+    static ConfigBuilder builder(@NotNull Config config) {
+        expectNonNull(config, "config");
         return builder().putAll(config);
     }
 
+    @NotNull
     static Config empty() {
         return ResolvableConfig.empty();
     }
 
-    static Config of(String firstKey, Object firstValue, Object... otherEntries) {
+    @NotNull
+    static Config of(@NotNull String firstKey, @NotNull Object firstValue, Object... otherEntries) {
         expectNonBlank(firstKey);
         expectNonNull(otherEntries);
         expect(otherEntries.length % 2 == 0, "Expected even entries. Got: ", 2 + otherEntries.length);
@@ -36,31 +44,44 @@ public interface Config extends ConfigGetters {
         return of(entries);
     }
 
-    static Config of(Map<String, ?> entries) {
+    @NotNull
+    static Config of(@NotNull Map<String, ?> entries) {
         expectNonNull(entries, "entries");
         return new ConfigBuilder(entries).build();
     }
 
+    @NotNull
     Map<String, Object> toMap();
 
+    @NotNull
     Map<String, Object> toFlatMap();
 
-    boolean contains(String path);
+    boolean contains(@NotNull String path);
 
-    Config getSubConfig(String path);
+    @NotNull
+    Config getSubConfig(@NotNull String path);
 
-    Config getSubConfigOrEmpty(String path);
+    @Nullable
+    Config getSubConfigOrNull(@NotNull String path);
 
-    Config getSubConfig(String path, Config defaultValue);
+    @NotNull
+    Config getSubConfigOrEmpty(@NotNull String path);
 
-    Optional<Config> getSubConfigOptional(String path);
+    @NotNull
+    Config getSubConfig(@NotNull String path, @NotNull Config defaultValue);
 
+    @NotNull
+    Optional<Config> getSubConfigAsOptional(@NotNull String path);
+
+    @NotNull
     MapConfigNode getRootNode();
 
     boolean isEmpty();
 
+    @NotNull
     Config withHiddenSecrets();
 
+    @NotNull
     default AuditableConfig auditable() {
         return AuditableConfig.of(this);
     }

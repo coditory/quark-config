@@ -1,5 +1,7 @@
 package com.coditory.quark.config;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -30,49 +32,58 @@ public final class ConfigLoader {
     private Set<String> optionalProfileConfigs = null;
     private boolean profileConfigsRequired = false;
 
-    public ConfigLoader args(String[] args) {
+    @NotNull
+    public ConfigLoader args(@NotNull String[] args) {
         expectNonNull(args, "args");
         this.args = copy(args);
         return this;
     }
 
-    public ConfigLoader args(List<String> args) {
+    @NotNull
+    public ConfigLoader args(@NotNull List<String> args) {
         expectNonNull(args, "args");
         this.args = args.toArray(new String[0]);
         return this;
     }
 
-    public ConfigLoader argsMapping(Map<String[], String[]> mapping) {
+    @NotNull
+    public ConfigLoader argsMapping(@NotNull Map<String[], String[]> mapping) {
         argumentsParser.withMapping(mapping);
         return this;
     }
 
-    public ConfigLoader addArgsMapping(List<String> args, List<String> mapping) {
+    @NotNull
+    public ConfigLoader addArgsMapping(@NotNull List<String> args, @NotNull List<String> mapping) {
         argumentsParser.addMapping(args.toArray(new String[0]), mapping.toArray(new String[0]));
         return this;
     }
 
-    public ConfigLoader addArgsMapping(String[] args, String[] mapping) {
+    @NotNull
+    public ConfigLoader addArgsMapping(@NotNull String[] args, @NotNull String[] mapping) {
         argumentsParser.addMapping(args, mapping);
         return this;
     }
 
-    public ConfigLoader argsAliases(Map<String, String> aliases) {
+    @NotNull
+    public ConfigLoader argsAliases(@NotNull Map<String, String> aliases) {
         argumentsParser.withAliases(aliases);
         return this;
     }
 
-    public ConfigLoader addArgsAlias(String arg, String alias) {
+    @NotNull
+    public ConfigLoader addArgsAlias(@NotNull String arg, @NotNull String alias) {
         argumentsParser.addAlias(arg, alias);
         return this;
     }
 
+    @NotNull
     public ConfigLoader noConfigPropArgPrefix() {
         this.configPropArgPrefix = null;
         return this;
     }
 
-    public ConfigLoader configPropArgPrefix(String configPropArgPrefix) {
+    @NotNull
+    public ConfigLoader configPropArgPrefix(@NotNull String configPropArgPrefix) {
         expectNonBlank(configPropArgPrefix, "configPropArgPrefix");
         expect(!Objects.equals(configPropArgPrefix, externalConfigArgName), "Expected configPropArgPrefix != externalConfigArgName");
         expect(!configPropArgPrefix.contains("."), "Expected configPropArgPrefix to contain no dots");
@@ -80,12 +91,14 @@ public final class ConfigLoader {
         return this;
     }
 
+    @NotNull
     public ConfigLoader noExternalConfigArgName() {
         this.externalConfigArgName = null;
         return this;
     }
 
-    public ConfigLoader externalConfigArgName(String externalConfigArgName) {
+    @NotNull
+    public ConfigLoader externalConfigArgName(@NotNull String externalConfigArgName) {
         expectNonBlank(externalConfigArgName, "externalConfigArgName");
         expect(!Objects.equals(configPropArgPrefix, externalConfigArgName), "Expected configPropArgPrefix != externalConfigArgName");
         expect(!externalConfigArgName.contains("."), "Expected externalConfigArgName to contain no dots");
@@ -93,104 +106,125 @@ public final class ConfigLoader {
         return this;
     }
 
-    public ConfigLoader allowedProfiles(String... allowedProfiles) {
+    @NotNull
+    public ConfigLoader allowedProfiles(@NotNull String... allowedProfiles) {
         return allowedProfiles(Set.of(allowedProfiles));
     }
 
-    public ConfigLoader allowedProfiles(Collection<String> allowedProfiles) {
+    @NotNull
+    public ConfigLoader allowedProfiles(@NotNull Collection<String> allowedProfiles) {
         this.profilesResolver.allowedProfiles(allowedProfiles);
         return this;
     }
 
-    public ConfigLoader firstIfNoneMatch(List<String> firstIfNoneMatch) {
+    @NotNull
+    public ConfigLoader firstIfNoneMatch(@NotNull List<String> firstIfNoneMatch) {
         this.profilesResolver.firstIfNoneMatch(firstIfNoneMatch);
         return this;
     }
 
-    public ConfigLoader exclusiveProfiles(String... exclusiveProfiles) {
+    @NotNull
+    public ConfigLoader exclusiveProfiles(@NotNull String... exclusiveProfiles) {
         return exclusiveProfiles(Set.of(exclusiveProfiles));
     }
 
+    @NotNull
     public ConfigLoader exclusiveProfiles(Collection<String> exclusiveProfiles) {
         this.profilesResolver.exclusiveProfiles(exclusiveProfiles);
         return this;
     }
 
+    @NotNull
     public ConfigLoader expectedProfileCount(int count) {
         this.profilesResolver.expectedProfileCount(count);
         return this;
     }
 
+    @NotNull
     public ConfigLoader minProfileCount(int count) {
         this.profilesResolver.minProfileCount(count);
         return this;
     }
 
+    @NotNull
     public ConfigLoader maxProfileCount(int count) {
         this.profilesResolver.maxProfileCount(count);
         return this;
     }
 
-    public ConfigLoader optionalProfileConfigs(String... optionalProfileConfigs) {
+    @NotNull
+    public ConfigLoader optionalProfileConfigs(@NotNull String... optionalProfileConfigs) {
         return optionalProfileConfigs(Set.of(optionalProfileConfigs));
     }
 
-    public ConfigLoader optionalProfileConfigs(Set<String> optionalProfileConfigs) {
+    @NotNull
+    public ConfigLoader optionalProfileConfigs(@NotNull Set<String> optionalProfileConfigs) {
         profileConfigsRequired();
         this.optionalProfileConfigs = new HashSet<>(optionalProfileConfigs);
         return this;
     }
 
+    @NotNull
     public ConfigLoader optionalBaseConfig() {
         return optionalBaseConfig(true);
     }
 
+    @NotNull
     public ConfigLoader optionalBaseConfig(boolean optionalBaseConfig) {
         this.optionalBaseConfig = optionalBaseConfig;
         return this;
     }
 
+    @NotNull
     public ConfigLoader profileConfigsRequired() {
         return profileConfigsRequired(true);
     }
 
+    @NotNull
     public ConfigLoader profileConfigsRequired(boolean profileConfigsRequired) {
         this.profileConfigsRequired = profileConfigsRequired;
         return this;
     }
 
+    @NotNull
     public ConfigLoader profileArgName(String profileArgName) {
         this.profilesResolver.profileArgName(profileArgName);
         return this;
     }
 
+    @NotNull
     public ConfigLoader commonConfigName(String commonConfigName) {
         expectNonBlank(commonConfigName, "commonConfigName");
         this.commonConfigName = commonConfigName;
         return this;
     }
 
+    @NotNull
     public ConfigLoader defaultProfiles(String... defaultProfiles) {
         this.profilesResolver.defaultProfiles(defaultProfiles);
         return this;
     }
 
+    @NotNull
     public ConfigLoader profilesMapper(Function<List<String>, List<String>> mapper) {
         this.profilesResolver.profilesMapper(mapper);
         return this;
     }
 
+    @NotNull
     public ConfigLoader profilesValidator(Predicate<List<String>> predicate) {
         this.profilesResolver.profilesValidator(predicate);
         return this;
     }
 
+    @NotNull
     public ConfigLoader noConfigBaseName() {
         this.configBaseName = null;
         return this;
     }
 
-    public ConfigLoader configBaseName(String configBaseName) {
+    @NotNull
+    public ConfigLoader configBaseName(@NotNull String configBaseName) {
         expectNonBlank(configBaseName, "configBaseName");
         expect(
                 !configBaseName.contains("/") && !configBaseName.contains("\\"),
@@ -200,42 +234,50 @@ public final class ConfigLoader {
         return this;
     }
 
+    @NotNull
     public ConfigLoader noConfigPath() {
         this.configPath = null;
         return this;
     }
 
-    public ConfigLoader configPath(Path configPath) {
+    @NotNull
+    public ConfigLoader configPath(@NotNull Path configPath) {
         expectNonNull(configPath, "configPath");
         expect(!configPath.isAbsolute(), "Expected relative configPath");
         this.configPath = configPath;
         return this;
     }
 
-    public ConfigLoader configPath(String configPath) {
+    @NotNull
+    public ConfigLoader configPath(@NotNull String configPath) {
         return configPath(Paths.get(configPath));
     }
 
-    public ConfigLoader profiles(String... profiles) {
+    @NotNull
+    public ConfigLoader profiles(@NotNull String... profiles) {
         this.profilesResolver.profiles(profiles);
         return this;
     }
 
-    public ConfigLoader profiles(List<String> profiles) {
+    @NotNull
+    public ConfigLoader profiles(@NotNull List<String> profiles) {
         this.profilesResolver.profiles(profiles);
         return this;
     }
 
-    public ConfigLoader profiles(Profiles profiles) {
+    @NotNull
+    public ConfigLoader profiles(@NotNull Profiles profiles) {
         this.profilesResolver.profiles(profiles);
         return this;
     }
 
+    @NotNull
     public Config loadConfig() {
         Environment environment = loadEnvironment();
-        return environment.getConfig();
+        return environment.config();
     }
 
+    @NotNull
     public Environment loadEnvironment() {
         Config allArgsConfig = allArgsConfig();
         Profiles profiles = resolveProfiles(allArgsConfig);

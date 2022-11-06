@@ -39,8 +39,8 @@ final class Preconditions {
 
     public static <T> T expectNonNull(T value, String name) {
         if (value == null) {
-            String field = name != null ? (": " + name) : "";
-            throw new IllegalArgumentException("Expected non-null value" + field);
+            String message = message("Expected non-blank string", name);
+            throw new IllegalArgumentException(message);
         }
         return value;
     }
@@ -83,9 +83,14 @@ final class Preconditions {
 
     private static String message(String expectation, String fieldName, Object value) {
         String field = fieldName != null ? (": " + fieldName) : "";
-        String stringifiedValue = value instanceof String
+        String stringValue = value instanceof String
                 ? ("\"" + value + "\"")
                 : Objects.toString(value);
-        return expectation + field + ". Got: " + stringifiedValue;
+        return expectation + field + ". Got: " + stringValue;
+    }
+
+    private static String message(String expectation, String fieldName) {
+        String field = fieldName != null ? (": " + fieldName) : "";
+        return expectation + field;
     }
 }

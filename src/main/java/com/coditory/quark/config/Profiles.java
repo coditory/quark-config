@@ -1,5 +1,7 @@
 package com.coditory.quark.config;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -14,6 +16,7 @@ import static com.coditory.quark.config.Preconditions.expectUnique;
 public final class Profiles {
     private static final Profiles EMPTY = new Profiles(List.of());
 
+    @NotNull
     public static ProfilesResolver resolver() {
         return new ProfilesResolver();
     }
@@ -21,15 +24,18 @@ public final class Profiles {
     private final List<String> profiles;
     private final Set<String> set;
 
+    @NotNull
     public static Profiles empty() {
         return EMPTY;
     }
 
-    public static Profiles of(String... profiles) {
+    @NotNull
+    public static Profiles of(@NotNull String... profiles) {
         return new Profiles(List.of(profiles));
     }
 
-    public static Profiles of(List<String> profiles) {
+    @NotNull
+    public static Profiles of(@NotNull List<String> profiles) {
         return new Profiles(profiles);
     }
 
@@ -43,34 +49,35 @@ public final class Profiles {
         this.set = Set.copyOf(profiles);
     }
 
+    @NotNull
     public List<String> getValues() {
         return profiles;
     }
 
-    public boolean isActive(String profile) {
+    public boolean isActive(@NotNull String profile) {
         return set.contains(profile);
     }
 
-    public boolean isAnyActive(Collection<String> profiles) {
+    public boolean isAnyActive(@NotNull Collection<String> profiles) {
         return profiles.stream()
                 .anyMatch(set::contains);
     }
 
-    public boolean isAnyActive(String... profiles) {
+    public boolean isAnyActive(@NotNull String... profiles) {
         return Arrays.stream(profiles)
                 .anyMatch(set::contains);
     }
 
-    public boolean areAllActive(Collection<String> profiles) {
+    public boolean areAllActive(@NotNull Collection<String> profiles) {
         return set.containsAll(profiles);
     }
 
-    public boolean areAllActive(String... profiles) {
+    public boolean areAllActive(@NotNull String... profiles) {
         return Arrays.stream(profiles)
                 .allMatch(set::contains);
     }
 
-    public <R> R on(String profile, Supplier<R> supplier) {
+    public <R> R on(@NotNull String profile, @NotNull Supplier<R> supplier) {
         if (isActive(profile)) {
             return supplier.get();
         }

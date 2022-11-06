@@ -31,20 +31,20 @@ class Expression {
         this.expressionNodes = requireNonNull(expressionNodes);
     }
 
-    public String getExpression() {
+    String getExpression() {
         return expression;
     }
 
-    public boolean isStatic() {
+    boolean isStatic() {
         return expressionNodes.stream()
                 .allMatch(ExpressionNode::isStatic);
     }
 
-    public Object resolve(Config config) {
+    Object resolve(Config config) {
         return resolve(config, Set.of());
     }
 
-    public Object resolve(Config config, Set<Expression> visited) {
+    Object resolve(Config config, Set<Expression> visited) {
         List<ExpressionNode> nodes = expressionNodes.stream()
                 .map(node -> node.resolve(config, visited))
                 .collect(toList());

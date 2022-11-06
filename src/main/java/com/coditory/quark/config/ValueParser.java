@@ -1,35 +1,41 @@
 package com.coditory.quark.config;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.function.Function;
 
+import static com.coditory.quark.config.Preconditions.expectNonNull;
 import static java.util.Objects.requireNonNull;
 
 public interface ValueParser {
-    static <V> ValueParser forType(Class<V> type, Function<String, V> parser) {
+    @NotNull
+    static <V> ValueParser forType(@NotNull Class<V> type, @NotNull Function<String, V> parser) {
+        expectNonNull(type, "type");
+        expectNonNull(parser, "parser");
         return new TypedValueParser<>(type, parser);
     }
 
-    boolean isApplicable(Class<?> type, String value);
-    <T> T parse(Class<T> type, String value);
+    boolean isApplicable(@NotNull Class<?> type, String value);
+    <T> T parse(@NotNull Class<T> type, String value);
 }
 
 class TypedValueParser<V> implements ValueParser {
     private final Class<V> type;
     private final Function<String, V> parser;
 
-    public TypedValueParser(Class<V> type, Function<String, V> parser) {
+    public TypedValueParser(@NotNull Class<V> type, @NotNull Function<String, V> parser) {
         this.type = requireNonNull(type, "Expected non null type");
         this.parser = requireNonNull(parser, "Expected non null parser");
     }
 
     @Override
-    public boolean isApplicable(Class<?> type, String value) {
+    public boolean isApplicable(@NotNull Class<?> type, String value) {
         return type.isAssignableFrom(this.type);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T parse(Class<T> type, String value) {
+    public <T> T parse(@NotNull Class<T> type, String value) {
         return (T) parser.apply(value);
     }
 }
