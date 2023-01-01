@@ -12,7 +12,7 @@ group = 'com.coditory.quark'
 description = 'Coditory Quark Configuration Library'
 
 dependencies {
-    api 'org.jetbrains:annotations:23.0.0'
+    api 'org.jetbrains:annotations:23.1.0'
     implementation 'org.yaml:snakeyaml:1.33'
     implementation 'com.google.code.gson:gson:2.10'
     testImplementation 'org.spockframework:spock-core:2.3-groovy-4.0'
