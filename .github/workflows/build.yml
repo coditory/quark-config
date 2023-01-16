@@ -32,14 +32,3 @@ jobs:
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         run: ./gradlew build jacocoTestReport coveralls --scan
-
-  dependabot:
-    needs: [ build ]
-    runs-on: ubuntu-latest
-    if: ${{ github.triggering_actor == 'dependabot[bot]' && github.event_name == 'pull_request'}}
-    steps:
-      - name: Auto-merge Dependabot PRs
-        run: gh pr merge --auto --merge "$PR_URL"
-        env:
-          PR_URL: ${{github.event.pull_request.html_url}}
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
