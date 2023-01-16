@@ -7,6 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static com.coditory.quark.config.Preconditions.expect;
 import static com.coditory.quark.config.Preconditions.expectNonBlank;
@@ -86,4 +88,16 @@ public interface Config extends ConfigGetters {
         return AuditableConfig.of(this);
     }
 
+    default <T> T auditMap(@NotNull Function<Config, T> configMapper) {
+        AuditableConfig auditableConfig = AuditableConfig.of(this);
+        T result = configMapper.apply(auditableConfig);
+        auditableConfig.failOnUnusedProperties();
+        return result;
+    }
+
+    default void audit(@NotNull Consumer<Config> configConsumer) {
+        AuditableConfig auditableConfig = AuditableConfig.of(this);
+        configConsumer.accept(auditableConfig);
+        auditableConfig.failOnUnusedProperties();
+    }
 }

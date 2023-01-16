@@ -30,47 +30,47 @@ public final class AuditableConfig extends ConfigDecorator {
     @NotNull
     @Override
     public Config getSubConfig(@NotNull String path) {
-        markAsRead(path);
+        markAsUsedProperty(path);
         return super.getSubConfig(path);
     }
 
     @NotNull
     @Override
     public Config getSubConfigOrEmpty(@NotNull String path) {
-        markAsRead(path);
+        markAsUsedProperty(path);
         return super.getSubConfigOrEmpty(path);
     }
 
     @NotNull
     @Override
     public Config getSubConfig(@NotNull String path, @NotNull Config defaultValue) {
-        markAsRead(path);
+        markAsUsedProperty(path);
         return super.getSubConfig(path, defaultValue);
     }
 
     @NotNull
     @Override
     public Optional<Config> getSubConfigAsOptional(@NotNull String path) {
-        markAsRead(path);
+        markAsUsedProperty(path);
         return super.getSubConfigAsOptional(path);
     }
 
     @NotNull
     @Override
     public <T> Optional<List<T>> getListAsOptional(@NotNull Class<T> type, @NotNull String path) {
-        markAsRead(path);
+        markAsUsedProperty(path);
         return super.getListAsOptional(type, path);
     }
 
     @NotNull
     @Override
     public <T> Optional<T> getAsOptional(@NotNull Class<T> type, @NotNull String path) {
-        markAsRead(path);
+        markAsUsedProperty(path);
         return super.getAsOptional(type, path);
     }
 
     @NotNull
-    public AuditableConfig markAsRead(@NotNull String path) {
+    public AuditableConfig markAsUsedProperty(@NotNull String path) {
         if (unreadConfig.contains(path)) {
             unreadConfig = Config.builder(unreadConfig)
                     .put(path, USED_MARKER)
@@ -89,7 +89,7 @@ public final class AuditableConfig extends ConfigDecorator {
                 ).build();
     }
 
-    public void throwErrorOnUnusedProperties() {
+    public void failOnUnusedProperties() {
         Map<String, Object> properties = unreadConfig.toFlatMap().entrySet().stream()
                 .filter(entry -> entry.getValue() != USED_MARKER)
                 .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
