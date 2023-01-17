@@ -104,7 +104,7 @@ class AuditableConfigSpec extends Specification {
                     .putAll(a: "A", b: "B")
                     .build()
         when:
-            config.audit {
+            config.consumeAuditable {
                 it.getString("a")
             }
         then:
@@ -112,7 +112,7 @@ class AuditableConfigSpec extends Specification {
             e.message == "Detected unused config properties:\nb"
 
         when:
-            config.audit {
+            config.consumeAuditable {
                 it.getString("a")
                 it.getString("b")
             }
@@ -126,7 +126,7 @@ class AuditableConfigSpec extends Specification {
                     .putAll(a: "A", b: "B")
                     .build()
         when:
-            String result = config.auditMap {
+            String result = config.mapAuditable {
                 it.getString("a")
             }
         then:
@@ -135,7 +135,7 @@ class AuditableConfigSpec extends Specification {
             result == null
 
         when:
-            result = config.auditMap {
+            result = config.mapAuditable {
                 it.getString("a") + it.getString("b")
             }
         then:
