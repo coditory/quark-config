@@ -111,7 +111,7 @@ Config config = new ConfigLoader()
 // Output: {application={port=8081, name=best-app}}
 ```
 
-For more examples see the [test cases](src/integration/groovy/com/coditory/quark/config/LoadApplicationConfigSpec.groovy).
+For more examples see the [test cases](src/integrationTest/groovy/com/coditory/quark/config/LoadApplicationConfigSpec.groovy).
 
 #### Config resolution variables
 
