@@ -1,6 +1,6 @@
 # Quark Config
 [![Build](https://github.com/coditory/quark-config/actions/workflows/build.yml/badge.svg)](https://github.com/coditory/quark-config/actions/workflows/build.yml)
-[![Coverage Status](https://coveralls.io/repos/github/coditory/quark-config/badge.svg)](https://coveralls.io/github/coditory/quark-config)
+[![Coverage](https://codecov.io/gh/coditory/quark-config/branch/master/graph/badge.svg?token=G4B3UCSDN7)](https://codecov.io/gh/coditory/quark-config)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.coditory.quark/quark-config/badge.svg)](https://mvnrepository.com/artifact/com.coditory.quark/quark-config)
 
 > Lightweight and single purpose java library for loading and manipulating configurations

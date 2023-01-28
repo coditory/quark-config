@@ -48,7 +48,7 @@ jobs:
           annotations_limit: 10
           report_paths: '**/build/test-results/**/TEST*.xml'
 
-      - name: Publish coverage Report
+      - name: Publish coverage report
         uses: codecov/codecov-action@v3
         continue-on-error: true
         with:
