@@ -10,7 +10,7 @@ kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.
 gradle-nexus-publish = { module = "io.github.gradle-nexus:publish-plugin", version = "1.1.0" }
 # dependencies
 jetbrains-annotations = { module = "org.jetbrains:annotations", version = "24.0.0" }
-snakeyaml = { module = "org.yaml:snakeyaml", version = "1.33" }
+snakeyaml = { module = "org.yaml:snakeyaml", version = "2.0" }
 gson = { module = "com.google.code.gson:gson", version = "2.10.1" }
 # test dependencies
 spock-core = { module = "org.spockframework:spock-core", version = "2.3-groovy-4.0" }
