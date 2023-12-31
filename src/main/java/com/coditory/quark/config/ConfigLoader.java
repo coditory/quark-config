@@ -20,8 +20,8 @@ import static com.coditory.quark.config.Preconditions.expectNonNull;
 
 public final class ConfigLoader {
     private final ArgumentsParser argumentsParser = new ArgumentsParser();
-    private final ProfilesResolver profilesResolver = new ProfilesResolver();
-    private Profiles profiles = null;
+    private final ConfigProfilesResolver profilesResolver = new ConfigProfilesResolver();
+    private ConfigProfiles profiles = null;
     private String[] args = null;
     private String externalConfigArgName = "config";
     private String configPropArgPrefix = "config-prop";
@@ -266,7 +266,7 @@ public final class ConfigLoader {
     }
 
     @NotNull
-    public ConfigLoader profiles(@NotNull Profiles profiles) {
+    public ConfigLoader profiles(@NotNull ConfigProfiles profiles) {
         this.profilesResolver.profiles(profiles);
         return this;
     }
@@ -280,7 +280,7 @@ public final class ConfigLoader {
     @NotNull
     public Environment loadEnvironment() {
         Config allArgsConfig = allArgsConfig();
-        Profiles profiles = resolveProfiles(allArgsConfig);
+        ConfigProfiles profiles = resolveProfiles(allArgsConfig);
         Config resolveConfig = Config.builder()
                 .put("_profiles", profiles.getValues())
                 .put("_system", ConfigFactory.buildFromSystemProperties())
@@ -297,7 +297,7 @@ public final class ConfigLoader {
         return new Environment(config, profiles);
     }
 
-    private Profiles resolveProfiles(Config argsConfig) {
+    private ConfigProfiles resolveProfiles(Config argsConfig) {
         return profiles != null
                 ? profiles
                 : profilesResolver.resolve(argsConfig);

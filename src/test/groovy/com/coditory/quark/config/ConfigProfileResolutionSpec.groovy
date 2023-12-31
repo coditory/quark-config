@@ -2,9 +2,9 @@ package com.coditory.quark.config
 
 import spock.lang.Specification
 
-import static com.coditory.quark.config.Profiles.resolver
+import static ConfigProfiles.resolver
 
-class ProfileResolutionSpec extends Specification {
+class ConfigProfileResolutionSpec extends Specification {
     def "should fail on not allowed profile"() {
         when:
             resolver()

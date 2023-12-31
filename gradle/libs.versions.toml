@@ -1,15 +1,15 @@
 [versions]
 # build tools
-java = "21"
-jacoco = "0.8.8"
+java = "17"
+jacoco = "0.8.11"
 
 [libraries]
 # build tools
 gradle-nexus-publish = { module = "io.github.gradle-nexus:publish-plugin", version = "1.1.0" }
 # dependencies
 jetbrains-annotations = { module = "org.jetbrains:annotations", version = "24.1.0" }
-snakeyaml = { module = "org.yaml:snakeyaml", version = "1.33" }
+snakeyaml = { module = "org.yaml:snakeyaml", version = "2.2" }
 gson = { module = "com.google.code.gson:gson", version = "2.10.1" }
 # test dependencies
-spock-core = { module = "org.spockframework:spock-core", version = "2.3-groovy-4.0" }
+spock-core = { module = "org.spockframework:spock-core", version = "2.4-M1-groovy-4.0" }
 jsonassert = { module = "org.skyscreamer:jsonassert", version = "1.5.1" }

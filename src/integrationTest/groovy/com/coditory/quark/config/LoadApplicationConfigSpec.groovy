@@ -108,7 +108,7 @@ class LoadApplicationConfigSpec extends Specification implements UsesFiles {
                         .loadEnvironment()
             }
         then:
-            env.profiles == Profiles.of("local")
+            env.profiles == ConfigProfiles.of("local")
             env.config == Config.of(a: "LOCAL")
     }
 

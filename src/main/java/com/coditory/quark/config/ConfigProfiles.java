@@ -13,33 +13,33 @@ import static com.coditory.quark.config.Preconditions.expectNonBlank;
 import static com.coditory.quark.config.Preconditions.expectNonNull;
 import static com.coditory.quark.config.Preconditions.expectUnique;
 
-public final class Profiles {
-    private static final Profiles EMPTY = new Profiles(List.of());
+public final class ConfigProfiles {
+    private static final ConfigProfiles EMPTY = new ConfigProfiles(List.of());
 
     @NotNull
-    public static ProfilesResolver resolver() {
-        return new ProfilesResolver();
+    public static ConfigProfilesResolver resolver() {
+        return new ConfigProfilesResolver();
     }
 
     private final List<String> profiles;
     private final Set<String> set;
 
     @NotNull
-    public static Profiles empty() {
+    public static ConfigProfiles empty() {
         return EMPTY;
     }
 
     @NotNull
-    public static Profiles of(@NotNull String... profiles) {
-        return new Profiles(List.of(profiles));
+    public static ConfigProfiles of(@NotNull String... profiles) {
+        return new ConfigProfiles(List.of(profiles));
     }
 
     @NotNull
-    public static Profiles of(@NotNull List<String> profiles) {
-        return new Profiles(profiles);
+    public static ConfigProfiles of(@NotNull List<String> profiles) {
+        return new ConfigProfiles(profiles);
     }
 
-    Profiles(List<String> profiles) {
+    ConfigProfiles(List<String> profiles) {
         expectNonNull(profiles, "profiles");
         expectUnique(profiles);
         for (String profile : profiles) {
@@ -97,7 +97,7 @@ public final class Profiles {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Profiles profiles1 = (Profiles) o;
+        ConfigProfiles profiles1 = (ConfigProfiles) o;
         return Objects.equals(profiles, profiles1.profiles);
     }
 
