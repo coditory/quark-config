@@ -1,5 +1,3 @@
-import java.time.Duration
-
 plugins {
     `java-library`
     `maven-publish`
@@ -7,31 +5,22 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin")
 }
 
-// creating publishable jar introduces time overhead
-// add "publish" property to enable signing and javadoc and sources in the jar
-// ./gradlew ... -Ppublish
-// ...or with a task
-// ./gradlew ... coverage
-val publishEnabled = (project.hasProperty("publish") && project.properties["publish"] != "false") ||
-    project.gradle.startParameter.taskNames.contains("publishToSonatype") ||
-    project.gradle.startParameter.taskNames.contains("publishToMavenLocal")
-
-java {
-    if (publishEnabled) {
-        withSourcesJar()
-        withJavadocJar()
-    }
-}
-
 group = "com.coditory.quark"
 description = "Coditory Quark Config - Configuration Library"
 
 publishing {
     publications {
-        create<MavenPublication>("maven") {
-            groupId = project.group.toString()
+        create<MavenPublication>("jvm") {
             artifactId = project.name
             from(components["java"])
+            versionMapping {
+                usage("java-api") {
+                    fromResolutionOf("runtimeClasspath")
+                }
+                usage("java-runtime") {
+                    fromResolutionResult()
+                }
+            }
 
             pom {
                 name.set(project.name)
@@ -69,25 +58,19 @@ publishing {
     }
 }
 
-if (publishEnabled && !project.gradle.startParameter.taskNames.contains("publishToMavenLocal")) {
-    val signingKey: String? = System.getenv("SIGNING_KEY")
-    val signingPwd: String? = System.getenv("SIGNING_PASSWORD")
-    if (signingKey.isNullOrBlank() || signingPwd.isNullOrBlank()) {
-        logger.info("Signing disabled as the GPG key was not found. Define SIGNING_KEY and SIGNING_PASSWORD to enable.")
+signing {
+    if (System.getenv("SIGNING_KEY")?.isNotBlank() == true && System.getenv("SIGNING_PASSWORD")?.isNotBlank() == true) {
+        useInMemoryPgpKeys(System.getenv("SIGNING_KEY"), System.getenv("SIGNING_PASSWORD"))
     }
-    signing {
-        useInMemoryPgpKeys(signingKey, signingPwd)
-        sign(publishing.publications["maven"])
-    }
+    sign(publishing.publications["jvm"])
 }
 
 nexusPublishing {
-    connectTimeout.set(Duration.ofMinutes(5))
-    clientTimeout.set(Duration.ofMinutes(5))
     repositories {
         sonatype {
-            System.getenv("NEXUS_USERNAME")?.let { username.set(it) }
-            System.getenv("NEXUS_PASSWORD")?.let { password.set(it) }
+            System.getenv("OSSRH_STAGING_PROFILE_ID")?.let { stagingProfileId = it }
+            System.getenv("OSSRH_USERNAME")?.let { username.set(it) }
+            System.getenv("OSSRH_PASSWORD")?.let { password.set(it) }
         }
     }
 }

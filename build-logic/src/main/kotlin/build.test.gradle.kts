@@ -1,4 +1,4 @@
-@file:Suppress("UnstableApiUsage", "HasPlatformType", "UNUSED_VARIABLE")
+@file:Suppress("UnstableApiUsage", "HasPlatformType")
 
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
