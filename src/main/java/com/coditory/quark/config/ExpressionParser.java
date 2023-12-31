@@ -21,29 +21,25 @@ class ExpressionParser {
     private static Expression parse(String template) {
         List<ExpressionNode> nodes = new ArrayList<>();
         boolean expression = false;
-        Set<Character> escapable = Set.of('{', '}');
         boolean escaped = false;
         StringBuilder chunk = new StringBuilder();
         char[] chars = template.toCharArray();
         for (int i = 0; i < chars.length; ++i) {
             char c = chars[i];
             if (escaped) {
-                if (!escapable.contains(c)) {
-                    throw new RuntimeException("Could not escape: \"" + c + "\" in template: \"" + template + "\"");
-                }
                 escaped = false;
                 chunk.append(c);
             } else if ('\\' == c) {
                 escaped = true;
             } else if (startsWith(chars, i, "${")) {
-                if (chunk.length() > 0) {
+                if (!chunk.isEmpty()) {
                     nodes.add(staticNode(chunk.toString()));
                     chunk = new StringBuilder();
                 }
                 expression = true;
                 i += 1;
             } else if ('}' == c && expression) {
-                if (chunk.length() > 0) {
+                if (!chunk.isEmpty()) {
                     nodes.add(parseExpression(chunk.toString().trim()));
                     chunk = new StringBuilder();
                 }
@@ -52,7 +48,7 @@ class ExpressionParser {
                 chunk.append(c);
             }
         }
-        if (chunk.length() > 0) {
+        if (!chunk.isEmpty()) {
             nodes.add(staticNode(chunk.toString()));
         }
         return new Expression(template, nodes);

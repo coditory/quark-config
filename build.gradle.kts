@@ -3,6 +3,7 @@ plugins {
     id("build.test")
     id("build.coverage")
     id("build.publish")
+    id("build.version")
 }
 
 dependencies {
