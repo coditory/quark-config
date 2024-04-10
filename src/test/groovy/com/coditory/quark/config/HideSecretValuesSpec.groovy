@@ -30,7 +30,7 @@ class HideSecretValuesSpec extends Specification {
             ]
         where:
             field << [
-                    "secret", "secrets", "password", "passwords", "token", "tokens"
+                    "secret", "secrets", "password", "passwords", "token", "tokens", "key", "keys", "apiKey", "apiKeys"
             ]
     }
 

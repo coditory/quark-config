@@ -1,6 +1,6 @@
 [versions]
 # build tools
-java = "17"
+java = "21"
 jacoco = "0.8.11"
 
 [libraries]
