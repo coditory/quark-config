@@ -88,14 +88,14 @@ public interface Config extends ConfigGetters {
         return AuditableConfig.of(this);
     }
 
-    default <T> T mapAuditable(@NotNull Function<Config, T> configMapper) {
+    default <T> T mapAuditable(@NotNull Function<AuditableConfig, T> configMapper) {
         AuditableConfig auditableConfig = AuditableConfig.of(this);
         T result = configMapper.apply(auditableConfig);
         auditableConfig.failOnUnusedProperties();
         return result;
     }
 
-    default void consumeAuditable(@NotNull Consumer<Config> configConsumer) {
+    default void consumeAuditable(@NotNull Consumer<AuditableConfig> configConsumer) {
         AuditableConfig auditableConfig = AuditableConfig.of(this);
         configConsumer.accept(auditableConfig);
         auditableConfig.failOnUnusedProperties();
