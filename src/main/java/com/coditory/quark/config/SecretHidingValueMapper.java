@@ -11,7 +11,9 @@ public class SecretHidingValueMapper implements ConfigEntryMapper {
     private static final Set<String> DEFAULT_SECRET_NAMES = Set.of(
             "password", "passwords",
             "secret", "secrets",
-            "token", "tokens"
+            "token", "tokens",
+            "key", "keys",
+            "apiKey", "apiKeys"
     );
 
     private static final SecretHidingValueMapper DEFAULT_SECRET_HIDING_VALUE_MAPPER =

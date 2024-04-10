@@ -2,8 +2,11 @@ package com.coditory.quark.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
+import org.snakeyaml.engine.v2.api.DumpSettings;
+import org.snakeyaml.engine.v2.api.Load;
+import org.snakeyaml.engine.v2.api.LoadSettings;
+import org.snakeyaml.engine.v2.api.Dump;
+import org.snakeyaml.engine.v2.common.FlowStyle;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -84,26 +87,30 @@ enum ConfigFormat {
     }
 
     private static class YamlConfigParser implements ConfigFormatParser {
+        @SuppressWarnings("unchecked")
         @Override
         public Config parse(String config) {
-            Yaml yaml = new Yaml();
-            Map<String, Object> map = yaml.load(config);
+            LoadSettings settings = LoadSettings.builder().build();
+            Load yaml = new Load(settings);
+            Map<String, Object> map = (Map<String, Object>) yaml.loadFromString(config);
             return Config.of(map);
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public Config parse(InputStream config) {
-            Yaml yaml = new Yaml();
-            Map<String, Object> map = yaml.load(config);
+            LoadSettings settings = LoadSettings.builder().build();
+            Load yaml = new Load(settings);
+            Map<String, Object> map = (Map<String, Object>) yaml.loadFromInputStream(config);
             return Config.of(map);
         }
 
         @Override
         public String stringify(Config config) {
-            DumperOptions options = new DumperOptions();
-            options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-            Yaml yaml = new Yaml(options);
-            return yaml.dump(config.toMap());
+            DumpSettings settings = DumpSettings.builder().setDefaultFlowStyle(FlowStyle.BLOCK).build();
+            Dump dump = new Dump(settings);
+            dump.dumpToString(config.toMap());
+            return dump.dumpToString(config.toMap());
         }
     }
 

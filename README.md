@@ -8,7 +8,7 @@
 A configuration library,
 similar to the one created in [Spring Boot](https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-external-config)
 of [typesafe](https://github.com/lightbend/config), that is:
-- lightweight, without a burden of a framework (has exactly two dependencies gson and yamlsnake)
+- lightweight, without a burden of a framework (has exactly two dependencies gson and snakeyaml)
 - loads configuration from multiple sources: arguments, classpath, file system
 - supports multiple formats YAML, JSON, properties
 - provides a collection of parsers for values such as `java.util.Duration`
