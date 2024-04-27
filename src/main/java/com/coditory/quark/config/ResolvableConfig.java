@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.coditory.quark.config.ConfigValueParser.defaultConfigValueParser;
 import static com.coditory.quark.config.MissingConfigValueException.missingConfigValueForPath;
@@ -76,6 +77,18 @@ final class ResolvableConfig implements Config {
     }
 
     @NotNull
+    private Optional<List<Config>> extractSubConfigListAsOptional(@NotNull String path) {
+        expectNonBlank(path, "path");
+        return root.getOptionalNode(Path.parse(path))
+                .filter(node -> node instanceof ListConfigNode)
+                .map(node -> (ListConfigNode) node)
+                .map(node -> node.children().stream()
+                        .filter(child -> child instanceof MapConfigNode)
+                        .map(child -> withRoot((MapConfigNode)child))
+                        .collect(Collectors.toList()));
+    }
+
+    @NotNull
     @Override
     public Config getSubConfig(@NotNull String path) {
         expectNonBlank(path, "path");
@@ -115,9 +128,14 @@ final class ResolvableConfig implements Config {
                 .map(node -> withRoot((MapConfigNode) node));
     }
 
+    @SuppressWarnings("unchecked")
     @NotNull
     @Override
     public <T> Optional<List<T>> getListAsOptional(@NotNull Class<T> type, @NotNull String path) {
+        if (type == Config.class) {
+            return extractSubConfigListAsOptional(path)
+                    .map(c -> (List<T>) c);
+        }
         return getOptional(path)
                 .map(value -> value.getAsList(valueParser, type));
     }

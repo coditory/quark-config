@@ -3,6 +3,9 @@ package com.coditory.quark.config;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Currency;
@@ -24,6 +27,9 @@ class ConfigValueParser {
             ValueParser.forType(BigDecimal.class, BigDecimal::new),
             ValueParser.forType(ZonedDateTime.class, value -> ZonedDateTime.parse(value, ISO_OFFSET_DATE_TIME)),
             ValueParser.forType(Instant.class, Instant::parse),
+            ValueParser.forType(LocalDateTime.class, LocalDateTime::parse),
+            ValueParser.forType(LocalDate.class, LocalDate::parse),
+            ValueParser.forType(LocalTime.class, LocalTime::parse),
             ValueParser.forType(Duration.class, DurationParser::parseDuration),
             ValueParser.forType(Locale.class, LocaleParser::parseLocale),
             ValueParser.forType(Currency.class, Currency::getInstance)

@@ -63,4 +63,23 @@ class SubConfigSpec extends Specification {
         then:
             thrown(MissingConfigValueException)
     }
+
+    def "should extract sub config list"() {
+        given:
+            Config config = Config.builder()
+                    .put("a.b[0].x", "X1")
+                    .put("a.b[0].y", "Y1")
+                    .put("a.b[1].x", "X2")
+                    .put("a.b[1].y", "Y2")
+                    .build()
+
+        when:
+            List<Config> list = config.getSubConfigList("a.b")
+        then:
+            list.get(0).getString("x") == "X1"
+            list.get(0).getString("y") == "Y1"
+        and:
+            list.get(1).getString("x") == "X2"
+            list.get(1).getString("y") == "Y2"
+    }
 }

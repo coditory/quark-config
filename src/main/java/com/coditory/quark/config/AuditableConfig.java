@@ -2,6 +2,7 @@ package com.coditory.quark.config;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -10,6 +11,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.coditory.quark.config.ConfigRemoveOptions.removeEmptyParents;
+import static com.coditory.quark.config.Preconditions.expectNonNull;
 
 public final class AuditableConfig extends ConfigDecorator {
     private static final Object USED_MARKER = new Object();

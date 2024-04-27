@@ -18,6 +18,10 @@ class ListConfigNode implements ConfigNode {
         this.values = values;
     }
 
+    List<ConfigNode> children() {
+        return List.copyOf(values);
+    }
+
     @Override
     public boolean isEmpty() {
         return values.isEmpty();
