@@ -58,4 +58,11 @@ class ConfigPropertiesFormatSpec extends Specification {
         then:
             result.getStringList("f") == ["F0", "F1"]
     }
+
+    def "should serialize and deserialize empty config"() {
+        expect:
+            ConfigFactory.parseProperties("") == Config.empty()
+        and:
+            ConfigFormatter.toProperties(Config.empty()) == ""
+    }
 }

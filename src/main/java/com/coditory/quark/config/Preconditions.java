@@ -39,7 +39,7 @@ final class Preconditions {
 
     public static <T> T expectNonNull(T value, String name) {
         if (value == null) {
-            String message = message("Expected non-blank string", name);
+            String message = message("Expected non-null", name);
             throw new IllegalArgumentException(message);
         }
         return value;

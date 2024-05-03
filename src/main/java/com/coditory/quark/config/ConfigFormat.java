@@ -2,10 +2,10 @@ package com.coditory.quark.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.snakeyaml.engine.v2.api.Dump;
 import org.snakeyaml.engine.v2.api.DumpSettings;
 import org.snakeyaml.engine.v2.api.Load;
 import org.snakeyaml.engine.v2.api.LoadSettings;
-import org.snakeyaml.engine.v2.api.Dump;
 import org.snakeyaml.engine.v2.common.FlowStyle;
 
 import java.io.ByteArrayInputStream;
@@ -93,7 +93,7 @@ enum ConfigFormat {
             LoadSettings settings = LoadSettings.builder().build();
             Load yaml = new Load(settings);
             Map<String, Object> map = (Map<String, Object>) yaml.loadFromString(config);
-            return Config.of(map);
+            return map == null || map.isEmpty() ? Config.empty() : Config.of(map);
         }
 
         @SuppressWarnings("unchecked")
@@ -107,6 +107,7 @@ enum ConfigFormat {
 
         @Override
         public String stringify(Config config) {
+            if (config.isEmpty()) return "";
             DumpSettings settings = DumpSettings.builder().setDefaultFlowStyle(FlowStyle.BLOCK).build();
             Dump dump = new Dump(settings);
             dump.dumpToString(config.toMap());
@@ -123,7 +124,7 @@ enum ConfigFormat {
         @SuppressWarnings("unchecked")
         public Config parse(String config) {
             Map<String, Object> map = gson.fromJson(config, Map.class);
-            return Config.of(map);
+            return map == null || map.isEmpty() ? Config.empty() : Config.of(map);
         }
 
         @Override
@@ -162,6 +163,7 @@ enum ConfigFormat {
 
         @Override
         public String stringify(Config config) {
+            if (config.isEmpty()) return "";
             return config.toFlatMap().entrySet().stream()
                     .map(entry -> entry.getKey() + "=" + entry.getValue())
                     .collect(joining("\n", "", "\n"));

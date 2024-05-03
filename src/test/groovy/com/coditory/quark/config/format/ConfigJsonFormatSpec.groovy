@@ -63,4 +63,11 @@ class ConfigJsonFormatSpec extends Specification {
         then:
             result.getStringList("f") == ["F0", "F1"]
     }
+
+    def "should serialize and deserialize empty config"() {
+        expect:
+            ConfigFactory.parseJson("") == Config.empty()
+        and:
+            ConfigFormatter.toJson(Config.empty()) == "{}"
+    }
 }
