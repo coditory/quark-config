@@ -29,6 +29,7 @@ class DurationParsingSpec extends Specification {
             "1.5s"   || Duration.parse("PT1.5S")
             "1m"     || Duration.parse("PT1M")
             "2h"     || Duration.parse("PT2H")
+            "2d"     || Duration.parse("PT48H")
     }
 
     @Unroll
@@ -40,7 +41,6 @@ class DurationParsingSpec extends Specification {
         where:
             value << [
                     "1.5m",
-                    "1d",
                     "10.5mss",
                     "1.0.5ms"
             ]
