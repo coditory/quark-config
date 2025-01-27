@@ -61,4 +61,11 @@ class ConfigYamlFormatSpec extends Specification {
         then:
             result.getStringList("f") == ["F0", "F1"]
     }
+
+    def "should serialize and deserialize empty config"() {
+        expect:
+            ConfigFactory.parseYaml("") == Config.empty()
+        and:
+            ConfigFormatter.toYaml(Config.empty()) == ""
+    }
 }

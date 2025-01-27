@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -88,14 +89,30 @@ public interface Config extends ConfigGetters {
         return AuditableConfig.of(this);
     }
 
-    default <T> T mapAuditable(@NotNull Function<Config, T> configMapper) {
+    default <T> T mapAuditableSubConfigOrNull(@NotNull String path, @NotNull Function<AuditableConfig, T> configMapper) {
+        Config subconfig =  this.getSubConfigOrNull(path);
+        if (subconfig == null) {
+            return null;
+        }
+        return subconfig.mapAuditable(configMapper);
+    }
+
+    default <T> T mapAuditableSubConfig(@NotNull String path, @NotNull Function<AuditableConfig, T> configMapper) {
+        return this.getSubConfig(path).mapAuditable(configMapper);
+    }
+
+    default <T> T mapAuditable(@NotNull Function<AuditableConfig, T> configMapper) {
         AuditableConfig auditableConfig = AuditableConfig.of(this);
         T result = configMapper.apply(auditableConfig);
         auditableConfig.failOnUnusedProperties();
         return result;
     }
 
-    default void consumeAuditable(@NotNull Consumer<Config> configConsumer) {
+    default void consumeAuditableSubConfig(@NotNull String path, @NotNull Consumer<AuditableConfig> configConsumer) {
+        this.getSubConfig(path).consumeAuditable(configConsumer);
+    }
+
+    default void consumeAuditable(@NotNull Consumer<AuditableConfig> configConsumer) {
         AuditableConfig auditableConfig = AuditableConfig.of(this);
         configConsumer.accept(auditableConfig);
         auditableConfig.failOnUnusedProperties();

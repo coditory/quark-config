@@ -13,6 +13,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 import static com.coditory.quark.config.MissingConfigValueException.missingConfigValueForPath;
+import static com.coditory.quark.config.Preconditions.expectNonBlank;
 import static com.coditory.quark.config.Preconditions.expectNonNull;
 
 interface ConfigGetters {
@@ -121,6 +122,8 @@ interface ConfigGetters {
 
     @NotNull
     default Object getObject(@NotNull String path, @NotNull Object defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getObjectAsOptional(path).orElse(defaultValue);
     }
 
@@ -147,6 +150,8 @@ interface ConfigGetters {
 
     @NotNull
     default Boolean getBoolean(@NotNull String path, @NotNull Boolean defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getBooleanAsOptional(path).orElse(defaultValue);
     }
 
@@ -173,6 +178,8 @@ interface ConfigGetters {
 
     @NotNull
     default Short getShort(@NotNull String path, @NotNull Short defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getShortAsOptional(path).orElse(defaultValue);
     }
 
@@ -199,6 +206,8 @@ interface ConfigGetters {
 
     @NotNull
     default Byte getByte(@NotNull String path, @NotNull Byte defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getByteAsOptional(path).orElse(defaultValue);
     }
 
@@ -225,6 +234,8 @@ interface ConfigGetters {
 
     @NotNull
     default Integer getInteger(@NotNull String path, @NotNull Integer defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getIntegerAsOptional(path).orElse(defaultValue);
     }
 
@@ -251,6 +262,8 @@ interface ConfigGetters {
 
     @NotNull
     default Long getLong(@NotNull String path, @NotNull Long defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getLongAsOptional(path).orElse(defaultValue);
     }
 
@@ -277,6 +290,8 @@ interface ConfigGetters {
 
     @NotNull
     default Float getFloat(@NotNull String path, @NotNull Float defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getFloatAsOptional(path).orElse(defaultValue);
     }
 
@@ -303,6 +318,8 @@ interface ConfigGetters {
 
     @NotNull
     default Double getDouble(@NotNull String path, @NotNull Double defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getDoubleAsOptional(path).orElse(defaultValue);
     }
 
@@ -329,6 +346,8 @@ interface ConfigGetters {
 
     @NotNull
     default BigDecimal getBigDecimal(@NotNull String path, @NotNull BigDecimal defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getBigDecimalAsOptional(path).orElse(defaultValue);
     }
 
@@ -355,6 +374,8 @@ interface ConfigGetters {
 
     @NotNull
     default Instant getInstant(@NotNull String path, @NotNull Instant defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getInstantAsOptional(path).orElse(defaultValue);
     }
 
@@ -381,6 +402,8 @@ interface ConfigGetters {
 
     @NotNull
     default ZonedDateTime getZonedDateTime(@NotNull String path, @NotNull ZonedDateTime defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getZonedDateTimeAsOptional(path).orElse(defaultValue);
     }
 
@@ -407,6 +430,8 @@ interface ConfigGetters {
 
     @NotNull
     default Duration getDuration(@NotNull String path, @NotNull Duration defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getDurationAsOptional(path).orElse(defaultValue);
     }
 
@@ -433,6 +458,8 @@ interface ConfigGetters {
 
     @NotNull
     default Locale getLocale(@NotNull String path, @NotNull Locale defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getLocaleAsOptional(path).orElse(defaultValue);
     }
 
@@ -459,6 +486,8 @@ interface ConfigGetters {
 
     @NotNull
     default Currency getCurrency(@NotNull String path, @NotNull Currency defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getCurrencyAsOptional(path).orElse(defaultValue);
     }
 
@@ -493,6 +522,8 @@ interface ConfigGetters {
 
     @NotNull
     default List<String> getStringList(@NotNull String path, @NotNull List<String> defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getStringListAsOptional(path).orElse(defaultValue);
     }
 
@@ -519,6 +550,8 @@ interface ConfigGetters {
 
     @NotNull
     default List<Object> getObjectList(@NotNull String path, @NotNull List<Object> defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getObjectListAsOptional(path).orElse(defaultValue);
     }
 
@@ -545,6 +578,8 @@ interface ConfigGetters {
 
     @NotNull
     default List<Boolean> getBooleanList(@NotNull String path, @NotNull List<Boolean> defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getBooleanListAsOptional(path).orElse(defaultValue);
     }
 
@@ -571,6 +606,8 @@ interface ConfigGetters {
 
     @NotNull
     default List<Short> getShortList(@NotNull String path, @NotNull List<Short> defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getShortListAsOptional(path).orElse(defaultValue);
     }
 
@@ -597,6 +634,8 @@ interface ConfigGetters {
 
     @NotNull
     default List<Byte> getByteList(@NotNull String path, @NotNull List<Byte> defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getByteListAsOptional(path).orElse(defaultValue);
     }
 
@@ -623,6 +662,8 @@ interface ConfigGetters {
 
     @NotNull
     default List<Integer> getIntegerList(@NotNull String path, @NotNull List<Integer> defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getIntegerListAsOptional(path).orElse(defaultValue);
     }
 
@@ -649,6 +690,8 @@ interface ConfigGetters {
 
     @NotNull
     default List<Long> getLongList(@NotNull String path, @NotNull List<Long> defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getLongListAsOptional(path).orElse(defaultValue);
     }
 
@@ -675,6 +718,8 @@ interface ConfigGetters {
 
     @NotNull
     default List<Float> getFloatList(@NotNull String path, @NotNull List<Float> defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getFloatListAsOptional(path).orElse(defaultValue);
     }
 
@@ -701,6 +746,8 @@ interface ConfigGetters {
 
     @NotNull
     default List<Double> getDoubleList(@NotNull String path, @NotNull List<Double> defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getDoubleListAsOptional(path).orElse(defaultValue);
     }
 
@@ -727,6 +774,8 @@ interface ConfigGetters {
 
     @NotNull
     default List<BigDecimal> getBigDecimalList(@NotNull String path, @NotNull List<BigDecimal> defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getBigDecimalListAsOptional(path).orElse(defaultValue);
     }
 
@@ -753,6 +802,8 @@ interface ConfigGetters {
 
     @NotNull
     default List<Instant> getInstantList(@NotNull String path, @NotNull List<Instant> defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getInstantListAsOptional(path).orElse(defaultValue);
     }
 
@@ -779,6 +830,8 @@ interface ConfigGetters {
 
     @NotNull
     default List<ZonedDateTime> getZonedDateTimeList(@NotNull String path, @NotNull List<ZonedDateTime> defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getZonedDateTimeListAsOptional(path).orElse(defaultValue);
     }
 
@@ -805,6 +858,8 @@ interface ConfigGetters {
 
     @NotNull
     default List<Duration> getDurationList(@NotNull String path, @NotNull List<Duration> defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getDurationListAsOptional(path).orElse(defaultValue);
     }
 
@@ -831,6 +886,8 @@ interface ConfigGetters {
 
     @NotNull
     default List<Locale> getLocaleList(@NotNull String path, @NotNull List<Locale> defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getLocaleListAsOptional(path).orElse(defaultValue);
     }
 
@@ -857,6 +914,42 @@ interface ConfigGetters {
 
     @NotNull
     default List<Currency> getCurrencyList(@NotNull String path, @NotNull List<Currency> defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
         return getCurrencyListAsOptional(path).orElse(defaultValue);
+    }
+
+    // SubConfig List API
+
+    @NotNull
+    default Optional<List<Config>> getSubConfigListAsOptional(@NotNull String path) {
+        expectNonBlank(path, "path");
+        return getListAsOptional(Config.class, path);
+    }
+
+    @NotNull
+    default List<Config> getSubConfigList(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getSubConfigListAsOptional(path)
+                .orElseThrow(() -> missingConfigValueForPath(path));
+    }
+
+    @NotNull
+    default List<Config> getSubConfigListOrEmpty(@NotNull String path) {
+        expectNonBlank(path, "path");
+        return getSubConfigListAsOptional(path).orElse(List.of());
+    }
+
+    @Nullable
+    default List<Config> getSubConfigListOrNull(@NotNull String path) {
+        expectNonNull(path, "path");
+        return getSubConfigListAsOptional(path).orElse(null);
+    }
+
+    @NotNull
+    default List<Config> getSubConfigList(@NotNull String path, @NotNull List<Config> defaultValue) {
+        expectNonNull(path, "path");
+        expectNonNull(defaultValue, "defaultValue");
+        return getSubConfigListAsOptional(path).orElse(defaultValue);
     }
 }

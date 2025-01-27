@@ -76,6 +76,9 @@ class ConfigValue {
         if (value instanceof String) {
             return parse(parser, type, (String) value);
         }
+        if (value instanceof Number && Number.class.isAssignableFrom(type)) {
+            return parse(parser, type, String.valueOf(value));
+        }
         throw new ConfigValueConversionException(type, path.toString(), value);
     }
 
