@@ -91,6 +91,27 @@ public interface Config extends ConfigGetters {
         return AuditableConfig.of(this);
     }
 
+    @NotNull
+    default <T> T mapSubConfig(@NotNull String path, @NotNull Function<Config, T> configMapper) {
+        Config subconfig = this.getSubConfig(path);
+        return configMapper.apply(subconfig);
+    }
+
+    @Nullable
+    default <T> T mapSubConfigOrNull(@NotNull String path, @NotNull Function<Config, T> configMapper) {
+        Config subconfig = this.getSubConfigOrNull(path);
+        if (subconfig == null) {
+            return null;
+        }
+        return configMapper.apply(subconfig);
+    }
+
+    @NotNull
+    default <T> T mapSubConfigOrEmpty(@NotNull String path, @NotNull Function<Config, T> configMapper) {
+        Config subconfig = this.getSubConfigOrEmpty(path);
+        return configMapper.apply(subconfig);
+    }
+
     default <T> T mapAuditableSubConfigOrNull(@NotNull String path, @NotNull Function<AuditableConfig, T> configMapper) {
         Config subconfig = this.getSubConfigOrNull(path);
         if (subconfig == null) {

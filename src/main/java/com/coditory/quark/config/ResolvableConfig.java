@@ -111,7 +111,7 @@ final class ResolvableConfig implements Config {
     public Config getSubConfig(@NotNull String path) {
         expectNonBlank(path, "path");
         return getSubConfigAsOptional(path)
-                .orElseThrow(() -> missingConfigValueForPath(path));
+                .orElseThrow(() -> missingConfigValueForPath(this.getPath(), path));
     }
 
     @NotNull

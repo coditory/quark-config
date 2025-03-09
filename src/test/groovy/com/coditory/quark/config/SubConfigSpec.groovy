@@ -82,4 +82,21 @@ class SubConfigSpec extends Specification {
             list.get(1).getString("x") == "X2"
             list.get(1).getString("y") == "Y2"
     }
+
+    def "should prefix missing property from from subconfig"() {
+        given:
+            Config config = Config.of(
+                    a: "A",
+                    b: [
+                            c: "C"
+                    ])
+        when:
+            config.mapAuditableSubConfig("b") {
+                it.getString("c")
+                it.getString("d")
+            }
+        then:
+            MissingConfigValueException e = thrown(MissingConfigValueException)
+            e.message == "Missing config value for path: b.d"
+    }
 }

@@ -172,7 +172,7 @@ class AuditableConfigSpec extends Specification {
             noExceptionThrown()
     }
 
-    def "should reason two auditable subconfigs"() {
+    def "should recognize nested auditable subconfigs"() {
         given:
             Config config = Config.of(
                     a: "A",
