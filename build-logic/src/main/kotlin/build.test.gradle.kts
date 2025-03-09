@@ -15,8 +15,6 @@ testing {
         val test by getting(JvmTestSuite::class)
 
         val integrationTest by registering(JvmTestSuite::class) {
-            testType.set(TestSuiteType.INTEGRATION_TEST)
-
             val mainSourceSet = project.sourceSets.main.get()
             val testSourceSet = project.sourceSets.test.get()
 
