@@ -11,7 +11,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.coditory.quark.config.ConfigRemoveOptions.removeEmptyParents;
-import static com.coditory.quark.config.Preconditions.expectNonNull;
 
 public final class AuditableConfig extends ConfigDecorator {
     private static final Object USED_MARKER = new Object();
@@ -72,12 +71,14 @@ public final class AuditableConfig extends ConfigDecorator {
     }
 
     @NotNull
-    public AuditableConfig markAsUsedProperty(@NotNull String path) {
-        if (unreadConfig.contains(path)) {
-            unreadConfig = Config.builder(unreadConfig)
-                    .put(path, USED_MARKER)
-                    .build();
-        }
+    public AuditableConfig markAsUsedProperty(@NotNull String... paths) {
+        Arrays.stream(paths).forEach(path -> {
+            if (unreadConfig.contains(path)) {
+                unreadConfig = Config.builder(unreadConfig)
+                        .put(path, USED_MARKER)
+                        .build();
+            }
+        });
         return this;
     }
 
