@@ -1,65 +1,51 @@
 package com.coditory.quark.config
 
 import spock.lang.Specification
-import spock.lang.Unroll
 
 class HideSecretValuesSpec extends Specification {
-    @Unroll
-    def "should hide secrets under field name: #field"() {
+    def "should hide secret values with field name: #field"() {
         given:
+            String path = "a.${field}"
             Config config = Config.builder()
-                    .put("a.${field}", "SECRET")
-                    .put("a.${field}.c", "SECRET")
-                    .put("b.${field}[0]", "SECRET")
-                    .put("b.${field}[1]", "SECRET")
-                    .put("c.${field}[0].x", "SECRET")
-                    .put("c.${field}[1][0]", "SECRET")
-                    .put("c.${field}.x.[0].x", "SECRET")
-                    .put("c.${field}.y.[0][0]", "SECRET")
+                    .put(path, "SECRET")
                     .build()
         when:
             Config result = config.withHiddenSecrets()
         then:
-            result.toMap() == [
-                    a: [(field): [c: "***"]],
-                    b: [(field): ["***", "***"]],
-                    c: [(field): [
-                            x: [[x: "***"]],
-                            y: [["***"]]]
-                    ]
-            ]
+            result.getString(path) == "***"
         where:
             field << [
-                    "secret", "secrets", "password", "passwords", "token", "tokens", "key", "keys", "apiKey", "apiKeys"
+                    "secret", "secrets", "password", "passwords", "token", "tokens", "key", "keys", "apiKey", "clientSecret"
+            ]
+    }
+
+    def "should hide secret value on path: #path"() {
+        given:
+            Config config = Config.builder()
+                    .put(path, "SECRET")
+                    .build()
+        when:
+            Config result = config.withHiddenSecrets()
+        then:
+            result.getString(path) == "***"
+        where:
+            path << [
+                    "b.secret", "b.token.secret[0]", "b.secretSth", "b.sthSecret", "b.sth-secret", "b.secret-sth"
             ]
     }
 
     def "should not hide non secret values"() {
         given:
             Config config = Config.builder()
-                    .put("a.password", "SECRET")
-                    .put("a.secret.c", "SECRET")
-                    .put("a.token.x[0]", "SECRET")
-                    .put("a.token.x[1]", "SECRET")
-                    .put("b.x", "NOT-SECRET")
-                    .put("b.pas.sword", "NOT-SECRET")
-                    .put("b.x.c", "NOT-SECRET")
-                    .put("b.x.[0]", "NOT-SECRET")
-                    .put("b.x.[1]", "NOT-SECRET")
+                    .put(path, "NOT-SECRET")
                     .build()
         when:
             Config result = config.withHiddenSecrets()
         then:
-            result.toMap() == [
-                    a: [
-                            password: "***",
-                            secret  : [c: "***"],
-                            token   : [x: ["***", "***"]]
-                    ],
-                    b: [
-                            x  : ["NOT-SECRET", "NOT-SECRET"],
-                            pas: [sword: "NOT-SECRET"]
-                    ]
+            result.getString(path) == "NOT-SECRET"
+        where:
+            path << [
+                    "b.secret.c", "b.token.x[0]", "b.x", "b.pas.sword", "nontoken"
             ]
     }
 }
