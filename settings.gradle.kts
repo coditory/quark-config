@@ -3,7 +3,7 @@ rootProject.name = "quark-config"
 includeBuild("build-logic")
 
 plugins {
-    id("com.gradle.enterprise").version("3.15.1")
+    id("com.gradle.develocity") version ("3.19.2")
 }
 
 dependencyResolutionManagement {
@@ -13,12 +13,10 @@ dependencyResolutionManagement {
     }
 }
 
-gradleEnterprise {
-    if (!System.getenv("CI").isNullOrEmpty()) {
-        buildScan {
-            publishAlways()
-            termsOfServiceUrl = "https://gradle.com/terms-of-service"
-            termsOfServiceAgree = "yes"
-        }
+develocity {
+    buildScan {
+        publishing.onlyIf { !System.getenv("CI").isNullOrEmpty() }
+        termsOfUseUrl.set("https://gradle.com/help/legal-terms-of-use")
+        termsOfUseAgree.set("yes")
     }
 }
