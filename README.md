@@ -22,7 +22,7 @@ Add to your `build.gradle`:
 
 ```gradle
 dependencies {
-    implementation "com.coditory.quark:quark-config:0.1.15"
+    implementation "com.coditory.quark:quark-config:0.1.24"
 }
 ```
 
@@ -35,7 +35,7 @@ Config config = new ConfigLoader()
         .defaultProfiles("local")
         .configPath("configs")
         .args(args)
-        .loadConfig()
+        .loadConfig();
 ```
 
 Loads configuration files:
@@ -170,22 +170,22 @@ new ConfigLoader()
     .firstIfNoneMatch(mainProfiles)
     .configPath("config")
     .args(args)
-    .loadConfig()
+    .loadConfig();
 ```
 
 ### Resolving a config value
 ```java
 // throws if config value is not defined
-config.getInteger("application.port")
+config.getInteger("application.port");
 
 // returns a default value if config value is not defined
-config.getInteger("application.port", 8080)
+config.getInteger("application.port", 8080);
 
 // returns null if config value is not defined
-config.getIntegerOrNull("application.port")
+config.getIntegerOrNull("application.port");
 
 // returns an Optional from config value
-config.getIntegerAsOptional("application.port")
+config.getIntegerAsOptional("application.port");
 ```
 
 Quark Config provides a lot of parsers
@@ -207,8 +207,8 @@ assert config.getInstant("timestamp") == Instant.parse("2007-12-03T10:15:30.00Z"
 
 Resolving a sub-config:
 ```java
-Config applicationConfig = config.getSubConfig("application")
-applicationConfig.getInteger("port")
+Config applicationConfig = config.getSubConfig("application");
+applicationConfig.getInteger("port");
 ```
 
 ### Merging configs
@@ -303,5 +303,5 @@ ConfigFormatter.toJsonWithExposedSecrets(config);
 ConfigFormatter.toPropertiesWithExposedSecrets(config);
 
 // config.toString() method uses output of a Map with hidden secrets
-config.toString()
+config.toString();
 ```
