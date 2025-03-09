@@ -72,6 +72,12 @@ abstract class ConfigDecorator implements Config {
 
     @NotNull
     @Override
+    public String getPath() {
+        return config.getPath();
+    }
+
+    @NotNull
+    @Override
     public MapConfigNode getRootNode() {
         return config.getRootNode();
     }

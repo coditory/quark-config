@@ -100,9 +100,7 @@ class AuditableConfigSpec extends Specification {
 
     def "should detected all unused config properties in passed config consumer"() {
         given:
-            Config config = Config.builder()
-                    .putAll(a: "A", b: "B")
-                    .build()
+            Config config = Config.of(a: "A", b: "B")
         when:
             config.consumeAuditable {
                 it.getString("a")
@@ -122,9 +120,7 @@ class AuditableConfigSpec extends Specification {
 
     def "should detected all unused config properties in passed config mapper"() {
         given:
-            Config config = Config.builder()
-                    .putAll(a: "A", b: "B")
-                    .build()
+            Config config = Config.of(a: "A", b: "B")
         when:
             String result = config.mapAuditable {
                 it.getString("a")
@@ -141,5 +137,89 @@ class AuditableConfigSpec extends Specification {
         then:
             noExceptionThrown()
             result == "AB"
+    }
+
+    def "should detected all unused config properties from subconfig"() {
+        given:
+            Config config = Config.of(
+                    a: "A",
+                    b: [
+                            c: "C",
+                            d: "D",
+                            e: [
+                                    f: "F",
+                                    g: "G"
+                            ]
+                    ])
+        when:
+            config.mapAuditableSubConfig("b") {
+                it.getString("c")
+                it.getString("e.g")
+                "Test"
+            }
+        then:
+            ConfigUnusedPropertiesException e = thrown(ConfigUnusedPropertiesException)
+            e.message == "Detected unused config properties:\nb.d\nb.e.f"
+
+        when:
+            config.mapAuditableSubConfig("b") {
+                it.getString("c")
+                it.getString("d")
+                it.getString("e.f")
+                it.getString("e.g")
+            }
+        then:
+            noExceptionThrown()
+    }
+
+    def "should reason two auditable subconfigs"() {
+        given:
+            Config config = Config.of(
+                    a: "A",
+                    b: [
+                            e: [
+                                    f: "F",
+                                    g: "G"
+                            ]
+                    ])
+        when:
+            config.mapAuditableSubConfig("b") {
+                it.mapAuditableSubConfig("e") {
+                    it.getString("g")
+                }
+            }
+        then:
+            ConfigUnusedPropertiesException e = thrown(ConfigUnusedPropertiesException)
+            e.message == "Detected unused config properties:\nb.e.f"
+
+        when:
+            config.mapAuditableSubConfig("b") {
+                it.mapAuditableSubConfig("e") {
+                    it.getString("g")
+                    it.getString("f")
+                }
+            }
+        then:
+            noExceptionThrown()
+
+        when:
+            config.mapAuditableSubConfig("b") {
+                it.mapAuditableSubConfigOrNull("e") {
+                    it.getString("g")
+                    it.getString("f")
+                }
+            }
+        then:
+            noExceptionThrown()
+
+        when:
+            config.mapAuditableSubConfig("b") {
+                it.mapAuditableSubConfigOrEmpty("e") {
+                    it.getString("g")
+                    it.getString("f")
+                }
+            }
+        then:
+            noExceptionThrown()
     }
 }

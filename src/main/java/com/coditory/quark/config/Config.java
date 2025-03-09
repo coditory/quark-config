@@ -4,7 +4,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -77,6 +76,9 @@ public interface Config extends ConfigGetters {
     Optional<Config> getSubConfigAsOptional(@NotNull String path);
 
     @NotNull
+    String getPath();
+
+    @NotNull
     MapConfigNode getRootNode();
 
     boolean isEmpty();
@@ -90,10 +92,15 @@ public interface Config extends ConfigGetters {
     }
 
     default <T> T mapAuditableSubConfigOrNull(@NotNull String path, @NotNull Function<AuditableConfig, T> configMapper) {
-        Config subconfig =  this.getSubConfigOrNull(path);
+        Config subconfig = this.getSubConfigOrNull(path);
         if (subconfig == null) {
             return null;
         }
+        return subconfig.mapAuditable(configMapper);
+    }
+
+    default <T> T mapAuditableSubConfigOrEmpty(@NotNull String path, @NotNull Function<AuditableConfig, T> configMapper) {
+        Config subconfig = this.getSubConfigOrEmpty(path);
         return subconfig.mapAuditable(configMapper);
     }
 

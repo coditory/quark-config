@@ -30,6 +30,7 @@ final class ResolvableConfig implements Config {
         return EMPTY;
     }
 
+    private final Path path;
     private final ConfigValueParser valueParser;
     private final MapConfigNode root;
     private final ConfigEntryMapper secretHidingValueMapper;
@@ -39,9 +40,25 @@ final class ResolvableConfig implements Config {
             ConfigValueParser valueParser,
             ConfigEntryMapper secretHidingValueMapper
     ) {
+        this(Path.root(), root, valueParser, secretHidingValueMapper);
+    }
+
+    ResolvableConfig(
+            Path path,
+            MapConfigNode root,
+            ConfigValueParser valueParser,
+            ConfigEntryMapper secretHidingValueMapper
+    ) {
+        this.path = expectNonNull(path);
         this.root = expectNonNull(root);
         this.valueParser = expectNonNull(valueParser);
         this.secretHidingValueMapper = expectNonNull(secretHidingValueMapper);
+    }
+
+    @NotNull
+    @Override
+    public String getPath() {
+        return this.path.toString();
     }
 
     @NotNull
@@ -67,24 +84,25 @@ final class ResolvableConfig implements Config {
     @Override
     public Config withHiddenSecrets() {
         MapConfigNode mapped = root.mapLeaves(Path.root(), secretHidingValueMapper);
-        return new ResolvableConfig(mapped, valueParser, secretHidingValueMapper);
+        return new ResolvableConfig(path, mapped, valueParser, secretHidingValueMapper);
     }
 
-    private ResolvableConfig withRoot(MapConfigNode root) {
+    private ResolvableConfig withRoot(Path path, MapConfigNode root) {
         return Objects.equals(this.root, root)
                 ? this
-                : new ResolvableConfig(root, valueParser, secretHidingValueMapper);
+                : new ResolvableConfig(this.path.add(path), root, valueParser, secretHidingValueMapper);
     }
 
     @NotNull
     private Optional<List<Config>> extractSubConfigListAsOptional(@NotNull String path) {
         expectNonBlank(path, "path");
-        return root.getOptionalNode(Path.parse(path))
+        Path parsedPath = Path.parse(path);
+        return root.getOptionalNode(parsedPath)
                 .filter(node -> node instanceof ListConfigNode)
                 .map(node -> (ListConfigNode) node)
                 .map(node -> node.children().stream()
                         .filter(child -> child instanceof MapConfigNode)
-                        .map(child -> withRoot((MapConfigNode)child))
+                        .map(child -> withRoot(parsedPath, (MapConfigNode) child))
                         .collect(Collectors.toList()));
     }
 
@@ -100,7 +118,7 @@ final class ResolvableConfig implements Config {
     @Override
     public Config getSubConfigOrEmpty(@NotNull String path) {
         expectNonBlank(path, "path");
-        return getSubConfig(path, withRoot(MapConfigNode.emptyRoot()));
+        return getSubConfig(path, withRoot(Path.parse(path), MapConfigNode.emptyRoot()));
     }
 
     @Nullable
@@ -123,9 +141,10 @@ final class ResolvableConfig implements Config {
     @Override
     public Optional<Config> getSubConfigAsOptional(@NotNull String path) {
         expectNonBlank(path, "path");
-        return root.getOptionalNode(Path.parse(path))
+        Path parsedPath = Path.parse(path);
+        return root.getOptionalNode(parsedPath)
                 .filter(node -> node instanceof MapConfigNode)
-                .map(node -> withRoot((MapConfigNode) node));
+                .map(node -> withRoot(parsedPath, (MapConfigNode) node));
     }
 
     @SuppressWarnings("unchecked")

@@ -49,6 +49,7 @@ class Path {
     }
 
     private static Path parseOrThrow(String path) {
+        if (path.isEmpty()) return Path.root();
         String[] chunks = path.split("\\.");
         List<PathElement> result = new ArrayList<>(chunks.length);
         for (String chunk : chunks) {
@@ -143,7 +144,7 @@ class Path {
     }
 
     PathElement getFirstElement() {
-        return elements.get(0);
+        return elements.getFirst();
     }
 
     List<String> getPropertyNames() {
@@ -260,7 +261,7 @@ class Path {
 
         @Override
         public void append(StringBuilder builder) {
-            if (builder.length() > 0) {
+            if (!builder.isEmpty()) {
                 builder.append(".");
             }
             builder.append(name);

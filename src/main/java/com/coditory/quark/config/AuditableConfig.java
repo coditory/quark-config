@@ -1,6 +1,7 @@
 package com.coditory.quark.config;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,6 +34,13 @@ public final class AuditableConfig extends ConfigDecorator {
     public Config getSubConfig(@NotNull String path) {
         markAsUsedProperty(path);
         return super.getSubConfig(path);
+    }
+
+    @Nullable
+    @Override
+    public Config getSubConfigOrNull(@NotNull String path) {
+        markAsUsedProperty(path);
+        return super.getSubConfigOrNull(path);
     }
 
     @NotNull
@@ -98,7 +106,11 @@ public final class AuditableConfig extends ConfigDecorator {
                 .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
         if (!properties.isEmpty()) {
             int limit = 5;
-            List<String> names = properties.keySet().stream().sorted().toList();
+            Path configPath = Path.parse(super.getPath());
+            List<String> names = properties.keySet().stream()
+                    .map(p -> configPath.add(p).toString())
+                    .sorted()
+                    .toList();
             String limitedNames = names.stream().limit(5).collect(Collectors.joining("\n"));
             if (names.size() > limit) {
                 limitedNames = limitedNames + "\n...";
