@@ -7,7 +7,7 @@ jacoco = "0.8.11"
 # build tools
 gradle-nexus-publish = { module = "io.github.gradle-nexus:publish-plugin", version = "2.0.0" }
 # dependencies
-jetbrains-annotations = { module = "org.jetbrains:annotations", version = "26.0.2" }
+jetbrains-annotations = { module = "org.jetbrains:annotations", version = "26.0.2-1" }
 snakeyaml = { module = "org.snakeyaml:snakeyaml-engine", version = "2.10" }
 gson = { module = "com.google.code.gson:gson", version = "2.13.1" }
 # test dependencies
