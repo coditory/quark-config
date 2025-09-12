@@ -18,7 +18,8 @@ public class SecretHidingValueMapper implements ConfigEntryMapper {
             "secret", "secrets",
             "token", "tokens",
             "key", "keys",
-            "apiKey", "apiKeys"
+            "apiKey", "apiKeys",
+            "pepper", "peppers"
     );
 
     private static final SecretHidingValueMapper DEFAULT_SECRET_HIDING_VALUE_MAPPER =
@@ -46,6 +47,9 @@ public class SecretHidingValueMapper implements ConfigEntryMapper {
     private boolean hasSecretChunk(String path) {
         int lastDot = path.lastIndexOf('.');
         String last = lastDot < 0 ? path : path.substring(lastDot + 1);
+        if (secretNames.contains(last)) {
+            return true;
+        }
         return findWordsInMixedCase(last).stream()
                 .flatMap(chunk -> Arrays.stream(chunk.split("-")))
                 .map(String::toLowerCase)

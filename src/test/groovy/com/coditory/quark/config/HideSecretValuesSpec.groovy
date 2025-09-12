@@ -15,8 +15,21 @@ class HideSecretValuesSpec extends Specification {
             result.getString(path) == "***"
         where:
             field << [
-                    "secret", "secrets", "password", "passwords", "token", "tokens", "key", "keys", "apiKey", "clientSecret"
+                    "secret", "secrets", "password", "passwords", "token", "tokens", "key", "keys", "apiKey", "pepper", "clientSecret"
             ]
+    }
+
+    def "should hide secret values with custom field name"() {
+        given:
+            String path = "a.clientId"
+            Config config = Config.builder()
+                    .put(path, "SECRET")
+                    .setSecretHidingValueMapper(new SecretHidingValueMapper(["clientId"] as Set<String>, "***"))
+                    .build()
+        when:
+            Config result = config.withHiddenSecrets()
+        then:
+            result.getString(path) == "***"
     }
 
     def "should hide secret value on path: #path"() {
