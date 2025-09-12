@@ -12,4 +12,5 @@ dependencies {
     implementation(libs.gson)
     testImplementation(libs.spock.core)
     testImplementation(libs.jsonassert)
+    testImplementation(libs.junit.platform)
 }
