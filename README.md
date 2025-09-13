@@ -32,10 +32,10 @@ dependencies {
 
 ```java
 Config config = new ConfigLoader()
-        .defaultProfiles("local")
-        .configPath("configs")
-        .args(args)
-        .loadConfig();
+    .defaultProfiles("local")
+    .configPath("configs")
+    .args(args)
+    .loadConfig();
 ```
 
 Loads configuration files:
