@@ -1,7 +1,8 @@
 // Prints project version.
 // Usage: ./gradlew version --quiet
 tasks.register("version") {
+    val version = project.version
     doLast {
-        println(project.version)
+        println(version)
     }
 }
