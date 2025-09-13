@@ -22,7 +22,7 @@ Add to your `build.gradle`:
 
 ```gradle
 dependencies {
-    implementation "com.coditory.quark:quark-config:0.1.27"
+    implementation "com.coditory.quark:quark-config:0.1.26"
 }
 ```
 
