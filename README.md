@@ -56,7 +56,7 @@ Explore the API, there is much more to configure.
 
 #### Config merging order
 
-Application configuration sources are merged into a single config object 
+Application configuration sources are merged into a single config object
 according to the following order:
 
 - base config
@@ -97,7 +97,7 @@ Config config = new ConfigLoader()
     .loadConfig();
 // loads config with prod profile
 // Output: {application={port=80, name=best-app}}
-        
+
 Config config = new ConfigLoader()
     .aArgs("--port", "7071")
     .loadConfig();
