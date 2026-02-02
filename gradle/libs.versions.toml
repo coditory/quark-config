@@ -8,9 +8,9 @@ jacoco = "0.8.11"
 gradle-nexus-publish = { module = "io.github.gradle-nexus:publish-plugin", version = "2.0.0" }
 # dependencies
 jetbrains-annotations = { module = "org.jetbrains:annotations", version = "26.0.2-1" }
-snakeyaml = { module = "org.snakeyaml:snakeyaml-engine", version = "2.10" }
+snakeyaml = { module = "org.snakeyaml:snakeyaml-engine", version = "3.0.1" }
 gson = { module = "com.google.code.gson:gson", version = "2.13.2" }
 # test dependencies
 spock-core = { module = "org.spockframework:spock-core", version = "2.4-M6-groovy-4.0" }
 jsonassert = { module = "org.skyscreamer:jsonassert", version = "1.5.3" }
-junit-platform = { module = "org.junit.platform:junit-platform-launcher", version = "1.13.4" }
+junit-platform = { module = "org.junit.platform:junit-platform-launcher", version = "6.0.2" }
